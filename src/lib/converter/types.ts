@@ -1,0 +1,140 @@
+// ============================================================
+// MATLABtoPython Converter — Core Types
+// 100% deterministic, no AI API calls
+// ============================================================
+
+/** A single logical line after tokenization (continuations joined, multi-statements split) */
+export interface LogicalLine {
+  content: string
+  originalLineStart: number
+  originalLineEnd: number
+  isComment: boolean
+}
+
+/** Block types that MATLAB uses with `end` to close */
+export type BlockType =
+  | 'function'
+  | 'for'
+  | 'while'
+  | 'if'
+  | 'elseif'
+  | 'else'
+  | 'switch'
+  | 'case'
+  | 'otherwise'
+  | 'try'
+  | 'catch'
+  | 'classdef'
+  | 'parfor'
+
+/** A logical line enriched with structural/indentation info */
+export interface StructuredLine extends LogicalLine {
+  indentLevel: number
+  blockType: BlockType | null
+  isBlockOpen: boolean
+  isBlockClose: boolean
+}
+
+/** Flag severity types */
+export type FlagType = 'WARNING' | 'INDEX' | 'TOOLBOX' | 'TODO' | 'UNSUPPORTED'
+
+/** A flag emitted during conversion */
+export interface Flag {
+  type: FlagType
+  message: string
+  originalLine: number
+  outputLine: number
+  originalCode: string
+}
+
+/** The compatibility report summarizing conversion quality */
+export interface CompatibilityReport {
+  totalLines: number
+  convertedCount: number
+  flaggedCount: number
+  unsupportedCount: number
+  flags: Flag[]
+  imports: string[]
+  detectedToolboxes: string[]
+  conversionRate: number
+}
+
+/** The full result returned by convert() */
+export interface ConversionResult {
+  python: string
+  report: CompatibilityReport
+  processingMs: number
+}
+
+// ============================================================
+// Registry Types
+// ============================================================
+
+/** How function arguments should be transformed */
+export type ArgTransform =
+  | 'passthrough'      // args transfer directly
+  | 'reshape'          // array dims need tuple wrapping: zeros(3,4) → np.zeros((3,4))
+  | 'attribute'        // becomes property access: size(A) → A.shape
+  | 'template'         // string template with {}: numel(A) → A.size
+  | 'format_convert'   // fprintf format string conversion
+  | 'custom'           // requires special handling logic
+
+/** A single function mapping entry */
+export interface FunctionMapping {
+  python: string
+  args: ArgTransform
+  imports: string[]
+  flag?: {
+    type: FlagType
+    message: string
+  }
+}
+
+/** An operator mapping entry — order matters for processing */
+export interface OperatorMapping {
+  matlab: string
+  python: string
+  note: string
+  flag?: {
+    type: FlagType
+    message: string
+  }
+}
+
+/** A constant mapping entry */
+export interface ConstantMapping {
+  python: string
+  imports: string[]
+  flag?: {
+    type: FlagType
+    message: string
+  }
+}
+
+/** A toolbox function mapping — like FunctionMapping but with toolbox metadata */
+export interface ToolboxMapping extends FunctionMapping {
+  toolbox: string
+}
+
+// ============================================================
+// Stage Output Types
+// ============================================================
+
+/** Output from Stage 3: Transform */
+export interface TransformResult {
+  transformed: StructuredLine[]
+  imports: Set<string>
+  flags: Flag[]
+}
+
+/** Output from Stage 4: Index Shifting */
+export interface IndexShiftResult {
+  shifted: StructuredLine[]
+  flags: Flag[]
+}
+
+/** Output from Stage 5: Cleanup */
+export interface CleanupResult {
+  python: string
+  flags: Flag[]
+}

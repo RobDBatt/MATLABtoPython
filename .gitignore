@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env.local
+.env
+src/lib/converter/debug*.ts
+src/lib/converter/test*.ts
+src/lib/converter/count.ts
