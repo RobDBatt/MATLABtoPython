@@ -80,11 +80,11 @@ describe('Control Flow', () => {
   })
 
   it('converts function definition', () => {
-    expect(py('function y = square(x)')).toBe('def square(x):  # returns y')
+    expect(py('function y = square(x)')).toContain('def square(x):')
   })
 
   it('converts function with multiple returns', () => {
-    expect(py('function [a, b] = split(x)')).toBe('def split(x):  # returns a, b')
+    expect(py('function [a, b] = split(x)')).toContain('def split(x):')
   })
 
   it('converts parfor with warning', () => {
@@ -454,15 +454,16 @@ describe('Phase 2: Indexing Intelligence', () => {
 describe('Phase 3: Format Strings and Registry', () => {
   it('3A: fprintf with format specifiers', () => {
     const result = py("fprintf('x = %d, y = %.2f\\n', x, y);")
-    expect(result).toContain('{x:d}')
-    expect(result).toContain('{y:.2f}')
     expect(result).toContain('print(')
+    expect(result).toContain('%d')
+    expect(result).toContain('%.2f')
+    expect(result).toContain('% (x, y)')
   })
 
-  it('3A: sprintf returns f-string', () => {
+  it('3A: sprintf returns %-formatted string', () => {
     const result = py("s = sprintf('val = %f', x);")
-    expect(result).toContain("f'")
-    expect(result).toContain('{x:f}')
+    expect(result).toContain("'val = %f'")
+    expect(result).toContain('% (x,)')
   })
 
   it('3B: unique function', () => {

@@ -922,15 +922,28 @@ function escapeRegex(str: string): string {
  * fprintf(fid, 'format', a, b) → fid.write(f'format with {a} {b}')
  * sprintf('format', a, b) → f'format with {a} {b}'
  */
+/**
+ * Convert MATLAB fprintf/sprintf to Python using % formatting.
+ *
+ * Uses Python's % operator instead of f-strings because:
+ * - MATLAB and Python % format specifiers are nearly identical
+ * - No need to parse and rearrange arguments into {var:spec} syntax
+ * - Handles nested function calls as arguments without breaking
+ *
+ * Examples:
+ *   fprintf('x = %d, y = %.2f\n', x, y) → print('x = %d, y = %.2f' % (x, y))
+ *   sprintf('val = %f', x)               → 'val = %f' % (x,)
+ *   fprintf(fid, '%s\n', name)            → fid.write('%s\n' % (name,))
+ */
 function convertFormatCall(funcName: string, allArgs: string): string {
-  // Split args respecting strings and parens
   const args = splitFormatArgs(allArgs)
   if (args.length === 0) return `print(${allArgs})`
 
   // Detect file-handle fprintf: first arg is not a string
   let fileHandle: string | null = null
   let formatIdx = 0
-  if (funcName === 'fprintf' && args.length >= 2 && !args[0].trim().startsWith("'") && !args[0].trim().startsWith('"')) {
+  if (funcName === 'fprintf' && args.length >= 2 &&
+      !args[0].trim().startsWith("'") && !args[0].trim().startsWith('"')) {
     fileHandle = args[0].trim()
     formatIdx = 1
   }
@@ -938,49 +951,52 @@ function convertFormatCall(funcName: string, allArgs: string): string {
   const formatStr = args[formatIdx]?.trim()
   if (!formatStr) return `print(${allArgs})`
 
-  // Remove surrounding quotes from format string
-  const stripped = formatStr.replace(/^['"]|['"]$/g, '')
   const valueArgs = args.slice(formatIdx + 1).map(a => a.trim())
 
-  // Convert MATLAB format specifiers to Python f-string
-  let argIdx = 0
-  const pyFormat = stripped.replace(/%([#0\- +]*)(\d+)?(\.\d+)?([diouxXeEfgGcs%])/g,
-    (match, _flags, _width, precision, type) => {
-      if (type === '%') return '%'  // literal %
-      const arg = valueArgs[argIdx++] || '?'
-      // Build Python format spec
-      let spec = ''
-      if (precision) spec += precision
-      if (type === 'd' || type === 'i') spec += 'd'
-      else if (type === 'f') spec += 'f'
-      else if (type === 'e' || type === 'E') spec += type
-      else if (type === 'g' || type === 'G') spec += type
-      else if (type === 's') spec = ''  // no format spec needed for strings
-      else if (type === 'c') spec = ''
-      else spec += type
+  // The format string stays almost as-is — Python % formatting uses
+  // the same specifiers as MATLAB (%d, %f, %s, %e, etc.)
+  // Only change: %i → %d (Python prefers %d)
+  let pyFormatStr = formatStr.replace(/%i/g, '%d')
 
-      return spec ? `{${arg}:${spec}}` : `{${arg}}`
-    },
-  )
+  // Build the tuple of values
+  if (valueArgs.length === 0) {
+    // No format args — just a plain string
+    if (funcName === 'sprintf') {
+      return pyFormatStr
+    }
+    if (fileHandle) {
+      return `${fileHandle}.write(${pyFormatStr})`
+    }
+    // Check for trailing \n — print adds newline automatically
+    if (pyFormatStr.includes('\\n')) {
+      pyFormatStr = pyFormatStr.replace(/\\n'\s*$/, "'").replace(/\\n"\s*$/, '"')
+      return `print(${pyFormatStr})`
+    }
+    return `print(${pyFormatStr}, end='')`
+  }
 
-  // Convert \n to actual newline handling
-  const formatted = pyFormat.replace(/\\n/g, '\\n').replace(/\\t/g, '\\t')
+  // Build value tuple
+  const tupleStr = valueArgs.length === 1
+    ? `(${valueArgs[0]},)`
+    : `(${valueArgs.join(', ')})`
 
   if (funcName === 'sprintf') {
-    return `f'${formatted}'`
+    return `${pyFormatStr} % ${tupleStr}`
   }
 
   if (fileHandle) {
-    return `${fileHandle}.write(f'${formatted}')`
+    return `${fileHandle}.write(${pyFormatStr} % ${tupleStr})`
   }
 
-  // Check if format string ends with \n — use print (which adds newline)
-  if (formatted.endsWith('\\n')) {
-    const trimmed = formatted.slice(0, -2)
-    return `print(f'${trimmed}')`
+  // fprintf to stdout — convert to print
+  // Check for trailing \n in format string
+  if (pyFormatStr.match(/\\n['"]\s*$/)) {
+    // Strip the \n from the format string — print adds its own
+    pyFormatStr = pyFormatStr.replace(/\\n(['"]\s*)$/, '$1')
+    return `print(${pyFormatStr} % ${tupleStr})`
   }
 
-  return `print(f'${formatted}', end='')`
+  return `print(${pyFormatStr} % ${tupleStr}, end='')`
 }
 
 /** Split format call arguments, respecting strings and nested parens */

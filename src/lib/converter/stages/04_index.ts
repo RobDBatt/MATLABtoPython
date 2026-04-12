@@ -29,8 +29,9 @@ export function shiftIndices(lines: StructuredLine[]): IndexShiftResult {
     let content = line.content
     const lineFlags: Flag[] = []
 
-    // Skip control flow lines
-    if (/^\s*(def |for |while |if |elif |else:|try:|except |class |return\b)/.test(content)) {
+    // Skip only lines where parens are part of syntax (def, for, class)
+    // DO NOT skip if/while/elif — they contain expressions with array indexing
+    if (/^\s*(def |for |class )/.test(content)) {
       shifted.push(line)
       continue
     }
@@ -64,13 +65,20 @@ const ARRAY_PRODUCING_FUNCTIONS = new Set([
   'fft2', 'fftshift', 'abs', 'sqrt', 'exp', 'log', 'sin', 'cos',
   'cumsum', 'cumprod', 'cross', 'conv', 'filter', 'filtfilt',
   'hanning', 'hamming', 'blackman', 'kaiser',
-  // After Stage 3 these become np.XXX — check both
+  'butter', 'cheby1', 'ellip', 'freqz', 'spectrogram',
+  'imread', 'rgb2gray', 'im2double',
+  'gradient', 'diff', 'cumtrapz', 'trapz',
+  'unique', 'intersect', 'union', 'setdiff',
+  // After Stage 3 these become np.XXX or signal.XXX — check both
   'np.zeros', 'np.ones', 'np.eye', 'np.random.rand', 'np.random.randn',
   'np.linspace', 'np.logspace', 'np.meshgrid', 'np.tile', 'np.diag',
   'np.fft.fft', 'np.fft.ifft', 'np.fft.fft2', 'np.fft.fftshift',
   'np.abs', 'np.sqrt', 'np.exp', 'np.log', 'np.sin', 'np.cos',
   'np.sort', 'np.hstack', 'np.vstack', 'np.concatenate',
   'np.cumsum', 'np.cumprod', 'np.cross', 'np.hanning', 'np.hamming',
+  'np.gradient', 'np.diff', 'np.unique', 'np.arange',
+  'signal.butter', 'signal.filtfilt', 'signal.lfilter', 'signal.freqz',
+  'signal.spectrogram', 'signal.welch',
 ])
 
 /** Functions whose arguments are arrays (e.g., size(A), length(A)) */
@@ -143,6 +151,19 @@ function buildKnownArrays(lines: StructuredLine[]): Set<string> {
     const transposeMatch = content.match(/\b(\w+)(?:\.'|\.T\b|\.conj\(\)\.T)/)
     if (transposeMatch) {
       arrays.add(transposeMatch[1])
+    }
+
+    // Pattern 6: Function parameters — if used with () later, likely arrays
+    // Extract parameter names from def lines
+    const defMatch = content.match(/^def\s+\w+\(([^)]+)\)/)
+    if (defMatch) {
+      const params = defMatch[1].split(',').map(s => s.trim()).filter(Boolean)
+      for (const p of params) {
+        // Add all params as potential arrays — better to convert () to []
+        // on a scalar (minor cosmetic issue) than to leave array indexing as ()
+        // (which is a syntax error)
+        arrays.add(p)
+      }
     }
   }
 
@@ -352,16 +373,37 @@ function splitArgs(argsStr: string): string[] {
 
 /**
  * Shift a single index expression from 1-based to 0-based.
+ *
+ * Only shifts "bare" indices — a single variable or literal number.
+ * If the expression already contains arithmetic (+, -, *, /), the user
+ * is doing their own offset math and we should NOT add another -1.
+ *
+ * Examples:
+ *   i       → i - 1        (bare variable — shift)
+ *   2       → 1            (literal — shift)
+ *   i-1     → i-1          (has arithmetic — don't shift)
+ *   i+1     → i+1          (has arithmetic — don't shift)
+ *   2*i     → 2*i          (has arithmetic — don't shift)
+ *   end     → handled separately, not here
  */
 function shiftSingleIndex(idx: string): string {
   const trimmed = idx.trim()
   if (trimmed === ':') return ':'
   if (trimmed === '') return ''
 
+  // Numeric literal — shift directly
   const num = parseInt(trimmed, 10)
   if (!isNaN(num) && String(num) === trimmed) {
     return String(num - 1)
   }
 
+  // If expression contains arithmetic operators, don't shift —
+  // the user is already computing an offset
+  // Allow leading negative sign (e.g. -1) but catch internal operators
+  if (/[+\-*/]/.test(trimmed.slice(1))) {
+    return trimmed
+  }
+
+  // Bare variable — shift
   return `${trimmed} - 1`
 }

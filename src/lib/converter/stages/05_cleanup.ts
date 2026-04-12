@@ -18,8 +18,40 @@ export function cleanup(
   const flags: Flag[] = []
   const outputLines: string[] = []
 
-  // Build import block
-  const importBlock = buildImportBlock(imports)
+  // Track function context for return statement generation
+  let currentFunctionReturns: string | null = null
+  let currentFunctionIndent = 0
+
+  // Track import alias → check for parameter collisions
+  const importAliases = new Set<string>()
+  for (const imp of Array.from(imports)) {
+    const alias = getImportAlias(imp)
+    if (alias) importAliases.add(alias)
+  }
+
+  // Scan for parameter names that collide with import aliases
+  const paramCollisions = new Map<string, string>() // alias → renamed alias
+  for (const line of lines) {
+    const defMatch = line.content.match(/^def\s+\w+\(([^)]*)\)/)
+    if (defMatch && defMatch[1]) {
+      const params = defMatch[1].split(',').map(s => s.trim())
+      for (const param of params) {
+        if (importAliases.has(param)) {
+          paramCollisions.set(param, `_${param}`)
+        }
+      }
+    }
+  }
+
+  // Build import block (with alias renaming for collisions)
+  let importBlock = buildImportBlock(imports)
+  // Rename colliding import aliases in the import block
+  for (const [original, renamed] of Array.from(paramCollisions.entries())) {
+    importBlock = importBlock.replace(
+      new RegExp(`as ${original}$`, 'gm'),
+      `as ${renamed}`,
+    )
+  }
   if (importBlock) {
     outputLines.push(importBlock)
     outputLines.push('') // blank line after imports
@@ -29,6 +61,15 @@ export function cleanup(
   let awaitingFirstCase = false
 
   for (const line of lines) {
+    // Emit return statement before function end — only at the function's own end,
+    // not at inner block ends (if/for/while). The function end is when we're back
+    // to the function's indent level.
+    if (line.isBlockClose && currentFunctionReturns && line.indentLevel <= currentFunctionIndent) {
+      const returnIndent = '    '.repeat(currentFunctionIndent + 1)
+      outputLines.push(`${returnIndent}return ${currentFunctionReturns}`)
+      currentFunctionReturns = null
+    }
+
     // Skip `end` lines — Python uses indentation instead
     if (line.isBlockClose) continue
 
@@ -41,6 +82,25 @@ export function cleanup(
     // Apply indentation
     const indent = '    '.repeat(line.indentLevel)
     let content = line.content
+
+    // Track function returns for return statement generation
+    const returnsMatch = content.match(/^def\s+\w+\([^)]*\):\s*#\s*returns\s+(.+)$/)
+    if (returnsMatch) {
+      currentFunctionReturns = returnsMatch[1].trim()
+      currentFunctionIndent = line.indentLevel
+      // Remove the returns comment from the def line, keep single colon
+      content = content.replace(/:\s*#\s*returns\s+.+$/, ':')
+    }
+
+    // Apply import alias renaming for parameter collisions
+    // Only rename when used as module prefix (followed by a function call)
+    // e.g. signal.butter( → _signal.butter(  but NOT signal.shape or signal > 0
+    for (const [original, renamed] of Array.from(paramCollisions.entries())) {
+      content = content.replace(
+        new RegExp(`\\b${original}\\.(\\w+)\\(`, 'g'),
+        `${renamed}.$1(`,
+      )
+    }
 
     // Track switch → first case should be `if`
     if (content.includes('# switch')) {
@@ -85,6 +145,32 @@ function cleanupSyntax(content: string): string {
 
   // Remove trailing semicolons (already mostly handled in tokenizer, but catch strays)
   result = result.replace(/;\s*$/, '')
+
+  // Array append pattern: A = [A, x] → A.append(x)
+  // MATLAB grows arrays with A = [A, newElement]
+  result = result.replace(
+    /^(\w+)\s*=\s*\[\1\s*,\s*(.+)\]\s*$/,
+    '$1.append($2)',
+  )
+  // Also handle vertical concat: A = [A; newRow]
+  result = result.replace(
+    /^(\w+)\s*=\s*\[\1\s*;\s*(.+)\]\s*$/,
+    '$1.append($2)',
+  )
+
+  // Legend argument fix: legend('a', 'b', ...) → plt.legend(['a', 'b'], ...)
+  // When legend has multiple string args followed by named args, wrap strings in list
+  result = result.replace(
+    /plt\.legend\(('(?:[^']*)'(?:\s*,\s*'(?:[^']*)')+)((?:\s*,\s*\w+=.*)?\))/,
+    (match, strings, rest) => {
+      // Count the string arguments
+      const strArgs = strings.match(/'[^']*'/g)
+      if (strArgs && strArgs.length >= 2) {
+        return `plt.legend([${strArgs.join(', ')}]${rest}`
+      }
+      return match
+    },
+  )
 
   // 3C. String concatenation in brackets: ['hello' ' world'] → 'hello' + ' world'
   // Detect bracket contents that are all string literals
@@ -137,4 +223,26 @@ function cleanupSyntax(content: string): string {
   }
 
   return result
+}
+
+/** Extract the Python alias from an import key */
+function getImportAlias(importKey: string): string | null {
+  const aliasMap: Record<string, string> = {
+    'numpy': 'np',
+    'scipy.signal': 'signal',
+    'scipy.stats': 'stats',
+    'scipy.optimize': 'optimize',
+    'scipy.ndimage': 'ndi',
+    'scipy.io': 'sio',
+    'scipy.integrate': 'integrate',
+    'scipy.sparse': 'scipy',
+    'control': 'control',
+    'matplotlib.pyplot': 'plt',
+    'pandas': 'pd',
+    'statsmodels': 'sm',
+    'soundfile': 'sf',
+    'sympy': 'sp',
+    'pywt': 'pywt',
+  }
+  return aliasMap[importKey] || null
 }
