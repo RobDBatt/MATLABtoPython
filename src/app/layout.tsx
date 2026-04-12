@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
+// ClerkProvider conditionally loaded — skip if no keys set
+const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_');
 import { Syne, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -35,19 +36,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
-      >
-        <body className="min-h-full flex flex-col font-[family-name:var(--font-dm-sans)]">
-          <Nav />
-          <main className="flex-1">{children}</main>
-        </body>
-      </html>
-    </ClerkProvider>
+  const content = (
+    <html
+      lang="en"
+      className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col font-[family-name:var(--font-dm-sans)]">
+        <Nav />
+        <main className="flex-1">{children}</main>
+      </body>
+    </html>
   );
+
+  if (!hasClerk) return content;
+
+  // Dynamic import to avoid build failure when keys are missing
+  const { ClerkProvider } = require("@clerk/nextjs");
+  return <ClerkProvider>{content}</ClerkProvider>;
 }
 
 function Nav() {

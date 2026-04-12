@@ -1,10 +1,12 @@
-import { clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
 export async function POST(req: Request) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')
 
@@ -17,22 +19,25 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      process.env.STRIPE_WEBHOOK_SECRET,
     )
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const client = await clerkClient()
+  // Only process Clerk metadata updates when Clerk is configured
+  const hasClerk = !!process.env.CLERK_SECRET_KEY?.startsWith('sk_')
 
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
       const userId = session.metadata?.userId
-      if (!userId) break
+      if (!userId || !hasClerk) break
+
+      const { clerkClient } = await import('@clerk/nextjs/server')
+      const client = await clerkClient()
 
       if (session.mode === 'payment') {
-        // Migration Pass — one-time, 30 days
         await client.users.updateUserMetadata(userId, {
           publicMetadata: {
             plan: 'migration_pass',
@@ -44,7 +49,6 @@ export async function POST(req: Request) {
           },
         })
       } else {
-        // Subscription (Pro or Team)
         const sub = await stripe.subscriptions.retrieve(
           session.subscription as string,
         )
@@ -61,17 +65,6 @@ export async function POST(req: Request) {
           },
         })
       }
-      break
-    }
-
-    case 'customer.subscription.deleted': {
-      // Downgrade to free when subscription ends
-      // Would need to look up userId by stripeCustomerId
-      break
-    }
-
-    case 'invoice.paid': {
-      // Reset monthly line counter on subscription renewal
       break
     }
   }

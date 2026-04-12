@@ -44,3 +44,5 @@ next-env.d.ts
 src/lib/converter/debug*.ts
 src/lib/converter/test*.ts
 src/lib/converter/count.ts
+
+.vercel
