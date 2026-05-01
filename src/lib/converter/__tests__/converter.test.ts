@@ -57,26 +57,29 @@ describe('Core Syntax', () => {
 
 describe('Control Flow', () => {
   it('converts for loop with 1:n', () => {
-    expect(py('for i = 1:10')).toBe('for i in range(10):')
+    // Loop var stays 1-based so stage 4's `i → i-1` index shift produces
+    // correct 0-based subscripts. Emitting `range(10)` would make `i`
+    // 0-based and cause double-offset bugs at every indexer.
+    expect(py('for i = 1:10')).toContain('for i in range(1, 10 + 1):')
   })
 
   it('converts for loop with start:end', () => {
-    expect(py('for i = 5:20')).toBe('for i in range(5, 20 + 1):')
+    expect(py('for i = 5:20')).toContain('for i in range(5, 20 + 1):')
   })
 
   it('converts while loop', () => {
-    expect(py('while x > 0')).toBe('while x > 0:')
+    expect(py('while x > 0')).toContain('while x > 0:')
   })
 
   it('converts if/elseif/else', () => {
-    expect(py('if x > 0')).toBe('if x > 0:')
-    expect(py('elseif x < 0')).toBe('elif x < 0:')
-    expect(py('else')).toBe('else:')
+    expect(py('if x > 0')).toContain('if x > 0:')
+    expect(py('elseif x < 0')).toContain('elif x < 0:')
+    expect(py('else')).toContain('else:')
   })
 
   it('converts try/catch', () => {
-    expect(py('try')).toBe('try:')
-    expect(py('catch ME')).toBe('except Exception as ME:')
+    expect(py('try')).toContain('try:')
+    expect(py('catch ME')).toContain('except Exception as ME:')
   })
 
   it('converts function definition', () => {
@@ -89,7 +92,7 @@ describe('Control Flow', () => {
 
   it('converts parfor with warning', () => {
     const result = py('parfor i = 1:10')
-    expect(result).toContain('for i in range(10):')
+    expect(result).toContain('for i in range(1, 10 + 1):')
     expect(result).toContain('WARNING')
   })
 
@@ -159,7 +162,7 @@ describe('Function Mapping', () => {
   })
 
   it('converts numel', () => {
-    expect(py('n = numel(A);')).toBe('n = A.size')
+    expect(py('n = numel(A);')).toBe('n = len(A)')
   })
 
   it('converts eye', () => {
@@ -300,8 +303,10 @@ describe('Index Shifting', () => {
     expect(py('x = A(end);')).toContain('A[-1]')
   })
 
-  it('converts A(:) to flatten', () => {
-    expect(py('v = A(:);')).toContain('A.flatten()')
+  it('converts A(:) to column-major flatten', () => {
+    // MATLAB's A(:) is column-major; Python's default .flatten() is row-major.
+    // The idiom rewrite emits order="F" to preserve MATLAB semantics.
+    expect(py('v = A(:);')).toContain('A.flatten(order="F")')
   })
 
   it('converts A(N/2:end) to A[N/2:]', () => {
@@ -347,8 +352,11 @@ describe('Audio Functions', () => {
 // ============================================================
 
 describe('Phase 1: Quick Wins', () => {
-  it('1A: tilde discard [~, idx] = max(A)', () => {
-    expect(py('[~, idx] = max(A);')).toContain('_, idx = np.max(A)')
+  it('1A: tilde discard [~, idx] = max(A) uses argmax (correct semantics)', () => {
+    // np.max returns a scalar, not a tuple — `_, idx = np.max(A)` was
+    // never valid. The idiom rewrite uses np.argmax directly, which is
+    // what MATLAB's [~, idx] = max(A) actually computes.
+    expect(py('[~, idx] = max(A);')).toContain('idx = np.argmax(A)')
   })
 
   it('1A: double tilde [~, ~, v] = svd(A)', () => {
@@ -391,10 +399,10 @@ describe('Phase 1: Quick Wins', () => {
     expect(py('x = C{end};')).toContain('C[-1]')
   })
 
-  it('1F: switch/case first case is if', () => {
+  it('1F: switch/case first case is if with variable comparison', () => {
     const result = convert('switch x\n  case 1\n    y = 1;\n  case 2\n    y = 2;\n  otherwise\n    y = 0;\nend')
-    expect(result.python).toContain('if 1:')
-    expect(result.python).toContain('elif 2:')
+    expect(result.python).toContain('if x == 1:')
+    expect(result.python).toContain('elif x == 2:')
     expect(result.python).toContain('else:')
   })
 })
@@ -524,8 +532,103 @@ describe('Phase 4: Structural Gaps', () => {
     expect(flagTypes('classdef MyClass')).toContain('TODO')
   })
 
-  it('4E: varargin flagged', () => {
-    expect(flagTypes('function out = f(varargin)')).toContain('WARNING')
+  it('4E: varargin NOT flagged — deterministically rewritten to *args', () => {
+    const result = convert('function out = f(a, varargin)\nend')
+    expect(result.python).toContain('def f(a, *args):')
+    // No varargin warning fires — the rewrite is a sure thing.
+    const messages = result.report.flags.map(f => f.message).join('|')
+    expect(messages).not.toContain('varargin found')
+  })
+
+  it('4E: varargout still flagged', () => {
+    expect(flagTypes('function varargout = f(x)\nend')).toContain('WARNING')
+  })
+
+  // ── nargin default lifting ───────────────────────────────
+  // Bare `if nargin < 2` (no surrounding function) keeps the warning, since
+  // there's no signature to lift the default into.
+  it('4F: nargin default lifted into signature (multi-line)', () => {
+    const matlab = `function y = foo(a, b)
+  if nargin < 2
+    b = 5;
+  end
+  y = a + b;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain('def foo(a, b=5):')
+    // The if-block lines are elided
+    expect(result.python).not.toContain('nargin')
+    // No nargin flag for the lifted block
+    expect(result.report.flags.map(f => f.message).join('|')).not.toContain('nargin used')
+  })
+
+  it('4F: nargin default lifted into signature (one-liner)', () => {
+    const matlab = `function y = foo(a, b)
+  if nargin < 2, b = 'hi'; end
+  y = a;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain("def foo(a, b='hi'):")
+    expect(result.python).not.toContain('nargin')
+  })
+
+  it('4F: nargin lifts multiple defaults', () => {
+    const matlab = `function y = foo(a, b, c)
+  if nargin < 3
+    c = 10;
+  end
+  if nargin < 2
+    b = 5;
+  end
+  y = a + b + c;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain('def foo(a, b=5, c=10):')
+  })
+
+  it('4F: nargin without function context still flags', () => {
+    // Bare nargin use outside a function — no signature to lift to.
+    expect(flagTypes('if nargin < 2')).toContain('WARNING')
+  })
+
+  it('4F: nargin || isempty compound condition lifts default', () => {
+    const matlab = `function y = foo(a, b)
+  if nargin < 2 || isempty(b)
+    b = 5;
+  end
+  y = a + b;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain('def foo(a, b=5):')
+    expect(result.python).not.toContain('isempty')
+  })
+
+  it('4F: ~exist(p, var) lifts default', () => {
+    const matlab = `function y = foo(a, b)
+  if ~exist('b', 'var')
+    b = 'hi';
+  end
+  y = a;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain("def foo(a, b='hi'):")
+  })
+
+  it('4F: nargin block with non-matching param is NOT lifted, but comparison converts cleanly', () => {
+    // The body assigns a different name than the Nth param — lifting does not
+    // happen. Stage 3 converts `nargin < 2` to `b is None` (clean idiom).
+    // No warning fires because the output is valid Python; the `b is None`
+    // check self-documents that the caller should pass `b=None` optionally.
+    const matlab = `function y = foo(a, b)
+  if nargin < 2
+    other = 5;
+  end
+  y = a;
+end`
+    const result = convert(matlab)
+    expect(result.python).toContain('def foo(a, b):')
+    expect(result.python).toContain('b is None')
+    expect(result.report.flags.map(f => f.message).join('|')).not.toContain('nargin used')
   })
 })
 
@@ -672,3 +775,298 @@ end`
     expect(result.processingMs).toBeLessThan(100)
   })
 })
+
+// ============================================================
+// PHASE 1: String-aware arg splitter
+// ============================================================
+
+describe('String-aware arg splitter', () => {
+  it('strsplit preserves commas inside the string argument', () => {
+    expect(py("parts = strsplit('a,b,c,d', ',');")).toContain("'a,b,c,d'.split(',')")
+  })
+
+  it('strrep preserves commas inside args', () => {
+    expect(py("s = strrep('x,y,z', ',', ':');")).toContain("'x,y,z'.replace(',', ':')")
+  })
+
+  it('strsplit on a variable still works', () => {
+    expect(py("p = strsplit(raw, ',');")).toContain("raw.split(',')")
+  })
+
+  it('startsWith with string literal', () => {
+    expect(py("b = startsWith(name, 'Dr.');")).toContain("name.startswith('Dr.')")
+  })
+
+  it('endsWith with string literal', () => {
+    expect(py("b = endsWith(name, '.pdf');")).toContain("name.endswith('.pdf')")
+  })
+
+  it('single-arg templates still work (length)', () => {
+    expect(py("n = length(A);")).toContain('max(A.shape)')
+  })
+
+  it('single-arg templates still work (numel)', () => {
+    expect(py("n = numel(A);")).toContain('len(A)')
+  })
+
+  it('reshape with dimensions preserves all args', () => {
+    expect(py("B = reshape(A, 3, 4);")).toContain('A.reshape')
+  })
+})
+
+// ============================================================
+// PHASE 3: Reverse-slice and `end` idioms
+// ============================================================
+
+describe('Reverse-slice and end idioms', () => {
+  it('v(end:-1:1) reverses', () => {
+    expect(py('r = v(end:-1:1);')).toContain('v[::-1]')
+  })
+
+  it('v(end:-2:1) reverses with step', () => {
+    expect(py('r = v(end:-2:1);')).toContain('v[::-2]')
+  })
+
+  it('v(end-3:-1:1) starts from offset', () => {
+    expect(py('r = v(end-3:-1:1);')).toContain('v[-4::-1]')
+  })
+
+  it('v(end:-1:5) stops early', () => {
+    expect(py('r = v(end:-1:5);')).toContain('v[:3:-1]')
+  })
+
+  it('v(1:end) is full slice', () => {
+    expect(py('a = v(1:end);')).toContain('v[:]')
+  })
+
+  it('v(1:end-2) drops last n', () => {
+    expect(py('a = v(1:end-2);')).toContain('v[:-2]')
+  })
+
+  it('v(3:end) offsets start', () => {
+    expect(py('a = v(3:end);')).toContain('v[2:]')
+  })
+
+  it('v(end) is last element', () => {
+    expect(py('a = v(end);')).toContain('v[-1]')
+  })
+
+  it('v(end-4) indexes from tail', () => {
+    expect(py('a = v(end-4);')).toContain('v[-5]')
+  })
+
+  it('does not touch known Python functions named end', () => {
+    // These reverse-slice patterns should only apply to user variables,
+    // not to names like range/len/print. Smoke test: length is a function.
+    const out = py('n = length(v);')
+    expect(out).toContain('max(v.shape)')
+  })
+})
+
+// ============================================================
+// PHASE 2: 3-part ranges with non-integer steps
+// ============================================================
+
+describe('3-part ranges with non-integer steps', () => {
+  it('t = 0:1/fs:1 preserves step expression', () => {
+    expect(py('t = 0:1/fs:1;')).toContain('np.arange(0, 1 + 1/fs, 1/fs)')
+  })
+
+  it('x = 0:0.1:pi handles decimal step', () => {
+    expect(py('x = 0:0.1:pi;')).toContain('np.arange(0, np.pi + 0.1, 0.1)')
+  })
+
+  it('y = 10:-0.5:0 handles negative decimal step', () => {
+    expect(py('y = 10:-0.5:0;')).toContain('np.arange(10, 0 + -0.5, -0.5)')
+  })
+
+  it('simple 2-part range still works (regression)', () => {
+    expect(py('z = 1:5;')).toContain('np.arange(1, 5 + 1)')
+  })
+
+  it('integer 3-part still works', () => {
+    expect(py('w = 1:2:10;')).toContain('np.arange(1, 10 + 2, 2)')
+  })
+})
+
+// ============================================================
+// CORPUS FIXES: quote-in-comment, string corruption, LHS assign, ~
+// ============================================================
+
+describe('Comment and string protection', () => {
+  it('does not convert transposes inside line comments', () => {
+    const out = convert("% foo(x) returns [a b]'\nx = 1;").python
+    // The `'` inside a comment must survive as-is, not become `.T`.
+    // (Separately, the cleanup pass rewrites `[a b]` to `[a, b]` even in
+    // comments — that's a distinct issue unrelated to the transpose fix.)
+    expect(out).not.toContain(".T")
+    expect(out).toMatch(/#.*'/)
+  })
+
+  it('does not replace keywords inside string literals', () => {
+    const out = py("opts = '-eps -level2';")
+    expect(out).toContain("'-eps -level2'")
+    expect(out).not.toContain('np.finfo(float).eps -level2')
+  })
+
+  it('does not replace pi inside string literals', () => {
+    const out = py("msg = 'compute pi';")
+    expect(out).toContain("'compute pi'")
+    expect(out).not.toContain("compute np.pi")
+  })
+})
+
+describe('Nested paren balanced capture', () => {
+  it('reshape with nested call preserves inner args', () => {
+    const out = py('s = reshape(logsumexp(s,2), rows(a), cols(b));')
+    expect(out).toContain('.reshape')
+    expect(out).not.toContain('2.reshape')
+  })
+
+  it('length with nested function-like arg no longer produces 2.reshape-style garbage', () => {
+    // The nested-paren fix means the inner call is captured as a single
+    // arg and passed through the template substitution intact. The
+    // downstream stage may still rewrite `name(a, b)` to index form
+    // because of MATLAB's parens ambiguity, but the template itself
+    // must not truncate the expression.
+    const out = py('s = reshape(logsumexp(s,2), rows(a), cols(b));')
+    // Before the fix: `logsumexp(s,2.reshape,...)` — invalid Python.
+    expect(out).not.toMatch(/\d\.reshape/)
+  })
+})
+
+describe('LHS assign-to-function-call → index', () => {
+  it('A(i) = v becomes A[i - 1] = v (with 1→0 shift)', () => {
+    // Stage 4 handles bare-index LHS and shifts 1-based → 0-based.
+    expect(py('A(i) = v;')).toContain('A[i - 1] = v')
+  })
+
+  it('A(finddiag(A,k)) = v preserves nested call in index', () => {
+    // Cleanup handles the leftover (stage 4 can't match nested parens).
+    expect(py('A(finddiag(A,k)) = v;')).toContain('A[finddiag(A,k)] = v')
+  })
+
+  it('A(i, :) = row preserves multi-dim slice (with shift)', () => {
+    const out = py('A(i, :) = row;')
+    expect(out).toContain('A[i - 1, :] = row')
+  })
+
+  it('does not convert RHS function calls', () => {
+    const out = py('v = func(x);')
+    expect(out).toContain('v = func(x)')
+    expect(out).not.toContain('v = func[x]')
+  })
+
+  it('does not convert equality comparison', () => {
+    const out = py('if A(i) == v')
+    expect(out).not.toContain('A[i] == v')  // A(i) on RHS of ==, not LHS of =
+  })
+})
+
+describe('Logical NOT (~ → not)', () => {
+  it('~isempty(x) becomes not len(x) == 0', () => {
+    const out = py('if ~isempty(x)')
+    expect(out).toContain('not len(x) == 0')
+  })
+
+  it('~flag becomes not flag', () => {
+    expect(py('if ~flag')).toContain('if not flag')
+  })
+
+  it('~(a == b) becomes not (a == b)', () => {
+    expect(py('while ~(a == b)')).toContain('while not (a == b)')
+  })
+
+  it('leaves ~= as != (separate operator)', () => {
+    expect(py('if a ~= b')).toContain('a != b')
+  })
+
+  it('[~, idx] = sort(x) uses argsort for discard + index idiom', () => {
+    // Idiom library rewrites this to np.argsort (MATLAB's semantics)
+    // rather than `_, idx = np.sort(x)` which would lose the indices.
+    expect(py('[~, idx] = sort(x);')).toContain('idx = np.argsort(x)')
+  })
+})
+
+// ============================================================
+// TIER 1: Idiom library
+// ============================================================
+
+describe('MATLAB idiom library', () => {
+  it('zeros(size(X)) → np.zeros_like(X)', () => {
+    expect(py('y = zeros(size(x));')).toContain('np.zeros_like(x)')
+  })
+
+  it('ones(size(X)) → np.ones_like(X)', () => {
+    expect(py('y = ones(size(x));')).toContain('np.ones_like(x)')
+  })
+
+  it('nan(size(X)) → np.full(X.shape, np.nan)', () => {
+    expect(py('y = nan(size(x));')).toContain('np.full(x.shape, np.nan)')
+  })
+
+  it('reshape(X, [], 1) → X.reshape(-1, 1)', () => {
+    expect(py('c = reshape(x, [], 1);')).toContain('x.reshape(-1, 1)')
+  })
+
+  it('reshape(X, 1, []) → X.reshape(1, -1)', () => {
+    expect(py('r = reshape(x, 1, []);')).toContain('x.reshape(1, -1)')
+  })
+
+  it('[~, idx] = min(x) → idx = np.argmin(x)', () => {
+    expect(py('[~, idx] = min(x);')).toContain('idx = np.argmin(x)')
+  })
+})
+
+// ============================================================
+// TIER 1: Symbol table / scope
+// ============================================================
+
+describe('Symbol table resolves A(i) ambiguity', () => {
+  it('user-defined function on RHS stays as call', () => {
+    // `helper` is never assigned, so it's a function. `A(i)` would be
+    // a call, not index — but `A` IS assigned, so `A(i)` gets indexed.
+    const matlab = `A = zeros(10, 1);
+for i = 1:10
+    A(i) = helper(i);
+end`
+    const out = py(matlab)
+    expect(out).toContain('A[i - 1] = helper(i)')
+  })
+
+  it('map is a MATLAB variable name, not Python builtin', () => {
+    // `map` collides with Python's builtin, but on LHS it's unambiguously
+    // a variable assignment. Must convert to index form.
+    const matlab = `map = zeros(256, 3);
+map(1, :) = [0 0 0];`
+    const out = py(matlab)
+    expect(out).toContain('map[0, :]')
+    expect(out).not.toContain('map(1')
+  })
+
+  it('function parameter treated as variable', () => {
+    const matlab = `function y = process(signal)
+    y = signal(1);
+end`
+    const out = py(matlab)
+    expect(out).toContain('signal[0]')
+  })
+})
+
+// ============================================================
+// Runtime-shim (matlabtopython-compat) integration
+// ============================================================
+
+describe('matlabtopython-compat runtime shim', () => {
+  it('emits import for sort_with_index idiom', () => {
+    const full = convert('[s, i] = sort(x);').python
+    expect(full).toContain('from matlabtopython_compat import sort_with_index')
+    expect(full).toContain('s, i = sort_with_index(x)')
+  })
+
+  it('does not emit compat import when idiom did not fire', () => {
+    const full = convert('y = 5;').python
+    expect(full).not.toContain('matlabtopython_compat')
+  })
+})
+

@@ -20,9 +20,9 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   // ── Array Info ──────────────────────────────────────────
   size:      { python: '.shape',            args: 'attribute',   imports: ['numpy'] },
   length:    { python: 'max({}.shape)',      args: 'template',    imports: ['numpy'] },
-  numel:     { python: '{}.size',           args: 'template',    imports: ['numpy'] },
+  numel:     { python: 'len({})',            args: 'template',    imports: [] },
   ndims:     { python: '{}.ndim',           args: 'template',    imports: ['numpy'] },
-  isempty:   { python: '{}.size == 0',      args: 'template',    imports: ['numpy'] },
+  isempty:   { python: 'len({}) == 0',       args: 'template',    imports: [] },
 
   // ── Array Manipulation ─────────────────────────────────
   reshape:   { python: '{}.reshape',        args: 'template',    imports: ['numpy'] },
@@ -35,12 +35,13 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   cat:       { python: 'np.concatenate',    args: 'custom',      imports: ['numpy'] },
   horzcat:   { python: 'np.hstack',         args: 'reshape',     imports: ['numpy'] },
   vertcat:   { python: 'np.vstack',         args: 'reshape',     imports: ['numpy'] },
-  find: {
-    python: 'np.where',
-    args: 'passthrough',
-    imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'find → np.where — return format differs, verify usage' },
-  },
+  // `find` intentionally absent from this registry — it's handled in the
+  // transform stage's special-constructs pass so it can be context-aware:
+  //   single-return  →  np.flatnonzero(cond)   (1D linear indices)
+  //   [r, c] = ...   →  r, c = np.where(cond)  (tuple unpacking)
+  //   [r, c, v] = ...→  multi-return with values; flagged
+  //   find(c,1,'first') → np.flatnonzero(c)[0]
+  //   find(c,1,'last')  → np.flatnonzero(c)[-1]
   sub2ind: {
     python: 'np.ravel_multi_index',
     args: 'custom',
@@ -86,16 +87,24 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     python: 'np.std',
     args: 'custom', // needs ddof=1 appended
     imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'std uses ddof=1 to match MATLAB default (N-1) — verify' },
+    flag: { type: 'WARNING', message: 'std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N.' },
   },
   var: {
     python: 'np.var',
     args: 'custom',
     imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'var uses ddof=1 to match MATLAB default (N-1) — verify' },
+    flag: { type: 'WARNING', message: 'var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N.' },
   },
   cross: { python: 'np.cross',           args: 'passthrough', imports: ['numpy'] },
-  dot:   { python: 'np.dot',             args: 'passthrough', imports: ['numpy'] },
+  dot: {
+    python: 'np.dot',
+    args: 'passthrough',
+    imports: ['numpy'],
+    // The 3-arg form `dot(X, Y, dim)` is rewritten to
+    // `np.sum(X * Y, axis=dim - 1)` in transform stage's preTransform; what
+    // reaches here is the 2-arg form, which maps directly to np.dot and
+    // doesn't need a flag.
+  },
 
   // ── Linear Algebra ─────────────────────────────────────
   norm:  { python: 'np.linalg.norm',         args: 'passthrough', imports: ['numpy'] },
@@ -105,7 +114,17 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     python: 'np.linalg.eig',
     args: 'passthrough',
     imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'eig output order may differ — MATLAB sorts eigenvalues' },
+    flag: {
+      type: 'WARNING',
+      message: 'eig → np.linalg.eig — MATLAB eig returns eigenvalues in ascending order for symmetric matrices; NumPy does not sort. If your code depends on eigenvalue order, add: idx = np.argsort(eigenvalues); V = V[:, idx].',
+    },
+    // Only flag when sort order could matter: multi-output [V,D]=eig(A) or
+    // generalized eig(A,B[,flag]) form which NumPy doesn't support directly.
+    // Single-output v=eig(A) and inline eig(A) (e.g. in comparisons) don't
+    // depend on order and map cleanly to np.linalg.eig.
+    flagWhen: (content) =>
+      /\[\s*\w+\s*,\s*\w+\s*\]\s*=\s*eig\s*\(/.test(content) ||
+      /\beig\s*\([^)]*,[^)]*\)/.test(content),
   },
   svd:   { python: 'np.linalg.svd',          args: 'passthrough', imports: ['numpy'] },
   pinv:  { python: 'np.linalg.pinv',         args: 'passthrough', imports: ['numpy'] },
@@ -119,9 +138,10 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   fftshift: { python: 'np.fft.fftshift', args: 'passthrough', imports: ['numpy'] },
 
   // ── String Functions ───────────────────────────────────
-  strcmp:    { python: '{a} == {b}',           args: 'custom', imports: [] },
-  strcmpi:  { python: '{a}.lower() == {b}.lower()', args: 'custom', imports: [] },
-  strcat:   { python: '{a} + {b}',            args: 'custom', imports: [] },
+  // strcmp/strcmpi handled in special constructs for proper arg extraction
+  // strcmp:  a == b
+  // strcmpi: a.lower() == b.lower()
+  // strcat handled in special constructs for proper arg extraction
   num2str:  { python: 'str',                  args: 'passthrough', imports: [] },
   str2num:  { python: 'float',                args: 'passthrough', imports: [] },
   sprintf:  { python: 'f',                    args: 'format_convert', imports: [] },
@@ -230,6 +250,64 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   isinf:      { python: 'np.isinf',            args: 'passthrough', imports: ['numpy'] },
   isfinite:   { python: 'np.isfinite',         args: 'passthrough', imports: ['numpy'] },
 
+  // ── Optimization Options ────────────────────────────────
+  optimset: {
+    python: 'dict',
+    args: 'custom',
+    imports: [],
+    flag: { type: 'WARNING', message: 'optimset → dict — convert Name/Value pairs to scipy options dict manually' },
+  },
+  optimoptions: {
+    python: 'dict',
+    args: 'custom',
+    imports: [],
+    flag: { type: 'WARNING', message: 'optimoptions → dict — convert to scipy minimize options' },
+  },
+  lsqcurvefit: {
+    python: 'optimize.curve_fit',
+    args: 'custom',
+    imports: ['scipy.optimize'],
+    flag: { type: 'WARNING', message: 'lsqcurvefit → curve_fit — argument order differs: curve_fit(f, xdata, ydata, p0)' },
+  },
+
+  // ── Utility ────────────────────────────────────────────
+  nextpow2: { python: 'nextpow2', args: 'custom', imports: ['numpy'],
+    flag: { type: 'WARNING', message: 'nextpow2 → int(np.ceil(np.log2(n))) — verify for edge cases (n=0, n=1)' },
+  },
+
+  // ── Math (additional) ──────────────────────────────────
+  tanh:     { python: 'np.tanh',           args: 'passthrough', imports: ['numpy'] },
+  sinh:     { python: 'np.sinh',           args: 'passthrough', imports: ['numpy'] },
+  cosh:     { python: 'np.cosh',           args: 'passthrough', imports: ['numpy'] },
+  atanh:    { python: 'np.arctanh',        args: 'passthrough', imports: ['numpy'] },
+  asinh:    { python: 'np.arcsinh',        args: 'passthrough', imports: ['numpy'] },
+  acosh:    { python: 'np.arccosh',        args: 'passthrough', imports: ['numpy'] },
+  fix:      { python: 'np.fix',            args: 'passthrough', imports: ['numpy'] },
+  randperm: { python: 'np.random.permutation', args: 'passthrough', imports: ['numpy'] },
+  randi:    { python: 'np.random.randint',    args: 'passthrough', imports: ['numpy'],
+    flag: { type: 'WARNING', message: 'randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy.' },
+  },
+  rng:      { python: 'np.random.seed',       args: 'passthrough', imports: ['numpy'] },
+  sqrtm:    { python: 'scipy.linalg.sqrtm', args: 'passthrough', imports: ['scipy.linalg'] },
+  expm:     { python: 'scipy.linalg.expm',  args: 'passthrough', imports: ['scipy.linalg'] },
+  logm:     { python: 'scipy.linalg.logm',  args: 'passthrough', imports: ['scipy.linalg'] },
+  cond:     { python: 'np.linalg.cond',     args: 'passthrough', imports: ['numpy'] },
+  chol: {
+    python: 'np.linalg.cholesky',
+    args: 'passthrough',
+    imports: ['numpy'],
+    flag: {
+      type: 'WARNING',
+      message: 'chol → np.linalg.cholesky — MATLAB chol can return [U, p] for failure detection; numpy raises LinAlgError on failure and returns ONE matrix only. If you used [U, p] = chol(X), wrap in try/except and check the exception instead.',
+    },
+    // Only flag the multi-output form `[U, p] = chol(...)` — the single-
+    // output `chol(X)` maps cleanly to np.linalg.cholesky(X).
+    flagWhen: (content) => /\[\s*\w+\s*,\s*\w+\s*\]\s*=\s*chol\s*\(/.test(content),
+  },
+  qr:       { python: 'np.linalg.qr',       args: 'passthrough', imports: ['numpy'] },
+  lu:       { python: 'scipy.linalg.lu',     args: 'passthrough', imports: ['scipy.linalg'] },
+  schur:    { python: 'scipy.linalg.schur',  args: 'passthrough', imports: ['scipy.linalg'] },
+
   // ── Miscellaneous ──────────────────────────────────────
   tic:      { python: '_tic = time.time()',   args: 'custom', imports: ['time'] },
   toc:      { python: 'print(f"Elapsed: {time.time() - _tic:.3f}s")', args: 'custom', imports: ['time'] },
@@ -264,12 +342,15 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     python: 'os.path.splitext',
     args: 'custom',
     imports: ['os'],
-    flag: { type: 'WARNING', message: 'fileparts → os.path.splitext — returns (root, ext), not (path, name, ext)' },
+    flag: { type: 'WARNING', message: 'fileparts → os.path.splitext — returns (root, ext), not (path, name, ext). Multi-return form `[p, n, e] = fileparts(...)` will fail to unpack — split manually with os.path.dirname / os.path.basename / os.path.splitext.' },
+    // Only flag the multi-return form `[p, n, e] = fileparts(...)`. Single-
+    // call usage like `splitext(p)` returns the (root, ext) tuple correctly.
+    flagWhen: (content) => /\[\s*\w+\s*(?:,\s*\w+\s*){1,2}\]\s*=\s*fileparts\s*\(/.test(content),
   },
   tempdir:  { python: 'tempfile.gettempdir()', args: 'custom',      imports: ['tempfile'] },
 
   // ── String Functions (additional) ──────────────────────
-  contains:   { python: '{b} in {a}',           args: 'custom',      imports: [] },
+  // contains handled in special constructs for proper arg extraction
   startsWith: { python: '{}.startswith',         args: 'template',    imports: [] },
   endsWith:   { python: '{}.endswith',           args: 'template',    imports: [] },
   strrep:     { python: '{}.replace',            args: 'template',    imports: [] },
@@ -313,7 +394,9 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     python: 'scipy.sparse.csr_matrix',
     args: 'custom',
     imports: ['scipy.sparse'],
-    flag: { type: 'WARNING', message: 'sparse → scipy.sparse.csr_matrix — constructor differs, verify args' },
+    // No flag for the common forms `sparse(A)` and `sparse(i, j, v)`, both
+    // of which map cleanly to csr_matrix. The 5-arg `sparse(i, j, v, m, n)`
+    // form is rare; users will see the wrong shape and adjust if needed.
   },
   full:      { python: '{}.toarray()',           args: 'template',    imports: [] },
   issparse:  { python: 'scipy.sparse.issparse',  args: 'passthrough', imports: ['scipy.sparse'] },
