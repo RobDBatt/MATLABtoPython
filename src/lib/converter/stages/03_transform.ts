@@ -659,7 +659,7 @@ function postTransform(
   }
 
   // Flag any remaining colon `:` outside of strings/slices/brackets that looks like a MATLAB range
-  if (/:/.test(result) && !result.includes('#') && !/^\s*(for|elif|else|if|while|def|try|except|case)/.test(result)) {
+  if (/:/.test(result) && !result.includes('#') && !result.includes('lambda') && !/^\s*(for|elif|else|if|while|def|try|except|case)/.test(result)) {
     // Strip all contexts where colons are valid Python (slicing, dicts, strings, ranges)
     const stripped = result
       .replace(/\[(?:[^\[\]]|\[[^\]]*\])*\]/g, '')  // remove bracket contents incl. one level of nesting (Python slicing)
