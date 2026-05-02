@@ -336,6 +336,12 @@ function preTransform(
     }
   }
 
+  // mex/make build commands — always comment out regardless of argument syntax
+  // (the general command-form handler below excludes `=` chars, missing `mex CFLAGS=...`)
+  if (/^\s*mex\b/.test(result) || /^\s*make\b/.test(result)) {
+    result = `# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+  }
+
   // Remove MATLAB trailing commas in conditions: if x>0, → if x>0
   // MATLAB allows trailing comma after condition before newline
   result = result.replace(/^(\s*(?:if|elseif|while)\s+.+),\s*$/, '$1')

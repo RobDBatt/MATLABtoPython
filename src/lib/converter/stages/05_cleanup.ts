@@ -629,19 +629,23 @@ function splitAllElements(inner: string): string[] {
     if (ch === ')' || ch === ']' || ch === '}') { depth--; cur += ch; continue }
     if (depth === 0 && /\s/.test(ch)) {
       const trimmedCur = cur.trim()
-      // Don't split on a space that is part of a binary arithmetic expression.
+      // Don't split on a space that is part of a binary expression (arithmetic or comparison).
       // Rule 1: If cur ends with an operator, the space follows the operator — keep accumulating.
       //   `b + ` — cur = 'b +' → space after operator, next is 'd' → don't split yet
+      //   Also handles comparison: `x >` — space after `>`, next is `1` → keep
       if (trimmedCur !== '' && /[+\-*/%^]$/.test(trimmedCur)) {
         cur += ch; continue
       }
-      // Rule 2: If the next non-space token starts with +/- FOLLOWED BY another space
-      //   (not a non-space char), it is a binary operator: `b + d` has `+ d` next.
-      //   Contrast: `b +d` (unary + on d) has `+d` next — that IS a separator.
+      // Rule 2: If the next non-space token starts with an operator FOLLOWED BY another space,
+      //   it is a binary operator context — don't split.
+      //   Covers arithmetic (+,-,*,/,%,^) and comparison (>,<,>=,<=,==,!=,~=).
       const nextStr = inner.slice(i + 1).trimStart()
       const nextCh = nextStr[0] || ''
       if (trimmedCur !== '' && /^[+\-*/%^]/.test(nextCh) && nextStr.length > 1 && /\s/.test(nextStr[1])) {
-        // binary operator: `+ d` or `- (x)` etc — don't split
+        cur += ch; continue
+      }
+      // Comparison operators `> 1`, `< 0`, `>= x`, `<= y` — always binary
+      if (trimmedCur !== '' && /^[<>!~=]/.test(nextCh)) {
         cur += ch; continue
       }
       if (trimmedCur !== '') out.push(trimmedCur)

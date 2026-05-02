@@ -228,8 +228,15 @@ function fixColonInsideParens(line: string): string {
       else if (ch === ':' && depth === 0) { hasTopColon = true; break }
     }
     if (!hasTopColon) return match
+    // If the args contain `lambda x: expr` where expr has NO further colons,
+    // the single colon is the lambda body separator, not a slice — keep parens.
+    // (Two colons means `lambda x: 1:x` — range inside lambda body — allow brackets.)
+    if (/\blambda\b/.test(args)) {
+      const colonCount = (args.match(/:/g) || []).length
+      if (colonCount === 1) return match
+    }
     // Skip if `name` looks like a known function — conservative list.
-    if (/^(range|slice|print|dict|set|list|tuple|map|filter|zip|enumerate|all|any|sum|min|max|len|sorted|reversed|iter|next|abs|round|isinstance|type|int|float|str|bool|bytes|hasattr|getattr|setattr|delattr|open|input)$/.test(name)) {
+    if (/^(range|slice|print|dict|set|list|tuple|map|filter|zip|enumerate|all|any|sum|min|max|len|sorted|reversed|iter|next|abs|round|isinstance|type|int|float|str|bool|bytes|hasattr|getattr|setattr|delattr|open|input|arrayfun|cellfun|structfun|spfun|addlistener)$/.test(name)) {
       return match
     }
     return `${name}[${args}]`
@@ -243,7 +250,7 @@ function fixColonInsideParens(line: string): string {
  * colon and rewrites to `var[...]`.
  */
 function fixColonInsideParensNested(line: string): string {
-  const RESERVED = /^(range|slice|print|dict|set|list|tuple|map|filter|zip|enumerate|all|any|sum|min|max|len|sorted|reversed|iter|next|abs|round|isinstance|type|int|float|str|bool|bytes|hasattr|getattr|setattr|delattr|open|input)$/
+  const RESERVED = /^(range|slice|print|dict|set|list|tuple|map|filter|zip|enumerate|all|any|sum|min|max|len|sorted|reversed|iter|next|abs|round|isinstance|type|int|float|str|bool|bytes|hasattr|getattr|setattr|delattr|open|input|arrayfun|cellfun|structfun|spfun|addlistener)$/
   let result = line
   let changed = true
   let guard = 0
