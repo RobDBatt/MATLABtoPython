@@ -324,10 +324,12 @@ function preTransform(
     result = result.replace(/^(\s*)methods(\s.*)?$/, '$1# --- methods$2---')
   }
 
-  // `else, body` / `else; body` — MATLAB inline else body with comma/semicolon separator.
+  // `else, body` / `else; body` / `else body` — MATLAB inline else body.
   // Split into `else:\n    body` so the output is valid Python.
+  // Handles three MATLAB separators: comma, semicolon, or bare space.
   {
-    const elseInline = result.match(/^(\s*)else\s*[,;]\s*(.+)$/)
+    const elseInline = result.match(/^(\s*)else\s*[,;]\s*(.+)$/) ||
+                       result.match(/^(\s*)else\s+(?!:)(.+)$/)
     if (elseInline) {
       const [, indent, body] = elseInline
       result = `${indent}else:\n${indent}    ${body.trimEnd()}`
@@ -1797,6 +1799,9 @@ function transformSpecialConstructs(
   result = result.replace(/\baxis\s+normal\b/g, "plt.axis('auto')")
   result = result.replace(/\baxis\s+off\b/g, "plt.axis('off')")
   result = result.replace(/\baxis\s+on\b/g, "plt.axis('on')")
+  result = result.replace(/\baxis\s+image\b/g, "plt.axis('image')")
+  result = result.replace(/\baxis\s+vis3d\b/g, "plt.axis('equal')")
+  result = result.replace(/\baxis\s+xy\b/g, "# axis xy (matplotlib default — origin bottom-left)")
   if (/plt\.axis/.test(result)) imports.add('matplotlib.pyplot')
 
   // hold on/off — drop the line. matplotlib accumulates plots by default,
