@@ -551,6 +551,27 @@ function rewriteSpaceSeparatedElements(source: string): string {
   return out.join('')
 }
 
+function hasTopLevelComma(s: string): boolean {
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < s.length && s[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    else if (ch === ',' && depth === 0) return true
+  }
+  return false
+}
+
 function hasTopLevelColon(s: string): boolean {
   let depth = 0
   let inString = false
@@ -595,7 +616,28 @@ function splitAllElements(inner: string): string[] {
     if (ch === "'" || ch === '"') { inString = true; sc = ch; cur += ch; continue }
     if (ch === '(' || ch === '[' || ch === '{') { depth++; cur += ch; continue }
     if (ch === ')' || ch === ']' || ch === '}') { depth--; cur += ch; continue }
-    if (depth === 0 && (ch === ',' || /\s/.test(ch))) {
+    if (depth === 0 && /\s/.test(ch)) {
+      const trimmedCur = cur.trim()
+      // Don't split on a space that is part of a binary arithmetic expression.
+      // Rule 1: If cur ends with an operator, the space follows the operator — keep accumulating.
+      //   `b + ` — cur = 'b +' → space after operator, next is 'd' → don't split yet
+      if (trimmedCur !== '' && /[+\-*/%^]$/.test(trimmedCur)) {
+        cur += ch; continue
+      }
+      // Rule 2: If the next non-space token starts with +/- FOLLOWED BY another space
+      //   (not a non-space char), it is a binary operator: `b + d` has `+ d` next.
+      //   Contrast: `b +d` (unary + on d) has `+d` next — that IS a separator.
+      const nextStr = inner.slice(i + 1).trimStart()
+      const nextCh = nextStr[0] || ''
+      if (trimmedCur !== '' && /^[+\-*/%^]/.test(nextCh) && nextStr.length > 1 && /\s/.test(nextStr[1])) {
+        // binary operator: `+ d` or `- (x)` etc — don't split
+        cur += ch; continue
+      }
+      if (trimmedCur !== '') out.push(trimmedCur)
+      cur = ''
+      continue
+    }
+    if (depth === 0 && ch === ',') {
       if (cur.trim() !== '') out.push(cur.trim())
       cur = ''
       continue
