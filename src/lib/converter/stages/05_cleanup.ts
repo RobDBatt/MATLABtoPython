@@ -379,14 +379,25 @@ function cleanupSyntax(content: string): string {
     },
   )
 
-  // 3C. String concatenation in brackets: ['hello' ' world'] → 'hello' + ' world'
-  // Detect bracket contents that are all string literals
+  // 3C. String concatenation in brackets — MATLAB [str1 str2] or ['prefix' var 'suffix']
+  // Handles: all string literals, or mixed string-literal + expression.
+  // All-string form: ['hello' ' world'] → 'hello' + ' world'
   result = result.replace(/\[\s*('(?:[^']|'')*'(?:\s+'(?:[^']|'')*')+)\s*\]/g, (_, inner) => {
     const parts = inner.match(/'(?:[^']|'')*'/g)
     if (parts && parts.length > 1) {
       return parts.join(' + ')
     }
     return `[${inner}]`
+  })
+  // Mixed form: [' ' expr] or [expr ' suffix'] → str concat with +.
+  // Conservative: only match when the non-string part has NO commas, spaces,
+  // or brackets — this avoids treating multi-element arrays as string concat.
+  // Commas excluded to prevent ['id', 'msg'] → 'id', + 'msg' corruption.
+  result = result.replace(/\[\s*('(?:[^']|'')*')\s+([^,\s[\]']+)\s*\]/g, (match, str, expr) => {
+    return `${str} + ${expr}`
+  })
+  result = result.replace(/\[\s*([^,\s[\]']+)\s+('(?:[^']|'')*')\s*\]/g, (match, expr, str) => {
+    return `${expr} + ${str}`
   })
 
   // Convert MATLAB string delimiters: 'text' is already valid Python

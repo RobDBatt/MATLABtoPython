@@ -351,11 +351,13 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type|mex|make)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
-      if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
+      if (name === 'mex' || name === 'make') {
+        result = `${indent}# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+      } else if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
         result = `${indent}# ${result.trim()} — MATLAB command; no direct Python equivalent`
       } else if (name === 'load') {
         result = `${indent}${name}('${trimmedArgs}')  # ⚠ MATLAB load: consider scipy.io.loadmat for .mat files`
@@ -1803,6 +1805,40 @@ function transformSpecialConstructs(
   result = result.replace(/\baxis\s+vis3d\b/g, "plt.axis('equal')")
   result = result.replace(/\baxis\s+xy\b/g, "# axis xy (matplotlib default — origin bottom-left)")
   if (/plt\.axis/.test(result)) imports.add('matplotlib.pyplot')
+
+  // colormap — MATLAB command: colormap gray / colormap(jet) → plt.set_cmap
+  result = result.replace(/\bcolormap\s+(\w+)\b/g, (_, name) => {
+    imports.add('matplotlib.pyplot')
+    return `plt.set_cmap('${name}')`
+  })
+  result = result.replace(/\bcolormap\s*\(([^)]+)\)/, (_, arg) => {
+    imports.add('matplotlib.pyplot')
+    return `plt.set_cmap(${arg.trim()})`
+  })
+
+  // drawnow — force render: plt.pause(0.001)
+  if (/^\s*drawnow\s*$/.test(result)) {
+    imports.add('matplotlib.pyplot')
+    result = 'plt.pause(0.001)'
+  }
+  // shg — show graph window
+  if (/^\s*shg\s*$/.test(result)) {
+    imports.add('matplotlib.pyplot')
+    result = 'plt.show()'
+  }
+  // clf — clear figure
+  if (/^\s*clf\s*$/.test(result)) {
+    imports.add('matplotlib.pyplot')
+    result = 'plt.clf()'
+  }
+  // cla — clear axes
+  if (/^\s*cla\s*$/.test(result)) {
+    imports.add('matplotlib.pyplot')
+    result = 'plt.cla()'
+  }
+  // rotate3d / zoom — interactive 3D rotation / zoom, no matplotlib equivalent
+  result = result.replace(/^\s*rotate3d\s*(on|off)?\s*$/, '# rotate3d — use plt toolbar for interactive rotation')
+  result = result.replace(/^\s*zoom\s*(on|off|in|out|\d+\.?\d*)?\s*$/, '# zoom — use plt toolbar for interactive zoom')
 
   // hold on/off — drop the line. matplotlib accumulates plots by default,
   // so the conversion is correct without further user action; no flag needed.
