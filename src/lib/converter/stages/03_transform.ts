@@ -357,12 +357,21 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type|mex|make)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
       if (name === 'mex' || name === 'make') {
         result = `${indent}# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+      } else if (name === 'xlabel' || name === 'ylabel' || name === 'zlabel' || name === 'title' || name === 'legend' || name === 'colorbar') {
+        imports.add('matplotlib.pyplot')
+        result = `${indent}plt.${name}(${trimmedArgs})`
+      } else if (name === 'colormap') {
+        imports.add('matplotlib.pyplot')
+        result = `${indent}plt.set_cmap(${trimmedArgs})`
+      } else if (name === 'subplot') {
+        imports.add('matplotlib.pyplot')
+        result = `${indent}plt.subplot(${trimmedArgs})`
       } else if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
         result = `${indent}# ${result.trim()} — MATLAB command; no direct Python equivalent`
       } else if (name === 'load') {
