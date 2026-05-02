@@ -1857,6 +1857,24 @@ function transformSpecialConstructs(
     result = result.trim() || '# hold off removed'
   }
 
+  // rng — random number seed: rng shuffle → np.random.seed(); rng(n) → np.random.seed(n)
+  if (/^\s*rng\s+shuffle\s*$/.test(result)) {
+    imports.add('numpy')
+    result = 'np.random.seed()'
+  }
+  result = result.replace(/^\s*rng\s+(\d+)\s*$/, (_, n) => {
+    imports.add('numpy')
+    return `np.random.seed(${n})`
+  })
+  // lighting / material / camlight — 3D rendering commands, no matplotlib equivalent
+  result = result.replace(/^\s*lighting\s+\w+\s*$/, '# lighting — use mpl_toolkits for 3D rendering')
+  result = result.replace(/^\s*material\s+\w+\s*$/, '# material — use mpl_toolkits for 3D rendering')
+  result = result.replace(/^\s*camlight\b.*$/, '# camlight — use mpl_toolkits for 3D rendering')
+  // view(az, el) — 3D viewport: keep but note
+  // set(gcf, ...) / set(gca, ...) — GUI object property setting
+  result = result.replace(/^\s*set\s*\(\s*gcf\s*,\s*/g, '# set(gcf, ')
+  result = result.replace(/^\s*set\s*\(\s*gca\s*,\s*/g, '# set(gca, ')
+
   // close all
   result = result.replace(/\bclose\s+all\b/g, 'plt.close(\'all\')')
   if (/plt\.close/.test(result)) imports.add('matplotlib.pyplot')

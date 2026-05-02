@@ -630,10 +630,10 @@ function splitAllElements(inner: string): string[] {
     if (depth === 0 && /\s/.test(ch)) {
       const trimmedCur = cur.trim()
       // Don't split on a space that is part of a binary expression (arithmetic or comparison).
-      // Rule 1: If cur ends with an operator, the space follows the operator — keep accumulating.
-      //   `b + ` — cur = 'b +' → space after operator, next is 'd' → don't split yet
-      //   Also handles comparison: `x >` — space after `>`, next is `1` → keep
-      if (trimmedCur !== '' && /[+\-*/%^]$/.test(trimmedCur)) {
+      // Rule 1: If cur ends with an operator (arithmetic or comparison), keep accumulating.
+      //   `b + ` — cur = 'b +' → space after `+`, next is 'd' → don't split
+      //   `x > ` — cur = 'x >' → space after `>`, next is `1` → don't split
+      if (trimmedCur !== '' && /[+\-*/%^<>!~=]$/.test(trimmedCur)) {
         cur += ch; continue
       }
       // Rule 2: If the next non-space token starts with an operator FOLLOWED BY another space,
