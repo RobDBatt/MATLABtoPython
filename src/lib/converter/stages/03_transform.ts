@@ -306,6 +306,34 @@ function preTransform(
     return `sys.stderr.write(${msg})`
   })
 
+  // classdef Name → class Name: (with optional < Parent → (Parent))
+  // Emits valid Python class syntax so files parse even before full OOP conversion.
+  if (/^\s*classdef\b/.test(result)) {
+    result = result
+      .replace(/^(\s*)classdef\s+(\w+)\s*<\s*(\w+)\s*$/, '$1class $2($3):')
+      .replace(/^(\s*)classdef\s+(\w+)\s*$/, '$1class $2:')
+  }
+
+  // properties/methods block headers inside classdef — convert to comments so
+  // the Python class body is syntactically valid. The TODO flags (from detector.ts)
+  // already tell the user to move these into __init__ / add self.
+  if (/^\s*properties\b/.test(result) && !/=/.test(result)) {
+    result = result.replace(/^(\s*)properties(\s.*)?$/, '$1# --- properties$2---')
+  }
+  if (/^\s*methods\b/.test(result) && !/[=(]/.test(result)) {
+    result = result.replace(/^(\s*)methods(\s.*)?$/, '$1# --- methods$2---')
+  }
+
+  // `else, body` / `else; body` — MATLAB inline else body with comma/semicolon separator.
+  // Split into `else:\n    body` so the output is valid Python.
+  {
+    const elseInline = result.match(/^(\s*)else\s*[,;]\s*(.+)$/)
+    if (elseInline) {
+      const [, indent, body] = elseInline
+      result = `${indent}else:\n${indent}    ${body.trimEnd()}`
+    }
+  }
+
   // Remove MATLAB trailing commas in conditions: if x>0, → if x>0
   // MATLAB allows trailing comma after condition before newline
   result = result.replace(/^(\s*(?:if|elseif|while)\s+.+),\s*$/, '$1')
@@ -2018,11 +2046,12 @@ function transformSpecialConstructs(
     result = result.replace(/\bnargout\s*<=?\s*\d+\b/g, 'False')
     result = result.replace(/\bnargout\s*==\s*\d+\b/g, 'True')
     result = result.replace(/\bnargout\s*~=\s*\d+\b/g, 'False')
-    // Bare nargout (rare, e.g. a value assigned `n = nargout`) — replace
-    // with a literal that documents the always-all-outputs reality. The
-    // user can fine-tune if their function dispatches on output count.
+    // Bare nargout (rare, e.g. `n = nargout`, `if nargout:`) — replace with
+    // True so any trailing `:` on the line remains valid Python syntax.
+    // (Using an inline comment like `1  # explanation` would eat the `:`,
+    // turning `if nargout:` into unparseable `if 1  # …:`.)
     if (/\bnargout\b/.test(result)) {
-      result = result.replace(/\bnargout\b/g, '1  # Python returns all outputs')
+      result = result.replace(/\bnargout\b/g, 'True')
     }
     if (result === before) {
       // We saw `nargout` but didn't recognize the shape — keep the flag.
