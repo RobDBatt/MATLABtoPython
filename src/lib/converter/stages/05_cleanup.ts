@@ -1,5 +1,6 @@
 import type { StructuredLine, Flag, CleanupResult } from '../types'
 import { buildImportBlock } from '../registry/imports'
+import { validateAndFix } from '../validator/syntax-check'
 
 /**
  * Stage 5: Cleanup
@@ -131,10 +132,216 @@ export function cleanup(
     outputLines.pop()
   }
 
+  // Post-processing: fix remaining syntax issues line by line
+  const fixedLines: string[] = []
+  for (const line of outputLines) {
+    let fixed = line
+
+    // Last-chance LHS indexing conversion: any `name(...)` on the LHS of
+    // an assignment that survived Stage 4 (usually because the args
+    // contained nested parens like `A(finddiag(A,k)) = v`). Python forbids
+    // assigning to a function call, so parens on LHS must be indexing.
+    fixed = convertLhsParenToBracket(fixed)
+
+    // Fix comma-if: "if cond, action:" → split into two lines
+    // Only match commas that are NOT inside parentheses (function calls)
+    {
+      const trimmedLine = fixed.trim()
+      const kwMatch = trimmedLine.match(/^(if|elif|while)\s+/)
+      if (kwMatch) {
+        const kw = kwMatch[1]
+        const afterKw = trimmedLine.slice(kwMatch[0].length)
+        // Find the first comma that's at paren depth 0 (not inside a function call)
+        let depth = 0
+        let commaIdx = -1
+        let inStr = false
+        for (let ci = 0; ci < afterKw.length; ci++) {
+          const ch = afterKw[ci]
+          if (ch === "'" || ch === '"') { inStr = !inStr; continue }
+          if (inStr) continue
+          if (ch === '(' || ch === '[') depth++
+          else if (ch === ')' || ch === ']') depth--
+          else if (ch === ',' && depth === 0) { commaIdx = ci; break }
+        }
+        if (commaIdx > 0 && afterKw.trimEnd().endsWith(':')) {
+          const cond = afterKw.slice(0, commaIdx).trim()
+          const action = afterKw.slice(commaIdx + 1).replace(/:\s*$/, '').trim()
+          if (action && !action.includes('=') || action.includes('(')) {
+            const indent = fixed.match(/^(\s*)/)?.[1] || ''
+            fixedLines.push(`${indent}${kw} ${cond}:`)
+            fixedLines.push(`${indent}    ${action}`)
+            continue
+          }
+        }
+      }
+    }
+
+    // Fix MATLAB colon-in-parens: var(:, expr) → var[:, expr]
+    // Must track paren depth to find the correct closing paren
+    fixed = fixed.replace(
+      /\b(\w+)\(:/g,
+      (match, varName, offset) => {
+        // Found varName(: — now find the matching ) tracking paren depth
+        const startIdx = offset + varName.length; // index of the (
+        let depth = 1;
+        let endIdx = startIdx + 1; // skip past the (
+        while (endIdx < fixed.length && depth > 0) {
+          if (fixed[endIdx] === '(') depth++;
+          else if (fixed[endIdx] === ')') depth--;
+          endIdx++;
+        }
+        if (depth === 0) {
+          const inner = fixed.substring(startIdx + 1, endIdx - 1); // content between ( and )
+          if (inner.startsWith(':')) {
+            // Replace this specific occurrence
+            return `${varName}[:`
+            // Note: the rest of the string after this point still has the original )
+            // We need to also replace the matching ) with ]
+          }
+        }
+        return match
+      },
+    )
+    // Replace the closing ) that matches our converted [: with ]
+    // Simple approach: if line has varName[: then find the unmatched ) and replace with ]
+    if (/\w+\[:/.test(fixed) && !/\w+\[:\]/.test(fixed)) {
+      // Count [ and ] to find if there's an unmatched )
+      let brackets = 0, parens = 0;
+      const chars = fixed.split('');
+      for (let ci = 0; ci < chars.length; ci++) {
+        if (chars[ci] === '[') brackets++;
+        else if (chars[ci] === ']') brackets--;
+        else if (chars[ci] === '(') parens++;
+        else if (chars[ci] === ')') {
+          parens--;
+          // If parens goes negative and we have unclosed brackets, this ) should be ]
+          if (parens < 0 && brackets > 0) {
+            chars[ci] = ']';
+            brackets--;
+            parens++;
+          }
+        }
+      }
+      fixed = chars.join('');
+    }
+
+    // Fix bare number.method: 2.write(...) → sys.stderr.write(...)
+    fixed = fixed.replace(/^\s*2\.write\(/, 'sys.stderr.write(')
+
+    // Fix trailing colons on non-block lines (assignment, function calls)
+    // Valid trailing colons: if/elif/else/for/while/def/class/try/except/finally/with
+    const trimCheck = fixed.trim()
+    if (trimCheck.endsWith(':') && !/^\s*(if|elif|else|for|while|def|class|try|except|finally|with)\b/.test(trimCheck)) {
+      fixed = fixed.replace(/:\s*$/, '')
+    }
+
+    fixedLines.push(fixed)
+  }
+
+  // Inject `pass` into empty blocks — MATLAB allows empty if/else/for/while
+  // bodies but Python requires a statement. Detect any block-opening line
+  // (`…:`) that isn't followed by a deeper-indented line and insert a
+  // single `pass` at the expected inner indent.
+  injectPassIntoEmptyBlocks(fixedLines)
+
   // Add trailing newline
-  const python = outputLines.join('\n') + '\n'
+  const initialPython = fixedLines.join('\n') + '\n'
+
+  // Run the heuristic validator (legacy — catches issues the main passes miss)
+  const syntaxIssues = validatePythonSyntax(fixedLines)
+  for (const issue of syntaxIssues) {
+    flags.push({
+      type: 'WARNING',
+      message: `Possible Python syntax issue: ${issue.message}`,
+      originalLine: issue.line,
+      outputLine: issue.line,
+      originalCode: '',
+    })
+  }
+
+  // Part 2: py_compile-equivalent validation with auto-fix loop. Catches
+  // patterns the main pipeline produced that Python's parser would reject
+  // (bare `end`, MATLAB `:` inside parens, raise with brackets, etc.) and
+  // applies targeted rewrites. Remaining issues are surfaced as WARNINGs.
+  const { python, issues: validatorIssues } = validateAndFix(initialPython)
+  for (const issue of validatorIssues) {
+    flags.push({
+      type: 'WARNING',
+      message: `Output may contain syntax errors on line ${issue.line}: ${issue.message}`,
+      originalLine: issue.line,
+      outputLine: issue.line,
+      originalCode: '',
+    })
+  }
 
   return { python, flags }
+}
+
+/**
+ * Lightweight Python syntax validator.
+ * Catches common issues the converter might produce.
+ */
+function validatePythonSyntax(lines: string[]): Array<{ line: number; message: string }> {
+  const issues: Array<{ line: number; message: string }> = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const trimmed = line.trim()
+    const lineNum = i + 1
+
+    // Skip comments and empty lines
+    if (trimmed.startsWith('#') || trimmed === '') continue
+
+    // Check unbalanced brackets
+    let parenDepth = 0, bracketDepth = 0, braceDepth = 0
+    let inString = false
+    let stringChar = ''
+    for (let j = 0; j < trimmed.length; j++) {
+      const ch = trimmed[j]
+      if (inString) {
+        if (ch === stringChar && trimmed[j - 1] !== '\\') inString = false
+        continue
+      }
+      if (ch === "'" || ch === '"') { inString = true; stringChar = ch; continue }
+      if (ch === '(') parenDepth++
+      if (ch === ')') parenDepth--
+      if (ch === '[') bracketDepth++
+      if (ch === ']') bracketDepth--
+      if (ch === '{') braceDepth++
+      if (ch === '}') braceDepth--
+    }
+    // Only flag if severely unbalanced (multiline expressions can be unbalanced on one line)
+    if (parenDepth < -1) issues.push({ line: lineNum, message: 'too many closing parentheses' })
+    if (bracketDepth < -1) issues.push({ line: lineNum, message: 'too many closing brackets' })
+
+    // Check for square brackets on raise statement
+    if (/\braise\s+\w+\[/.test(trimmed)) {
+      issues.push({ line: lineNum, message: 'raise with square brackets — should use parentheses: raise Error(...)' })
+    }
+
+    // Check for stray commas before colons in if/while/for
+    // Only flag commas at paren depth 0 (not inside function calls)
+    if (/^(if|elif|while)\s+/.test(trimmed) && trimmed.endsWith(':')) {
+      let depth = 0
+      let hasStrayComma = false
+      const afterKw = trimmed.replace(/^(if|elif|while)\s+/, '')
+      for (const ch of afterKw) {
+        if (ch === '(' || ch === '[') depth++
+        else if (ch === ')' || ch === ']') depth--
+        else if (ch === ',' && depth === 0) { hasStrayComma = true; break }
+      }
+      if (hasStrayComma) {
+        issues.push({ line: lineNum, message: 'comma in condition before colon — may be unconverted MATLAB syntax' })
+      }
+    }
+
+    // Check for MATLAB-style function calls with : inside parens (not slices)
+    if (/\w+\(:[,)]/.test(trimmed) && !/\w+\[:/.test(trimmed)) {
+      issues.push({ line: lineNum, message: 'colon inside parentheses — should use square brackets for slicing' })
+    }
+  }
+
+  return issues
 }
 
 /**
@@ -186,43 +393,522 @@ function cleanupSyntax(content: string): string {
   // But MATLAB uses '' for escaping inside strings → keep as-is (Python uses \')
 
   // Convert MATLAB array literals: [1 2 3] → [1, 2, 3]
-  // Match content inside [] that contains spaces but no commas
+  // Also handles: [0 M-1] → [0, M-1], [a b c] → [a, b, c]
   // BUT skip Python indexing like .shape[0] or A[i - 1]
   result = result.replace(/(\w|\.|]|\))?(\[([^\[\]]*)\])/g, (match, prefix, bracketExpr, inner) => {
     // If preceded by a word char, dot, ] or ) — this is Python indexing, not an array literal
     if (prefix && /[\w.\])]/.test(prefix)) {
       return match
     }
-    // Skip if already has commas or is empty
+    // Skip if already has commas, is empty, or contains colons (slicing)
     if (inner.includes(',') || inner.trim() === '' || inner.includes(':')) {
       return match
     }
-    // Skip if it contains operators (likely an expression, not an array)
-    if (/[+\-*/]/.test(inner) && !/^\s*[\w.]+(\s+[\w.]+)+\s*$/.test(inner)) {
-      return match
+    // Split on spaces that separate distinct elements
+    // Elements can be simple values (1, x, 3.14) or expressions (M-1, N+1, x*2)
+    // Strategy: split on whitespace that's preceded by a value-end and followed by a value-start
+    const trimmedInner = inner.trim()
+    // Try to identify boundaries between elements:
+    // A space between two "value" tokens (not an operator-space-value sequence)
+    // Match tokens like: 0, M-1, x, 3.14, -5, N+1, a*b
+    const elements: string[] = []
+    let current = ''
+    let parenDepth = 0
+    for (let ci = 0; ci < trimmedInner.length; ci++) {
+      const ch = trimmedInner[ci]
+      if (ch === '(') { parenDepth++; current += ch; continue }
+      if (ch === ')') { parenDepth--; current += ch; continue }
+      if (ch === ' ' && parenDepth === 0) {
+        // Check if this space separates two elements or is part of an expression
+        // If previous char is alphanumeric/)/] and next non-space char is alphanumeric/(/- → element boundary
+        const prev = current.trim()
+        const rest = trimmedInner.slice(ci + 1).trim()
+        if (prev && rest && /[\w)\]]$/.test(prev) && /^[\w('"-]/.test(rest)) {
+          elements.push(current.trim())
+          current = ''
+          continue
+        }
+      }
+      current += ch
     }
-    // Check if it looks like a space-separated array of simple values
-    const parts = inner.trim().split(/\s+/)
-    if (parts.length > 1 && parts.every((p: string) => /^-?[\w.]+$/.test(p))) {
-      return (prefix || '') + `[${parts.join(', ')}]`
+    if (current.trim()) elements.push(current.trim())
+
+    if (elements.length > 1) {
+      return (prefix || '') + `[${elements.join(', ')}]`
     }
     return match
   })
 
   // Convert MATLAB row separator in matrices: [1 2; 3 4] → np.array([[1, 2], [3, 4]])
-  // This is a common pattern but complex — flag it rather than attempt full conversion
-  if (/\[.*;\s*.*\]/.test(result) && !result.includes('#')) {
-    // Simple 2D matrix literal
-    result = result.replace(/\[([^\[\]]*;[^\[\]]*)\]/g, (_, inner) => {
-      const rows = inner.split(';').map((row: string) => {
-        const vals = row.trim().split(/[\s,]+/).filter(Boolean)
-        return `[${vals.join(', ')}]`
-      })
-      return `np.array([${rows.join(', ')}])`
-    })
+  // Uses balanced-bracket matching so nested indexing like
+  // `[0; data[:-1]==data[1:]]` still gets recognized.
+  if (result.includes(';') && !result.includes('#')) {
+    result = rewriteVerticalConcat(result)
+  }
+
+  // Second pass: if a bracket literal still has space-separated elements
+  // at depth 0 (no `;` but visible space boundaries), convert to commas.
+  // Handles `[0 all(...).T]` after strings/slices have been rewritten.
+  if (!result.includes('#')) {
+    result = rewriteSpaceSeparatedElements(result)
   }
 
   return result
+}
+
+/**
+ * Walk all top-level `[...]` literals (not Python indexing) and convert
+ * space-separated elements to commas. Balanced-bracket aware.
+ *
+ * `[0 var]`         → `[0, var]`
+ * `[0 expr.T]`      → `[0, expr.T]`
+ * `[A(i) B(j)]`     → `[A(i), B(j)]`
+ * `[a:b c:d]`       → left alone — ranges inside need separate treatment
+ *                     and the idiom library handles the single-range
+ *                     case before cleanup runs.
+ */
+function rewriteSpaceSeparatedElements(source: string): string {
+  const out: string[] = []
+  let i = 0
+  while (i < source.length) {
+    const ch = source[i]
+    // Handle both `[...]` array literals and `{...}` cell literals —
+    // MATLAB uses the same space-separation rules for both. In Python
+    // both become list literals after earlier passes convert `{}` to
+    // list form; until then we treat `{` as a parallel case.
+    if (ch !== '[' && ch !== '{') {
+      out.push(ch)
+      i++
+      continue
+    }
+    const closeChar = ch === '[' ? ']' : '}'
+    // Skip if this is Python indexing / dict access (`name[`, `)[`, `.[`, `][`)
+    const prev = i > 0 ? source[i - 1] : ''
+    if (/[\w.)\]]/.test(prev)) {
+      out.push(ch)
+      i++
+      continue
+    }
+    // Find matching close with depth tracking
+    let depth = 1
+    let j = i + 1
+    let inString = false
+    let sc = ''
+    while (j < source.length && depth > 0) {
+      const c = source[j]
+      if (inString) {
+        if (c === sc) {
+          if (j + 1 < source.length && source[j + 1] === sc) { j += 2; continue }
+          inString = false
+        }
+        j++
+        continue
+      }
+      if (c === "'" || c === '"') { inString = true; sc = c; j++; continue }
+      if (c === ch) depth++
+      else if (c === closeChar) { depth--; if (depth === 0) break }
+      j++
+    }
+    if (depth !== 0) {
+      out.push(ch)
+      i++
+      continue
+    }
+    const inner = source.slice(i + 1, j)
+    // Skip if this literal is a pure slice (e.g. `[1:2:10]` or contains `:`
+    // outside of strings at top level — that's either np.arange territory
+    // or already-converted Python slicing).
+    if (hasTopLevelColon(inner)) {
+      out.push(source.slice(i, j + 1))
+      i = j + 1
+      continue
+    }
+    // Skip if this literal is a multi-return LHS like `[a, b] = ...` —
+    // we need to detect `=` immediately after close.
+    const after = source.slice(j + 1).trimStart()
+    if (after.startsWith('=') && !after.startsWith('==')) {
+      out.push(source.slice(i, j + 1))
+      i = j + 1
+      continue
+    }
+    // Split inner by top-level commas AND whitespace into elements,
+    // re-emit with commas. The output wrapper stays as `[` for both
+    // `[...]` and `{...}` inputs — MATLAB cell literals map to Python
+    // lists in every context the earlier passes haven't already
+    // converted.
+    const elements = splitAllElements(inner)
+    if (elements.length <= 1 || elements.every(e => /^[A-Za-z_]\w*$/.test(e))) {
+      const wasAlreadyCommaSeparated = !/\s/.test(inner.trim()) || /,/.test(inner)
+      if (wasAlreadyCommaSeparated && elements.length <= 1) {
+        out.push(source.slice(i, j + 1))
+        i = j + 1
+        continue
+      }
+    }
+    out.push(`[${elements.join(', ')}]`)
+    i = j + 1
+  }
+  return out.join('')
+}
+
+function hasTopLevelColon(s: string): boolean {
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < s.length && s[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    else if (ch === ':' && depth === 0) return true
+  }
+  return false
+}
+
+/**
+ * Split `inner` on top-level commas and whitespace boundaries into
+ * element strings, respecting strings and nesting.
+ */
+function splitAllElements(inner: string): string[] {
+  const out: string[] = []
+  let cur = ''
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i]
+    if (inString) {
+      cur += ch
+      if (ch === sc) {
+        if (i + 1 < inner.length && inner[i + 1] === sc) { cur += inner[i + 1]; i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; cur += ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') { depth++; cur += ch; continue }
+    if (ch === ')' || ch === ']' || ch === '}') { depth--; cur += ch; continue }
+    if (depth === 0 && (ch === ',' || /\s/.test(ch))) {
+      if (cur.trim() !== '') out.push(cur.trim())
+      cur = ''
+      continue
+    }
+    cur += ch
+  }
+  if (cur.trim() !== '') out.push(cur.trim())
+  return out
+}
+
+/**
+ * Find each `[...]` that contains a top-level `;` (the MATLAB row
+ * separator) and rewrite to `np.array([[row1], [row2]])`. Unlike a
+ * simple `[^\[\]]*;[^\[\]]*` regex, this walks with balanced brackets so
+ * inner slices like `data[:-1]` don't confuse the matcher.
+ */
+function rewriteVerticalConcat(source: string): string {
+  const out: string[] = []
+  let i = 0
+  while (i < source.length) {
+    const ch = source[i]
+    if (ch !== '[') {
+      out.push(ch)
+      i++
+      continue
+    }
+    // Skip Python indexing: `name[...]` or `)[...]` — the `[` there is
+    // slicing, not a MATLAB matrix literal.
+    const prev = i > 0 ? source[i - 1] : ''
+    if (/[\w.)\]]/.test(prev)) {
+      out.push(ch)
+      i++
+      continue
+    }
+    // Find matching `]` with bracket depth
+    let depth = 1
+    let j = i + 1
+    let inString = false
+    let sc = ''
+    const semicolons: number[] = []
+    while (j < source.length && depth > 0) {
+      const c = source[j]
+      if (inString) {
+        if (c === sc) {
+          if (j + 1 < source.length && source[j + 1] === sc) { j += 2; continue }
+          inString = false
+        }
+        j++
+        continue
+      }
+      if (c === "'" || c === '"') { inString = true; sc = c; j++; continue }
+      if (c === '[') depth++
+      else if (c === ']') { depth--; if (depth === 0) break }
+      else if (c === ';' && depth === 1) semicolons.push(j)
+      j++
+    }
+    if (depth !== 0 || semicolons.length === 0) {
+      out.push(ch)
+      i++
+      continue
+    }
+    // Extract rows by splitting on the collected semicolon positions.
+    const inner = source.slice(i + 1, j)
+    const rowTexts: string[] = []
+    let prevPos = 0
+    for (const pos of semicolons) {
+      rowTexts.push(source.slice(i + 1, pos))
+      prevPos = pos - (i + 1) + 1
+    }
+    // Re-split using string offsets relative to `inner`
+    const relativeSplits = semicolons.map(p => p - (i + 1))
+    const rows: string[] = []
+    let start = 0
+    for (const sp of relativeSplits) {
+      rows.push(inner.slice(start, sp).trim())
+      start = sp + 1
+    }
+    rows.push(inner.slice(start).trim())
+
+    // Map each row to a Python list literal. Preserves existing content
+    // (commas, expressions, nested brackets) — we only restructure the
+    // MATLAB `;` separator.
+    const pyRows = rows.map(row => {
+      // If the row contains no comma and looks like space-separated
+      // values, convert spaces at depth 0 to commas so it's a proper list.
+      if (!row.includes(',') && /\s/.test(row)) {
+        const vals = splitSpaceSeparatedAtTopLevel(row)
+        return `[${vals.join(', ')}]`
+      }
+      return `[${row}]`
+    })
+    out.push(`np.array([${pyRows.join(', ')}])`)
+    i = j + 1
+  }
+  return out.join('')
+}
+
+/**
+ * Split a string on whitespace that sits at paren/bracket-depth 0 and
+ * outside string literals. Used by the row-rewriter above.
+ */
+function splitSpaceSeparatedAtTopLevel(s: string): string[] {
+  const out: string[] = []
+  let cur = ''
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      cur += ch
+      if (ch === sc) {
+        if (i + 1 < s.length && s[i + 1] === sc) { cur += s[i + 1]; i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; cur += ch; continue }
+    if (ch === '(' || ch === '[') { depth++; cur += ch; continue }
+    if (ch === ')' || ch === ']') { depth--; cur += ch; continue }
+    if (/\s/.test(ch) && depth === 0 && cur.trim() !== '') {
+      out.push(cur.trim())
+      cur = ''
+      continue
+    }
+    cur += ch
+  }
+  if (cur.trim()) out.push(cur.trim())
+  return out
+}
+
+/**
+ * Inject `pass` into empty Python blocks (mutates `lines` in place).
+ *
+ * MATLAB allows an empty if/else/for/while/try body:
+ *   if cond
+ *   end
+ * Python rejects this — every block needs at least one statement. Scan
+ * for block-opening lines (ending in `:`) whose immediately-following
+ * non-blank line is at an equal-or-shallower indent, and insert `pass`
+ * at the expected inner indent.
+ */
+function injectPassIntoEmptyBlocks(lines: string[]): void {
+  const BLOCK_OPEN = /^(\s*)(if|elif|else|for|while|def|class|try|except|finally|with|async\s+def|async\s+for|async\s+with)\b[^:]*:\s*(?:#.*)?$/
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(BLOCK_OPEN)
+    if (!match) continue
+    const indent = match[1]
+    // Scan forward: skip blank lines AND comment-only lines that are inside
+    // the block (deeper-indented). Track where to insert `pass` if needed.
+    let j = i + 1
+    let insertAfter = i  // default: right after the opener
+    while (j < lines.length) {
+      const trimmed = lines[j].trim()
+      if (trimmed === '') { j++; continue }
+      if (trimmed.startsWith('#')) {
+        const lineIndent = lines[j].match(/^(\s*)/)?.[1] ?? ''
+        if (lineIndent.length > indent.length) {
+          // Comment inside the block — note position and keep scanning.
+          // Python requires at least one real statement even when comments exist.
+          insertAfter = j
+          j++; continue
+        }
+      }
+      break  // found a non-blank, non-comment line — stop scanning
+    }
+    const next = j < lines.length ? lines[j] : null
+    const nextIndent = next ? next.match(/^(\s*)/)?.[1] ?? '' : ''
+    const isDeeperIndent = next && nextIndent.length > indent.length
+    if (!isDeeperIndent) {
+      // Block has no real statements — inject `pass` after last in-block comment
+      lines.splice(insertAfter + 1, 0, `${indent}    pass`)
+      i++  // skip the injected line to avoid re-processing it as a block opener
+    }
+  }
+}
+
+/**
+ * Convert `name(args) = value` on the LHS of `=` to `name[args] = value`.
+ * Stage 4 handles the common case already; this runs in cleanup to catch
+ * leftovers (typically LHS with nested parens in the arg list, like
+ * `A(finddiag(A, k)) = v`).
+ */
+function convertLhsParenToBracket(line: string): string {
+  // Fast rejection: line must have both `(` and `=` outside strings.
+  if (!line.includes('(') || !line.includes('=')) return line
+
+  // Find the assignment `=` (not `==`, `<=`, `>=`, `!=`, `~=`).
+  let eq = -1
+  let paren = 0, bracket = 0, brace = 0
+  let inString = false, sc = ''
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < line.length && line[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === '#') return line
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(') paren++
+    else if (ch === ')') paren--
+    else if (ch === '[') bracket++
+    else if (ch === ']') bracket--
+    else if (ch === '{') brace++
+    else if (ch === '}') brace--
+    else if (ch === '=' && paren === 0 && bracket === 0 && brace === 0) {
+      const prev = line[i - 1] || ''
+      const next = line[i + 1] || ''
+      if (next === '=') return line
+      if (prev === '=' || prev === '!' || prev === '<' || prev === '>' || prev === '~') return line
+      eq = i
+      break
+    }
+  }
+  if (eq < 0) return line
+
+  const lhs = line.slice(0, eq)
+  const rhs = line.slice(eq)
+
+  // Find each top-level `name(...)` in LHS via balanced paren matching,
+  // rewrite to `name[...]`. Right-to-left so indexes stay valid.
+  type Repl = { start: number; end: number; text: string }
+  const repls: Repl[] = []
+  let i = 0
+  let inStr = false, sc2 = ''
+  while (i < lhs.length) {
+    const ch = lhs[i]
+    if (inStr) {
+      if (ch === sc2) {
+        if (i + 1 < lhs.length && lhs[i + 1] === sc2) { i += 2; continue }
+        inStr = false
+      }
+      i++
+      continue
+    }
+    if (ch === "'" || ch === '"') { inStr = true; sc2 = ch; i++; continue }
+    if (ch === '(' && i > 0 && /\w/.test(lhs[i - 1])) {
+      // Find matching close paren
+      let depth = 1
+      let j = i + 1
+      let inS = false, scc = ''
+      while (j < lhs.length && depth > 0) {
+        const c = lhs[j]
+        if (inS) {
+          if (c === scc) {
+            if (j + 1 < lhs.length && lhs[j + 1] === scc) { j += 2; continue }
+            inS = false
+          }
+          j++
+          continue
+        }
+        if (c === "'" || c === '"') { inS = true; scc = c; j++; continue }
+        if (c === '(') depth++
+        else if (c === ')') depth--
+        if (depth > 0) j++
+      }
+      if (depth === 0) {
+        const args = lhs.slice(i + 1, j)
+        // Skip Python method calls with keyword args — e.g.
+        // `.flatten(order="F")` must NOT become `.flatten[order="F"]`.
+        // A top-level `=` in the arg list signals `kwarg=value`.
+        if (argsContainTopLevelEquals(args)) { i++; continue }
+        repls.push({ start: i, end: j, text: `[${args}]` })
+        i = j + 1
+        continue
+      }
+    }
+    i++
+  }
+
+  if (repls.length === 0) return line
+
+  let newLhs = lhs
+  for (let k = repls.length - 1; k >= 0; k--) {
+    const r = repls[k]
+    newLhs = newLhs.slice(0, r.start) + r.text + newLhs.slice(r.end + 1)
+  }
+  return newLhs + rhs
+}
+
+/**
+ * True if `args` contains a `=` at depth 0 that isn't part of a comparison
+ * (`==`, `<=`, `>=`, `!=`, `~=`). Used to distinguish Python kwarg calls
+ * like `.flatten(order="F")` from MATLAB LHS indices like `A(i)`.
+ */
+function argsContainTopLevelEquals(args: string): boolean {
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < args.length; i++) {
+    const ch = args[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < args.length && args[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    else if (ch === '=' && depth === 0) {
+      const prev = args[i - 1] || ''
+      const next = args[i + 1] || ''
+      if (next === '=') { i++; continue }
+      if (prev === '=' || prev === '!' || prev === '<' || prev === '>' || prev === '~') continue
+      return true
+    }
+  }
+  return false
 }
 
 /** Extract the Python alias from an import key */
