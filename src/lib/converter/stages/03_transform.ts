@@ -110,7 +110,7 @@ export function transform(lines: StructuredLine[]): TransformResult {
     {
       const before = content
       content = content.replace(
-        /\bnp\.(inf|nan)\s*\(([^()]*)\)/g,
+        /\bnp\.(inf|nan)\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g,
         (_, kind, args) => {
           const argList = String(args)
             .split(',')
