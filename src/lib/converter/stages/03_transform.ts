@@ -310,7 +310,7 @@ function preTransform(
   // Emits valid Python class syntax so files parse even before full OOP conversion.
   if (/^\s*classdef\b/.test(result)) {
     result = result
-      .replace(/^(\s*)classdef\s+(\w+)\s*<\s*(\w+)\s*$/, '$1class $2($3):')
+      .replace(/^(\s*)classdef\s+(\w+)\s*<\s*([\w.]+(?:\s*&\s*[\w.]+)*)\s*$/, '$1class $2($3):')
       .replace(/^(\s*)classdef\s+(\w+)\s*$/, '$1class $2:')
   }
 

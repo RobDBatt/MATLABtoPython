@@ -340,6 +340,8 @@ function fixStrayTrailingColon(line: string): string {
   const after = line.slice(lastColon + 1)
   // Only remove when what comes after is a bare literal/identifier expression
   if (!/^\s*[\w.]+\s*$/.test(after)) return line
+  // Don't strip a lambda body: `lambda x: expr` or `lambda: expr`
+  if (/\blambda\b/.test(before)) return line
   // Don't strip a ternary-looking expression (rare) or dict entry
   return before.trimEnd()
 }
