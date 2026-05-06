@@ -13,7 +13,7 @@ export const OPERATOR_MAP: OperatorMapping[] = [
   { matlab: './', python: '/', note: 'element-wise divide' },
   { matlab: '.\\', python: '1/', note: 'element-wise left divide' },
   { matlab: '.^', python: '**', note: 'element-wise power' },
-  { matlab: ".'" , python: '.T', note: 'non-conjugate transpose' },
+  // .' non-conjugate transpose handled in preTransform
 
   // Matrix operators (process AFTER element-wise)
   // NOTE: * → @ is the "correct" MATLAB matrix multiply mapping, but in practice
@@ -23,12 +23,8 @@ export const OPERATOR_MAP: OperatorMapping[] = [
   { matlab: '*', python: '*', note: 'multiply — kept as * (could be scalar or matrix)' },
   // / stays as / — MATLAB uses it for both scalar and matrix division
   // Only explicit mrdivide() or mldivide() would map to np.linalg.solve
-  {
-    matlab: '\\',
-    python: 'np.linalg.solve',
-    note: 'matrix left divide',
-    flag: { type: 'WARNING', message: 'Backslash (mldivide) → np.linalg.solve — verify usage' },
-  },
+  // Backslash (\) is handled specially in special constructs
+  // because simple string replacement can't add proper function call syntax
   {
     matlab: '^',
     python: '**',
@@ -46,5 +42,5 @@ export const OPERATOR_MAP: OperatorMapping[] = [
   { matlab: '||', python: 'or', note: 'short-circuit OR' },
   { matlab: '&', python: '&', note: 'element-wise AND' },
   { matlab: '|', python: '|', note: 'element-wise OR' },
-  { matlab: '~', python: 'not ', note: 'logical not (prefix)' },
+  { matlab: '~', python: '~', note: 'logical not — works on both scalars and numpy arrays' },
 ]

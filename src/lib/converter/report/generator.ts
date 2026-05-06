@@ -34,7 +34,9 @@ export function generateReport(
     return true
   })
 
-  const convertedCount = Math.max(0, originalLines - unsupportedCount - todoCount)
+  // Only UNSUPPORTED lines reduce the conversion rate.
+  // TODO and WARNING flags mean the line WAS converted but needs review — that's still a conversion.
+  const convertedCount = Math.max(0, originalLines - unsupportedCount)
   const conversionRate = originalLines > 0
     ? Math.round((convertedCount / originalLines) * 100)
     : 100

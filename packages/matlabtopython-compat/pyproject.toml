@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "matlabtopython-compat"
+version = "0.1.2"
+description = "MATLAB runtime for Python: cell arrays, structs, sprintf, column-major flatten. The package that makes ported MATLAB code actually run."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Rob Batt" }]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.20",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: OS Independent",
+]
+keywords = ["matlab", "migration", "numpy", "compatibility", "translator", "converter", "porting"]
+
+[project.optional-dependencies]
+mat-io = ["scipy>=1.7"]
+
+[project.urls]
+Homepage = "https://mtopython.com"
+"Online converter" = "https://mtopython.com/convert"
+Documentation = "https://mtopython.com/learn"
+Repository = "https://github.com/RobDBatt/matlabtopython-compat"
+"Bug tracker" = "https://github.com/RobDBatt/matlabtopython-compat/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

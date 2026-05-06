@@ -6,8 +6,9 @@ export function generateStaticParams() {
   return TOOLBOXES.map((tb) => ({ slug: tb.slug }))
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const tb = getToolbox(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const tb = getToolbox(slug)
   if (!tb) return { title: 'Toolbox Not Found' }
   return {
     title: `${tb.matlabName} to ${tb.pythonLib}`,
@@ -15,27 +16,28 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   }
 }
 
-export default function ToolboxPage({ params }: { params: { slug: string } }) {
-  const tb = getToolbox(params.slug)
+export default async function ToolboxPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const tb = getToolbox(slug)
   if (!tb) notFound()
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       {/* Header */}
       <div className="mb-8">
-        <a href="/toolboxes" className="text-slate-500 text-sm hover:text-slate-300 transition-colors mb-4 inline-block">
+        <a href="/toolboxes" className="text-slate-500 text-sm hover:text-slate-700 transition-colors mb-4 inline-block">
           Toolboxes
         </a>
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-white mb-2">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-slate-900 mb-2">
           {tb.matlabName} → {tb.pythonLib}
         </h1>
-        <p className="text-slate-400 max-w-2xl">{tb.description}</p>
+        <p className="text-slate-600 max-w-2xl">{tb.description}</p>
       </div>
 
       {/* Install */}
-      <div className="mb-8 p-4 bg-navy-900 border border-navy-800 rounded-lg">
+      <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="text-slate-500 text-xs mb-1">Install</div>
-        <code className="text-purple-400 font-[family-name:var(--font-jetbrains)] text-sm">
+        <code className="text-purple-600 font-[family-name:var(--font-jetbrains)] text-sm">
           {tb.installCmd}
         </code>
       </div>
@@ -44,32 +46,32 @@ export default function ToolboxPage({ params }: { params: { slug: string } }) {
       <div className="mb-8">
         <a
           href="/convert"
-          className="inline-block px-5 py-2 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-400 transition-colors"
+          className="inline-block px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-500 transition-colors"
         >
           Convert {tb.name} code now
         </a>
       </div>
 
       {/* Mapping Table */}
-      <div className="border border-navy-800 rounded-lg overflow-hidden">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-navy-900 text-left">
-              <th className="px-4 py-3 text-slate-400 font-medium">MATLAB</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Python</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Note</th>
+            <tr className="bg-gray-50 text-left">
+              <th className="px-4 py-3 text-slate-600 font-medium">MATLAB</th>
+              <th className="px-4 py-3 text-slate-600 font-medium">Python</th>
+              <th className="px-4 py-3 text-slate-600 font-medium">Note</th>
             </tr>
           </thead>
           <tbody>
             {tb.mappings.map((m, i) => (
               <tr
                 key={i}
-                className="border-t border-navy-800 hover:bg-navy-900/50"
+                className="border-t border-gray-200 hover:bg-gray-50"
               >
-                <td className="px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-gold-400 text-xs">
+                <td className="px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-amber-600 text-xs">
                   {m.matlab}
                 </td>
-                <td className="px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-green-400 text-xs">
+                <td className="px-4 py-2.5 font-[family-name:var(--font-jetbrains)] text-green-600 text-xs">
                   {m.python}
                 </td>
                 <td className="px-4 py-2.5 text-slate-500 text-xs">
@@ -83,13 +85,13 @@ export default function ToolboxPage({ params }: { params: { slug: string } }) {
 
       {/* Bottom CTA */}
       <div className="mt-12 text-center">
-        <p className="text-slate-400 mb-4">
+        <p className="text-slate-600 mb-4">
           The converter automatically detects {tb.name} functions and adds
           the correct imports.
         </p>
         <a
           href="/convert"
-          className="inline-block px-6 py-2.5 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-400 transition-colors"
+          className="inline-block px-6 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-500 transition-colors"
         >
           Try the converter
         </a>

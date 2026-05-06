@@ -4,6 +4,13 @@
  * at the top of the output file in this specific order.
  */
 
+/**
+ * Special import prefix: `compat:NAME` in the imports set requests
+ * `from matlabtopython_compat import NAME` to be added at the top of
+ * the output. Multiple compat: entries get merged into one import line.
+ */
+export const COMPAT_PREFIX = 'compat:'
+
 /** Maps an import key to its Python import statement */
 export const IMPORT_STATEMENTS: Record<string, string> = {
   numpy: 'import numpy as np',
@@ -72,11 +79,15 @@ export const IMPORT_ORDER: string[] = [
 export function buildImportBlock(imports: Set<string>): string {
   // Merge skimage submodules into combined imports
   const skimageModules: string[] = []
+  const compatNames: string[] = []
   const filteredImports = new Set(Array.from(imports))
 
   Array.from(imports).forEach(key => {
     if (key.startsWith('skimage.')) {
       skimageModules.push(key.replace('skimage.', ''))
+      filteredImports.delete(key)
+    } else if (key.startsWith(COMPAT_PREFIX)) {
+      compatNames.push(key.slice(COMPAT_PREFIX.length))
       filteredImports.delete(key)
     }
   })
@@ -105,6 +116,14 @@ export function buildImportBlock(imports: Set<string>): string {
         lines.push(skimageImport)
       }
     }
+  }
+
+  // Append the compat import last (user installs via `pip install
+  // matlabtopython-compat`). Keeping it at the end makes it obvious
+  // this is the optional runtime dependency.
+  if (compatNames.length > 0) {
+    const names = Array.from(new Set(compatNames)).sort().join(', ')
+    lines.push(`from matlabtopython_compat import ${names}`)
   }
 
   return lines.join('\n')

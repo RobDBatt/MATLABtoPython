@@ -1,0 +1,104 @@
+Metadata-Version: 2.4
+Name: matlabtopython-compat
+Version: 0.1.2
+Summary: MATLAB runtime for Python: cell arrays, structs, sprintf, column-major flatten. The package that makes ported MATLAB code actually run.
+Author: Rob Batt
+License: MIT
+Project-URL: Homepage, https://mtopython.com
+Project-URL: Online converter, https://mtopython.com/convert
+Project-URL: Documentation, https://mtopython.com/learn
+Project-URL: Repository, https://github.com/RobDBatt/matlabtopython-compat
+Project-URL: Bug tracker, https://github.com/RobDBatt/matlabtopython-compat/issues
+Keywords: matlab,migration,numpy,compatibility,translator,converter,porting
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Education
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Topic :: Software Development :: Code Generators
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.20
+Provides-Extra: mat-io
+Requires-Dist: scipy>=1.7; extra == "mat-io"
+
+# matlabtopython-compat
+
+**The Python runtime for ported MATLAB code.**
+
+When you translate MATLAB to Python, some idioms don't map cleanly to
+numpy or scipy alone:
+
+- Cell arrays with grow-on-write semantics
+- Structs that support both `s.name` and `s.('name')` access
+- `sprintf` cycling format specifiers through vector arguments
+- `X(:)` column-major flatten (numpy defaults to row-major)
+- `[sorted_vals, idx] = sort(X)` returning a pair
+
+This package fills those gaps so ported code runs without hand-editing
+every MATLAB-ism into a numpy equivalent. Pair it with the online
+converter at [mtopython.com](https://mtopython.com) for a zero-edit
+path, or use it directly if you're porting MATLAB by hand.
+
+## Install
+
+```bash
+pip install matlabtopython-compat
+```
+
+Optional `.mat` file I/O adds a scipy dependency:
+
+```bash
+pip install "matlabtopython-compat[mat-io]"
+```
+
+## What's in it
+
+| Helper | MATLAB equivalent | Why it's here |
+|---|---|---|
+| `CellArray` | `c = {a, b, c}` | Lists work for most cells but miss `c{1} = ...` grow-on-write semantics. |
+| `Struct` | `s.name`, `s.(name)` | Combines attribute + dict access in one object. |
+| `sprintf` | `sprintf('%d\n', [1 2 3])` | Vector arguments cycle through format specifiers — Python's `%` doesn't. |
+| `fprintf` | `fprintf(fid, fmt, args)` | Same, with file-handle form. |
+| `tic` / `toc` | `tic; ... toc` | MATLAB-compatible timing output. |
+| `flatten_fortran` | `X(:)` | Column-major flatten (numpy defaults to row-major). |
+| `sort_with_index` | `[s, i] = sort(X)` | Returns both sorted values and indices. |
+
+## Example
+
+```python
+from matlabtopython_compat import CellArray, Struct, sprintf, tic, toc
+
+# Cells with grow-on-write
+c = CellArray()
+c.cell_set(1, 'Alice')
+c.cell_set(2, 42)
+print(c.cell_get(1))  # 'Alice'
+
+# Struct with both access styles
+s = Struct(name='Alice', age=30)
+print(s.name, s['age'])
+
+# Vector-argument sprintf
+print(sprintf('%d\n', [1, 2, 3]))  # '1\n2\n3\n'
+
+# MATLAB-style timing
+t0 = tic()
+# ... code ...
+toc()  # "Elapsed time is X seconds."
+```
+
+## License
+
+MIT. No runtime calls to external services; everything is pure Python.

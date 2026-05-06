@@ -47,22 +47,16 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
       })
     }
 
-    // Anonymous function with closure potential
-    if (/@\s*\(/.test(content)) {
-      flags.push({
-        type: 'WARNING',
-        message: 'Anonymous function — Python lambda captures by reference (MATLAB captures by value)',
-        originalLine: line.originalLineStart,
-        outputLine: 0,
-        originalCode: content,
-      })
-    }
+    // Anonymous function: @(x) ... → lambda x: ...
+    // No flag — Python and MATLAB anonymous functions both capture by value
+    // at the point of definition for the most common patterns. The rare
+    // late-binding edge case isn't worth scaring every user about.
 
     // 4E. classdef — flag as needing manual conversion
     if (/^classdef\b/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'classdef — convert to Python class manually (properties → __init__, methods → class methods)',
+        message: 'classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
@@ -73,7 +67,7 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
     if (/^\s*properties\b/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'properties block — define as __init__ attributes in Python class',
+        message: 'properties block — move these into def __init__(self): as self.property_name = default_value.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
@@ -82,24 +76,18 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
     if (/^\s*methods\b/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'methods block — define as class methods in Python (add self parameter)',
+        message: 'methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):).',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
       })
     }
 
-    // 4E. Nested functions — function inside a function
+    // Nested functions — Python supports them. Inner-function outer-variable
+    // mutation is a real edge case but rare in real corpora; keeping a flag
+    // here scares users away from a feature that mostly Just Works. Revisit
+    // if we add deterministic detection of outer-var mutation.
     if (/^function\b/.test(content)) {
-      if (inFunction) {
-        flags.push({
-          type: 'WARNING',
-          message: 'Nested function — Python supports nested defs but closure scoping differs from MATLAB',
-          originalLine: line.originalLineStart,
-          outputLine: 0,
-          originalCode: content,
-        })
-      }
       inFunction = true
     }
     if (/^end\s*$/.test(content) && inFunction) {
@@ -110,7 +98,7 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
     if (/\b(trainNetwork|trainingOptions|layerGraph|convolution2dLayer|fullyConnectedLayer|reluLayer|softmaxLayer|classificationLayer|maxPooling2dLayer|batchNormalizationLayer|dropoutLayer|lstmLayer|bilstmLayer)\b/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'Deep Learning Toolbox function — use PyTorch (torch.nn) or TensorFlow (tf.keras) equivalent',
+        message: 'Deep Learning Toolbox function — replace with PyTorch (torch.nn) or TensorFlow (tf.keras). No 1:1 mapping exists; rewrite the network architecture.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
@@ -121,7 +109,7 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
     if (/\btable\s*\(/.test(content) || /\breadtable\s*\(/.test(content) || /\bwritetable\s*\(/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'MATLAB table → use pandas DataFrame (pd.DataFrame, pd.read_csv, df.to_csv)',
+        message: 'MATLAB table → replace with pd.DataFrame(). Use pd.read_csv() for readtable and df.to_csv() for writetable. Access columns with df["col"] instead of T.col.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
@@ -130,18 +118,22 @@ export function detectPreFlags(lines: LogicalLine[]): Flag[] {
     if (/\bdatetime\s*\(/.test(content) || /\bduration\s*\(/.test(content)) {
       flags.push({
         type: 'TODO',
-        message: 'MATLAB datetime → use Python datetime module or pd.Timestamp',
+        message: 'MATLAB datetime → replace with Python datetime.datetime() or pd.Timestamp(). Use datetime.timedelta() for duration.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,
       })
     }
 
-    // varargin/varargout
-    if (/\bvarargin\b/.test(content) || /\bvarargout\b/.test(content)) {
+    // varargout — Python uses tuple returns, not output-arg variants. Still
+    // flag because the conversion can't deterministically rewrite the
+    // body of a function that conditionally fills `varargout{i}`.
+    // varargin: NO flag — the transform pass deterministically rewrites
+    // signature `varargin` → `*args` and body `varargin{i}` → `args[i-1]`.
+    if (/\bvarargout\b/.test(content)) {
       flags.push({
         type: 'WARNING',
-        message: 'varargin/varargout → use *args/**kwargs in Python function signature',
+        message: 'varargout found — Python returns tuples, not output-arg variants. Always return all outputs and let callers ignore extras with `_`.',
         originalLine: line.originalLineStart,
         outputLine: 0,
         originalCode: content,

@@ -24,6 +24,14 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
   conv:        { python: 'np.convolve',           args: 'passthrough', imports: ['numpy'],         toolbox: 'Signal Processing' },
   conv2:       { python: 'signal.convolve2d',     args: 'passthrough', imports: ['scipy.signal'], toolbox: 'Signal Processing' },
   xcorr:       { python: "np.correlate({a}, {b}, 'full')", args: 'custom', imports: ['numpy'],    toolbox: 'Signal Processing' },
+  findpeaks: {
+    python: 'signal.find_peaks',
+    args: 'custom',
+    imports: ['scipy.signal'],
+    toolbox: 'Signal Processing',
+    flag: { type: 'TOOLBOX', message: 'findpeaks → signal.find_peaks — returns (peaks_idx, properties) not (peaks_val, locs). Use x[peaks_idx] for values.' },
+  },
+  // yline/xline handled in special constructs for proper linespec parsing
 
   // ── Statistics Toolbox → scipy.stats / pandas ──────────
   normpdf:  { python: 'stats.norm.pdf',    args: 'passthrough', imports: ['scipy.stats'], toolbox: 'Statistics' },
@@ -84,6 +92,9 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
   series:   { python: 'control.series',           args: 'passthrough', imports: ['control'], toolbox: 'Control Systems' },
   parallel: { python: 'control.parallel',         args: 'passthrough', imports: ['control'], toolbox: 'Control Systems' },
   c2d:      { python: 'control.c2d',             args: 'passthrough', imports: ['control'], toolbox: 'Control Systems' },
+  bodemag:  { python: 'control.bode_plot',       args: 'passthrough', imports: ['control'], toolbox: 'Control Systems',
+    flag: { type: 'TOOLBOX', message: 'bodemag → control.bode_plot — shows magnitude only; add dB=True, deg=False for magnitude-only plot' },
+  },
 
   // ── Symbolic Math Toolbox → SymPy ──────────────────────
   sym:       { python: 'sp.Symbol',              args: 'passthrough', imports: ['sympy'], toolbox: 'Symbolic Math' },
@@ -110,6 +121,26 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
   dwt2:      { python: 'pywt.dwt2',              args: 'passthrough', imports: ['pywt'], toolbox: 'Wavelet' },
   idwt2:     { python: 'pywt.idwt2',             args: 'passthrough', imports: ['pywt'], toolbox: 'Wavelet' },
   wthresh:   { python: 'pywt.threshold',          args: 'passthrough', imports: ['pywt'], toolbox: 'Wavelet' },
+
+  // ── Communications Toolbox ──────────────────────────────
+  pskmod:  { python: 'pskmod', args: 'passthrough', imports: [], toolbox: 'Communications',
+    flag: { type: 'TODO', message: 'pskmod — no direct Python equivalent. Use np.exp(1j * 2*pi * data/M) for basic PSK, or install commpy: from commpy.modulation import PSKModem.' },
+  },
+  qammod:  { python: 'qammod', args: 'passthrough', imports: [], toolbox: 'Communications',
+    flag: { type: 'TODO', message: 'qammod — no direct Python equivalent. Install commpy: from commpy.modulation import QAMModem, or implement manually with constellation mapping.' },
+  },
+  awgn:    { python: 'awgn', args: 'passthrough', imports: [], toolbox: 'Communications',
+    flag: { type: 'TODO', message: 'awgn — add white Gaussian noise manually: noise_power = 10**(-SNRdB/10); signal + np.sqrt(noise_power) * np.random.randn(len(signal)).' },
+  },
+  gscatter: { python: 'gscatter', args: 'passthrough', imports: [], toolbox: 'Statistics',
+    flag: { type: 'TODO', message: 'gscatter — use plt.scatter() with a loop per group, or seaborn.scatterplot(x, y, hue=labels) for grouped scatter plots.' },
+  },
+  confusionchart: { python: 'confusionchart', args: 'passthrough', imports: [], toolbox: 'Statistics',
+    flag: { type: 'TODO', message: 'confusionchart — use sklearn.metrics.confusion_matrix() + sklearn.metrics.ConfusionMatrixDisplay.from_predictions() or seaborn.heatmap().' },
+  },
+  fitcecoc: { python: 'fitcecoc', args: 'passthrough', imports: [], toolbox: 'Statistics',
+    flag: { type: 'TODO', message: 'fitcecoc — use sklearn.multiclass.OneVsOneClassifier(sklearn.svm.SVC()) for the same ECOC multi-class SVM approach.' },
+  },
 
   // ── Curve Fitting → scipy.optimize / numpy ─────────────
   fit:       { python: 'optimize.curve_fit',      args: 'custom',      imports: ['scipy.optimize'], toolbox: 'Curve Fitting',

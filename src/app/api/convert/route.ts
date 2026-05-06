@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { convert } from '@/lib/converter'
+import { auth, currentUser } from '@clerk/nextjs/server'
 
 const FREE_LINE_LIMIT = 50
 
@@ -16,13 +17,30 @@ export async function POST(req: NextRequest) {
 
     const lineCount = code.split('\n').filter((l: string) => l.trim() !== '').length
 
-    // For now (no auth), enforce free tier limit
-    if (lineCount > FREE_LINE_LIMIT) {
+    // Check auth and plan limits
+    let lineLimit = FREE_LINE_LIMIT
+    const { userId } = await auth()
+
+    if (userId) {
+      const user = await currentUser()
+      const meta = user?.publicMetadata as Record<string, unknown> | undefined
+      const plan = meta?.plan as string | undefined
+
+      if (plan === 'team') {
+        lineLimit = (meta?.linesPerConversion as number) || 10000
+      } else if (plan === 'pro' || plan === 'migration_pass') {
+        lineLimit = 5000
+      }
+    }
+
+    if (lineCount > lineLimit) {
       return NextResponse.json(
         {
           error: 'line_limit_exceeded',
-          message: `Free tier allows ${FREE_LINE_LIMIT} lines. This code has ${lineCount} lines.`,
-          limit: FREE_LINE_LIMIT,
+          message: userId
+            ? `Your plan allows ${lineLimit} lines per conversion. This code has ${lineCount} lines.`
+            : `Free tier allows ${FREE_LINE_LIMIT} lines. This code has ${lineCount} lines. Sign in to upgrade.`,
+          limit: lineLimit,
           actual: lineCount,
         },
         { status: 403 },

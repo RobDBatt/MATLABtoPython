@@ -1,10 +1,8 @@
-import type { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Pricing',
-  description:
-    'Free for 50 lines. Migration Pass for one-time projects. Pro and Team plans for ongoing work.',
-}
+import { useUser } from '@clerk/nextjs'
+import { useState } from 'react'
+import { track } from '@vercel/analytics'
 
 const tiers = [
   {
@@ -20,7 +18,7 @@ const tiers = [
     ],
     limits: ['No file upload', 'No batch conversion'],
     cta: 'Start converting',
-    ctaHref: '/convert',
+    planKey: 'free' as const,
     highlight: false,
   },
   {
@@ -30,14 +28,15 @@ const tiers = [
     description: 'For one-time migration projects',
     features: [
       '5,000 lines per conversion',
-      'Single .m file upload',
+      'File upload (.m files)',
+      'Python file download',
       'Compatibility report',
       'Toolbox detection',
       '30 days of full access',
     ],
-    limits: ['No batch conversion'],
+    limits: [],
     cta: 'Get Migration Pass',
-    ctaHref: '/sign-up',
+    planKey: 'migration_pass' as const,
     highlight: false,
   },
   {
@@ -47,14 +46,15 @@ const tiers = [
     description: 'For researchers with ongoing work',
     features: [
       '5,000 lines per conversion',
-      'Single .m file upload',
+      'File upload (.m files)',
+      'Python file download',
       'Compatibility report',
       'Toolbox detection',
       'Unlimited conversions',
     ],
-    limits: ['No batch conversion'],
+    limits: [],
     cta: 'Start Pro',
-    ctaHref: '/sign-up',
+    planKey: 'pro' as const,
     highlight: true,
   },
   {
@@ -64,27 +64,105 @@ const tiers = [
     description: 'For research groups and engineering teams',
     features: [
       '10,000 lines per conversion',
-      'Batch folder upload',
+      'Batch folder conversion (.m → .py zip)',
+      'Per-file conversion report',
+      'File upload (.m files)',
+      'Python file download',
       '100,000 lines/month',
       'Compatibility report',
       'Toolbox detection',
-      'Up to 5 seats',
     ],
     limits: [],
     cta: 'Start Team',
-    ctaHref: '/sign-up',
+    planKey: 'team' as const,
     highlight: false,
   },
 ]
 
+const PRICE_IDS: Record<string, string> = {
+  migration_pass: process.env.NEXT_PUBLIC_STRIPE_PRICE_MIGRATION_PASS || 'price_1TLHrpRElJyZVpb2TIQVSzCj',
+  pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || 'price_1TLHrqRElJyZVpb2X14Ag9oY',
+  team: process.env.NEXT_PUBLIC_STRIPE_PRICE_TEAM || 'price_1TLHrqRElJyZVpb2ULp88N8T',
+}
+
 export default function PricingPage() {
+  const { isSignedIn } = useUser()
+  const [loading, setLoading] = useState<string | null>(null)
+
+  // On mount, check if we returned from sign-up with a remembered plan
+  // and auto-continue checkout so the user only clicks once.
+  if (typeof window !== 'undefined' && isSignedIn) {
+    const pending = window.sessionStorage.getItem('pendingCheckoutPlan')
+    if (pending && !loading) {
+      window.sessionStorage.removeItem('pendingCheckoutPlan')
+      // Defer to next tick so React finishes its render first
+      setTimeout(() => handleCheckout(pending), 0)
+    }
+  }
+
+  async function handleCheckout(planKey: string) {
+    track('pricing_plan_click', { plan: planKey, signedIn: !!isSignedIn })
+
+    if (planKey === 'free') {
+      window.location.href = '/convert'
+      return
+    }
+
+    if (!isSignedIn) {
+      // Remember intent so after sign-up the user auto-continues to
+      // Stripe without a second "Start Pro" click.
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('pendingCheckoutPlan', planKey)
+      }
+      track('pricing_signup_redirect', { plan: planKey })
+      window.location.href = `/sign-up?redirect_url=/pricing`
+      return
+    }
+
+    setLoading(planKey)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId: PRICE_IDS[planKey] }),
+      })
+
+      // Check if response is JSON (not an HTML redirect)
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        // Clerk proxy may have redirected to sign-in
+        if (res.status === 401 || res.status === 403 || res.redirected) {
+          window.location.href = `/sign-in?redirect_url=/pricing`
+          return
+        }
+        alert('Unexpected response from server. Please try again.')
+        return
+      }
+
+      const data = await res.json()
+      if (data.url) {
+        track('checkout_session_started', { plan: planKey })
+        window.location.href = data.url
+      } else if (data.error === 'Unauthorized') {
+        window.location.href = `/sign-in?redirect_url=/pricing`
+      } else {
+        alert(data.error || 'Checkout failed')
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Connection error — please check your internet and try again')
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <div className="text-center mb-12">
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-white mb-3">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-slate-900 mb-3">
           Simple, honest pricing
         </h1>
-        <p className="text-slate-400 max-w-lg mx-auto">
+        <p className="text-slate-600 max-w-lg mx-auto">
           Free for small conversions. Pay only when you need more lines
           or file upload. No surprise fees.
         </p>
@@ -96,23 +174,23 @@ export default function PricingPage() {
             key={tier.name}
             className={`relative flex flex-col p-6 rounded-lg border ${
               tier.highlight
-                ? 'border-purple-500/50 bg-navy-900'
-                : 'border-navy-800 bg-navy-900/50'
+                ? 'border-purple-400 bg-gray-50'
+                : 'border-gray-200 bg-gray-50'
             }`}
           >
             {tier.highlight && (
-              <div className="absolute -top-3 left-6 px-3 py-0.5 bg-purple-500 text-white text-xs font-medium rounded-full">
+              <div className="absolute -top-3 left-6 px-3 py-0.5 bg-purple-600 text-white text-xs font-medium rounded-full">
                 Recommended
               </div>
             )}
 
             <div className="mb-4">
-              <h2 className="text-white font-semibold text-lg">{tier.name}</h2>
+              <h2 className="text-slate-900 font-semibold text-lg">{tier.name}</h2>
               <p className="text-slate-500 text-sm mt-1">{tier.description}</p>
             </div>
 
             <div className="mb-6">
-              <span className="text-3xl font-bold text-white">{tier.price}</span>
+              <span className="text-3xl font-bold text-slate-900">{tier.price}</span>
               {tier.period && (
                 <span className="text-slate-500 text-sm ml-1">{tier.period}</span>
               )}
@@ -120,8 +198,8 @@ export default function PricingPage() {
 
             <ul className="space-y-2 mb-6 flex-1">
               {tier.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
-                  <span className="text-green-400 mt-0.5">+</span>
+                <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
+                  <span className="text-green-600 mt-0.5">+</span>
                   {f}
                 </li>
               ))}
@@ -133,59 +211,60 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <a
-              href={tier.ctaHref}
-              className={`block text-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            <button
+              onClick={() => handleCheckout(tier.planKey)}
+              disabled={loading === tier.planKey}
+              className={`block w-full text-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 tier.highlight
-                  ? 'bg-purple-500 text-white hover:bg-purple-400'
-                  : 'border border-navy-700 text-slate-300 hover:border-slate-500 hover:text-white'
-              }`}
+                  ? 'bg-purple-600 text-white hover:bg-purple-500'
+                  : 'border border-gray-300 text-slate-700 hover:border-gray-400 hover:text-slate-900'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {tier.cta}
-            </a>
+              {loading === tier.planKey ? 'Loading...' : tier.cta}
+            </button>
           </div>
         ))}
       </div>
 
       {/* FAQ */}
       <div className="mt-20 max-w-2xl mx-auto">
-        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-white mb-6 text-center">
+        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-slate-900 mb-6 text-center">
           Common questions
         </h2>
         <div className="space-y-6 text-sm">
           <div>
-            <h3 className="text-white font-medium mb-1">How are lines counted?</h3>
-            <p className="text-slate-400">
+            <h3 className="text-slate-900 font-medium mb-1">How are lines counted?</h3>
+            <p className="text-slate-600">
               Only non-empty lines of MATLAB code are counted. Comments count as lines.
               Blank lines don&apos;t. A typical MATLAB function is 50-200 lines.
             </p>
           </div>
           <div>
-            <h3 className="text-white font-medium mb-1">What happens when I hit the line limit?</h3>
-            <p className="text-slate-400">
+            <h3 className="text-slate-900 font-medium mb-1">What happens when I hit the line limit?</h3>
+            <p className="text-slate-600">
               The converter will tell you exactly how many lines your code has and
               which plan covers it. You can upgrade instantly without losing your work.
             </p>
           </div>
           <div>
-            <h3 className="text-white font-medium mb-1">Is my code sent to an AI service?</h3>
-            <p className="text-slate-400">
+            <h3 className="text-slate-900 font-medium mb-1">Is my code sent to an AI service?</h3>
+            <p className="text-slate-600">
               No. The converter is 100% deterministic and rule-based. Your code is
               processed entirely on our server and never sent to any third-party AI
               API. Same input, same output, every time.
             </p>
           </div>
           <div>
-            <h3 className="text-white font-medium mb-1">What&apos;s the difference between Migration Pass and Pro?</h3>
-            <p className="text-slate-400">
+            <h3 className="text-slate-900 font-medium mb-1">What&apos;s the difference between Migration Pass and Pro?</h3>
+            <p className="text-slate-600">
               Migration Pass is a one-time 30-day purchase for engineers doing a
               single migration project. Pro is a monthly subscription for researchers
               who regularly convert MATLAB scripts as part of ongoing work.
             </p>
           </div>
           <div>
-            <h3 className="text-white font-medium mb-1">Which toolboxes are supported?</h3>
-            <p className="text-slate-400">
+            <h3 className="text-slate-900 font-medium mb-1">Which toolboxes are supported?</h3>
+            <p className="text-slate-600">
               Signal Processing (scipy.signal), Statistics (scipy.stats), Image Processing
               (scikit-image), Optimization (scipy.optimize), Control Systems (python-control),
               Symbolic Math (SymPy), Wavelets (PyWavelets), and Curve Fitting (scipy.interpolate).

@@ -1,48 +1,23 @@
 @import "tailwindcss";
 
-:root {
-  --navy-950: #0a0e1a;
-  --navy-900: #0f1629;
-  --navy-800: #1a2240;
-  --navy-700: #253060;
-  --purple-500: #8b5cf6;
-  --purple-400: #a78bfa;
-  --purple-600: #7c3aed;
-  --gold-400: #fbbf24;
-  --gold-300: #fcd34d;
-  --green-400: #4ade80;
-  --red-400: #f87171;
-  --slate-300: #cbd5e1;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-}
-
 @theme inline {
-  --color-navy-950: var(--navy-950);
-  --color-navy-900: var(--navy-900);
-  --color-navy-800: var(--navy-800);
-  --color-navy-700: var(--navy-700);
-  --color-purple-500: var(--purple-500);
-  --color-purple-400: var(--purple-400);
-  --color-purple-600: var(--purple-600);
-  --color-gold-400: var(--gold-400);
-  --color-gold-300: var(--gold-300);
-  --color-green-400: var(--green-400);
-  --color-red-400: var(--red-400);
-  --color-slate-300: var(--slate-300);
-  --color-slate-400: var(--slate-400);
-  --color-slate-500: var(--slate-500);
+  --color-navy-950: #1e1e2e;
+  --color-navy-900: #f8fafc;
+  --color-navy-800: #e2e8f0;
+  --color-navy-700: #cbd5e1;
+  --color-gold-400: #d97706;
+  --color-gold-300: #f59e0b;
   --font-display: var(--font-syne);
   --font-body: var(--font-dm-sans);
   --font-mono: var(--font-jetbrains);
 }
 
 body {
-  background: var(--navy-950);
-  color: var(--slate-300);
+  background: #ffffff;
+  color: #334155;
 }
 
-/* Code editor textarea styling */
+/* Code editor textarea styling — stays dark */
 .code-editor {
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 0.875rem;
@@ -52,24 +27,24 @@ body {
 }
 
 .code-editor::placeholder {
-  color: var(--slate-500);
+  color: #94a3b8;
 }
 
-/* Scrollbar styling for code panels */
+/* Scrollbar styling for code panels — stays dark */
 .code-panel::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 .code-panel::-webkit-scrollbar-track {
-  background: var(--navy-950);
+  background: #1e1e2e;
 }
 
 .code-panel::-webkit-scrollbar-thumb {
-  background: var(--navy-700);
+  background: #475569;
   border-radius: 4px;
 }
 
 .code-panel::-webkit-scrollbar-thumb:hover {
-  background: var(--slate-500);
+  background: #64748b;
 }

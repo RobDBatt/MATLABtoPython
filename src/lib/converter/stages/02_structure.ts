@@ -8,10 +8,42 @@ import type { LogicalLine, StructuredLine, BlockType } from '../types'
  * This stage tags each line with its indent level and block type.
  */
 export function detectStructure(lines: LogicalLine[]): StructuredLine[] {
+  // Pre-pass: identify functions that never get an `end` in this file.
+  // MATLAB allows multiple sibling functions per file without `end`s
+  // between them; treating each as a nested block produces over-indented
+  // garbage output where every function is nested inside the previous.
+  // After this pass, any line index in `unclosedFunctions` is a function
+  // that should be auto-closed when the next sibling `function` appears.
+  const unclosedFunctions = new Set<number>()
+  {
+    const preStack: number[] = []  // stack of line indices of openers
+    const types: BlockType[] = []  // parallel stack of types
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      if (line.isComment || !line.content.trim()) continue
+      const t = line.content.trim()
+      const info = detectBlock(t)
+      if (info.isClose) {
+        preStack.pop()
+        types.pop()
+        continue
+      }
+      if (info.isOpen && info.type) {
+        preStack.push(i)
+        types.push(info.type)
+      }
+    }
+    for (let k = 0; k < preStack.length; k++) {
+      if (types[k] === 'function') unclosedFunctions.add(preStack[k])
+    }
+  }
+
   const result: StructuredLine[] = []
   const blockStack: BlockType[] = []
+  const blockStackLineIdx: number[] = []
 
-  for (const line of lines) {
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    const line = lines[lineIdx]
     if (line.isComment || line.content.trim() === '') {
       result.push({
         ...line,
@@ -30,6 +62,7 @@ export function detectStructure(lines: LogicalLine[]): StructuredLine[] {
       // `end` keyword — pop the block stack
       if (blockStack.length > 0) {
         blockStack.pop()
+        blockStackLineIdx.pop()
       }
       result.push({
         ...line,
@@ -56,6 +89,21 @@ export function detectStructure(lines: LogicalLine[]): StructuredLine[] {
     }
 
     if (blockInfo.isOpen && blockInfo.type) {
+      // Sibling-function auto-close: in MATLAB files where functions
+      // omit the trailing `end`, the parser must auto-close the previous
+      // function when the next one starts. The pre-pass identified which
+      // function-openers never get an `end`; pop those off the stack now
+      // so the new function is at file-level rather than nested.
+      if (blockInfo.type === 'function') {
+        while (
+          blockStack.length > 0 &&
+          blockStack[blockStack.length - 1] === 'function' &&
+          unclosedFunctions.has(blockStackLineIdx[blockStackLineIdx.length - 1])
+        ) {
+          blockStack.pop()
+          blockStackLineIdx.pop()
+        }
+      }
       result.push({
         ...line,
         indentLevel: blockStack.length,
@@ -64,6 +112,7 @@ export function detectStructure(lines: LogicalLine[]): StructuredLine[] {
         isBlockClose: false,
       })
       blockStack.push(blockInfo.type)
+      blockStackLineIdx.push(lineIdx)
       continue
     }
 

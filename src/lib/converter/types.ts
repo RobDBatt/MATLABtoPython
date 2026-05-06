@@ -88,6 +88,13 @@ export interface FunctionMapping {
     type: FlagType
     message: string
   }
+  /**
+   * Optional gate: emit `flag` only when this returns true. Receives the
+   * full original line so the predicate can inspect arg counts (e.g.
+   * `dot(x, y, dim)` 3-arg form) or return-shape patterns (e.g.
+   * `[U, p] = chol(...)`).
+   */
+  flagWhen?: (content: string) => boolean
 }
 
 /** An operator mapping entry — order matters for processing */

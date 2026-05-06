@@ -49,6 +49,20 @@ export function tokenize(matlabCode: string): LogicalLine[] {
       i++
     }
 
+    // Merge lines whose brackets/parens/braces are unbalanced at line end.
+    // MATLAB treats a newline inside `[...]` as a row separator (equivalent
+    // to `;`), and inside `(...)` / `{...}` as simply whitespace. Python
+    // requires these to be on one logical line. Keep joining until the
+    // balance is zero.
+    while (i + 1 < rawLines.length && hasUnbalancedOpens(line)) {
+      // Insert `;` when merging lines that are inside `[...]` so the
+      // row-separator semantics survive into stage 5. Spaces are safe
+      // for `(...)` and `{...}` contexts.
+      const joiner = isInsideBrackets(line) ? '; ' : ' '
+      line = line.trimEnd() + joiner + rawLines[i + 1].trimStart()
+      i++
+    }
+
     const endLine = i + 1 // 1-based
     i++
 
@@ -107,6 +121,73 @@ export function tokenize(matlabCode: string): LogicalLine[] {
   }
 
   return logicalLines
+}
+
+/**
+ * True when `line` has more opening brackets/parens/braces than closing
+ * ones (i.e. the line continues onto the next). Respects strings so `(`
+ * inside a string literal doesn't count.
+ */
+function hasUnbalancedOpens(line: string): boolean {
+  let paren = 0, bracket = 0, brace = 0
+  let inString = false, sc = ''
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < line.length && line[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === '%') return paren > 0 || bracket > 0 || brace > 0 // stop at comment
+    if (ch === "'" || ch === '"') {
+      // Basic transpose-vs-string heuristic — match what resolveQuotes did.
+      if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\]}.']/.test(line[i - 1])) continue
+      inString = true
+      sc = ch
+      continue
+    }
+    if (ch === '(') paren++
+    else if (ch === ')') paren--
+    else if (ch === '[') bracket++
+    else if (ch === ']') bracket--
+    else if (ch === '{') brace++
+    else if (ch === '}') brace--
+  }
+  return paren > 0 || bracket > 0 || brace > 0
+}
+
+/** True when the unbalanced context is inside `[...]` (row-separator semantics). */
+function isInsideBrackets(line: string): boolean {
+  let paren = 0, bracket = 0, brace = 0
+  let inString = false, sc = ''
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < line.length && line[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === '%') break
+    if (ch === "'" || ch === '"') {
+      if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\]}.']/.test(line[i - 1])) continue
+      inString = true
+      sc = ch
+      continue
+    }
+    if (ch === '(') paren++
+    else if (ch === ')') paren--
+    else if (ch === '[') bracket++
+    else if (ch === ']') bracket--
+    else if (ch === '{') brace++
+    else if (ch === '}') brace--
+  }
+  // Prefer bracket context when all three are open — rare but `[{(`
+  // combos go to bracket since that has the row-separator meaning.
+  return bracket > 0
 }
 
 /**

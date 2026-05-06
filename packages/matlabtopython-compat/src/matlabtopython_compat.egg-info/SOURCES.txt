@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/matlabtopython_compat/__init__.py
+src/matlabtopython_compat/arrays.py
+src/matlabtopython_compat/cell_array.py
+src/matlabtopython_compat/format.py
+src/matlabtopython_compat/struct.py
+src/matlabtopython_compat/timing.py
+src/matlabtopython_compat.egg-info/PKG-INFO
+src/matlabtopython_compat.egg-info/SOURCES.txt
+src/matlabtopython_compat.egg-info/dependency_links.txt
+src/matlabtopython_compat.egg-info/requires.txt
+src/matlabtopython_compat.egg-info/top_level.txt
+tests/test_compat.py

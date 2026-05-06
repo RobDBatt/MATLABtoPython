@@ -123,6 +123,147 @@ export const TOOLBOXES: ToolboxInfo[] = [
       { matlab: 'c2d(sys, Ts)', python: 'control.c2d(sys, Ts)' },
     ],
   },
+
+  // ── Deep Learning ────────────────────────────────────────
+
+  {
+    slug: 'deep-learning',
+    name: 'Deep Learning',
+    matlabName: 'Deep Learning Toolbox',
+    pythonLib: 'PyTorch or TensorFlow/Keras',
+    installCmd: 'pip install torch  # or: pip install tensorflow',
+    description: "MATLAB's neural network stack. No 1:1 function mapping — deep learning frameworks differ in their whole mental model. Use PyTorch if you prefer defining layers in code; TensorFlow/Keras if you prefer a declarative builder. Both are mature, free, and dominant in research.",
+    mappings: [
+      { matlab: 'trainNetwork(X, Y, layers, options)', python: 'model.fit(X, Y, ...)  # Keras', note: 'Keras: define Sequential, compile, fit' },
+      { matlab: 'trainingOptions(solver, ...)', python: 'optimizer = torch.optim.Adam(...)', note: 'PyTorch: create optimizer directly' },
+      { matlab: 'layerGraph', python: 'torch.nn.Sequential(...) or torch.nn.Module', note: 'PyTorch: subclass nn.Module for custom graphs' },
+      { matlab: 'imageInputLayer([h w c])', python: 'Input(shape=(h, w, c))  # Keras', note: 'Input layer not needed in PyTorch' },
+      { matlab: 'convolution2dLayer(k, n)', python: 'Conv2D(n, k)  # Keras', note: 'torch.nn.Conv2d(in_ch, out_ch, k)' },
+      { matlab: 'fullyConnectedLayer(n)', python: 'Dense(n)  # Keras', note: 'torch.nn.Linear(in_features, n)' },
+      { matlab: 'reluLayer', python: 'ReLU()  # Keras / torch.nn.ReLU()' },
+      { matlab: 'softmaxLayer', python: 'Softmax()  # output layer with softmax activation' },
+      { matlab: 'dropoutLayer(p)', python: 'Dropout(p)  # Keras / torch.nn.Dropout(p)' },
+      { matlab: 'batchNormalizationLayer', python: 'BatchNormalization()  # Keras / torch.nn.BatchNorm2d' },
+      { matlab: 'maxPooling2dLayer(k)', python: 'MaxPooling2D(k)  # Keras / torch.nn.MaxPool2d(k)' },
+      { matlab: 'lstmLayer(n)', python: 'LSTM(n)  # Keras / torch.nn.LSTM(input_size, n)' },
+      { matlab: 'classify(net, X)', python: 'model.predict(X)  # Keras', note: 'torch: model(X).argmax(dim=1)' },
+      { matlab: 'predict(net, X)', python: 'model.predict(X)  # Keras / model(X) for torch' },
+      { matlab: 'imageDatastore(folder)', python: 'torchvision.datasets.ImageFolder / tf.keras.utils.image_dataset_from_directory' },
+      { matlab: 'augmentedImageDatastore', python: 'torchvision.transforms / tf.keras.layers.experimental.preprocessing' },
+      { matlab: 'resnet50 / vgg16 / googlenet', python: 'torchvision.models.resnet50(weights=...) / tf.keras.applications.VGG16' },
+    ],
+  },
+
+  // ── Curve Fitting ────────────────────────────────────────
+
+  {
+    slug: 'curve-fitting',
+    name: 'Curve Fitting',
+    matlabName: 'Curve Fitting Toolbox',
+    pythonLib: 'scipy.optimize + numpy.polyfit',
+    installCmd: 'pip install scipy',
+    description: "Fit curves to data. scipy.optimize.curve_fit covers 95% of MATLAB's fit() usage; polyfit/polyval match directly. For interactive fitting, the MATLAB `cftool` GUI has no Python equivalent — but a Jupyter notebook with matplotlib widgets comes close.",
+    mappings: [
+      { matlab: "fit(x, y, 'poly2')", python: 'np.polyfit(x, y, 2)', note: 'Polynomial order N → degree N' },
+      { matlab: "fit(x, y, 'poly1')", python: 'np.polyfit(x, y, 1)', note: 'Linear fit' },
+      { matlab: 'polyfit(x, y, n)', python: 'np.polyfit(x, y, n)' },
+      { matlab: 'polyval(p, x)', python: 'np.polyval(p, x)' },
+      { matlab: "fit(x, y, 'exp1')", python: "from scipy.optimize import curve_fit\\nfit, cov = curve_fit(lambda x, a, b: a*np.exp(b*x), x, y)", note: 'Exponential fit via curve_fit' },
+      { matlab: 'fit(x, y, customModel)', python: 'scipy.optimize.curve_fit(model, x, y)', note: 'Pass any callable as the model' },
+      { matlab: 'goodnessOfFit', python: "from sklearn.metrics import r2_score\\nr2_score(y, y_fit)", note: 'R² via sklearn, or compute manually' },
+      { matlab: 'confint(fitobject)', python: '95% CI from sqrt(diag(cov))  # from curve_fit covariance', note: 'No direct function — compute from covariance matrix' },
+      { matlab: "smooth(y, 'sgolay')", python: 'scipy.signal.savgol_filter(y, window, order)', note: 'Savitzky–Golay' },
+      { matlab: 'interp1(x, y, xi)', python: "scipy.interpolate.interp1d(x, y)(xi)", note: "Default 'linear'; kind='cubic' for spline" },
+      { matlab: 'interp2(X, Y, Z, xi, yi)', python: 'scipy.interpolate.interp2d(X, Y, Z)(xi, yi)', note: 'Or RegularGridInterpolator for newer scipy' },
+      { matlab: 'spline(x, y, xi)', python: "scipy.interpolate.CubicSpline(x, y)(xi)" },
+      { matlab: 'csaps(x, y, p, xi)', python: 'scipy.interpolate.UnivariateSpline(x, y, s=...)', note: 'Smoothing spline' },
+    ],
+  },
+
+  // ── Parallel Computing ───────────────────────────────────
+
+  {
+    slug: 'parallel-computing',
+    name: 'Parallel Computing',
+    matlabName: 'Parallel Computing Toolbox',
+    pythonLib: 'joblib / multiprocessing / dask',
+    installCmd: 'pip install joblib dask',
+    description: "MATLAB's parfor and spmd parallelize loops and distribute work across cores. Python's equivalent choices are joblib (simple, parallel map), multiprocessing (stdlib, explicit), or dask (for out-of-core data that doesn't fit in RAM). Pick joblib for drop-in parfor replacement.",
+    mappings: [
+      { matlab: 'parfor i = 1:n\\n    y(i) = f(x(i));\\nend', python: "from joblib import Parallel, delayed\\ny = Parallel(n_jobs=-1)(delayed(f)(xi) for xi in x)", note: 'Drop-in parfor replacement' },
+      { matlab: 'parpool', python: 'joblib uses auto-detected pool', note: 'No explicit pool setup needed' },
+      { matlab: 'parpool(4)', python: "Parallel(n_jobs=4)(...)", note: '4 cores' },
+      { matlab: 'delete(gcp)', python: '# pool auto-closes at context exit', note: 'No action needed with joblib' },
+      { matlab: 'parfeval(@f, 1, args)', python: "from concurrent.futures import ProcessPoolExecutor\\nexecutor.submit(f, *args)", note: 'Future-based async execution' },
+      { matlab: 'fetchOutputs(future)', python: 'future.result()' },
+      { matlab: 'spmd\\n    ...\\nend', python: 'Use multiprocessing.Pool with explicit worker rank', note: 'Rarely a direct port — redesign is usually cleaner' },
+      { matlab: 'labindex', python: 'rank from multiprocessing.current_process() or explicit arg' },
+      { matlab: 'numlabs', python: "os.cpu_count() or pool size" },
+      { matlab: 'gcp (get current pool)', python: '# implicit in joblib' },
+      { matlab: 'distributed(X)', python: 'dask.array.from_array(X, chunks=...)', note: 'For data too large for RAM' },
+      { matlab: 'gather(D)', python: 'D.compute()  # dask', note: 'Materialize a dask array to numpy' },
+      { matlab: 'batch(script)', python: "subprocess.run(['python', script])", note: 'Fire-and-forget background job' },
+    ],
+  },
+
+  // ── Symbolic Math ────────────────────────────────────────
+
+  {
+    slug: 'symbolic-math',
+    name: 'Symbolic Math',
+    matlabName: 'Symbolic Math Toolbox',
+    pythonLib: 'sympy',
+    installCmd: 'pip install sympy',
+    description: "Symbolic algebra — solve equations, simplify expressions, compute derivatives and integrals. sympy is a nearly-complete functional superset of MATLAB's Symbolic Math Toolbox, including LaTeX rendering in Jupyter. Most one-liners port directly.",
+    mappings: [
+      { matlab: "syms x y", python: "x, y = sp.symbols('x y')", note: "Explicit 'import sympy as sp' first" },
+      { matlab: "f = x^2 + 3*x + 2", python: "f = x**2 + 3*x + 2", note: 'sympy uses Python ** not ^' },
+      { matlab: 'diff(f, x)', python: 'sp.diff(f, x)' },
+      { matlab: 'diff(f, x, 2)', python: 'sp.diff(f, x, 2)', note: 'Second derivative' },
+      { matlab: 'int(f, x)', python: 'sp.integrate(f, x)', note: 'Indefinite integral' },
+      { matlab: 'int(f, x, 0, 1)', python: 'sp.integrate(f, (x, 0, 1))', note: 'Definite integral — tuple form' },
+      { matlab: 'solve(f == 0, x)', python: 'sp.solve(f, x)', note: 'Implicitly solves for zeros' },
+      { matlab: 'solve([f1; f2], [x; y])', python: 'sp.solve([f1, f2], [x, y])', note: 'System of equations' },
+      { matlab: 'simplify(f)', python: 'sp.simplify(f)' },
+      { matlab: 'expand(f)', python: 'sp.expand(f)' },
+      { matlab: 'factor(f)', python: 'sp.factor(f)' },
+      { matlab: 'collect(f, x)', python: 'sp.collect(f, x)' },
+      { matlab: 'subs(f, x, 2)', python: 'f.subs(x, 2)' },
+      { matlab: 'subs(f, [x, y], [1, 2])', python: 'f.subs([(x, 1), (y, 2)])' },
+      { matlab: 'limit(f, x, 0)', python: 'sp.limit(f, x, 0)' },
+      { matlab: 'taylor(f, x, Order=5)', python: 'sp.series(f, x, 0, 5).removeO()' },
+      { matlab: 'jacobian([f1; f2], [x; y])', python: 'sp.Matrix([f1, f2]).jacobian([x, y])' },
+      { matlab: 'latex(f)', python: 'sp.latex(f)' },
+      { matlab: 'vpa(pi, 50)', python: 'sp.N(sp.pi, 50)', note: 'Arbitrary-precision numeric' },
+      { matlab: 'double(f)', python: 'float(f)  # or sp.N(f)' },
+    ],
+  },
+
+  // ── Database ─────────────────────────────────────────────
+
+  {
+    slug: 'database',
+    name: 'Database',
+    matlabName: 'Database Toolbox',
+    pythonLib: 'SQLAlchemy + pandas',
+    installCmd: 'pip install sqlalchemy pandas pyodbc  # pyodbc for SQL Server, psycopg2 for Postgres, PyMySQL for MySQL',
+    description: "Connect to SQL databases and run queries. Python's SQL ecosystem is richer than MATLAB's: SQLAlchemy for ORM and connection management, pandas.read_sql for tabular queries, DBAPI drivers for each engine. Migration is usually an improvement.",
+    mappings: [
+      { matlab: "conn = database(dsn, user, pwd)", python: "from sqlalchemy import create_engine\\nengine = create_engine('postgresql://user:pwd@host/db')", note: 'Connection URL format per DB' },
+      { matlab: "conn = database('', user, pwd, driver, url)", python: 'create_engine(url)', note: 'SQLAlchemy encodes driver in the URL' },
+      { matlab: "close(conn)", python: 'engine.dispose()', note: 'Or use context manager' },
+      { matlab: "data = fetch(conn, 'SELECT * FROM t')", python: "import pandas as pd\\ndata = pd.read_sql('SELECT * FROM t', engine)", note: 'Returns a DataFrame' },
+      { matlab: "curs = exec(conn, 'SELECT ...')", python: "result = engine.execute('SELECT ...')  # or session.execute()" },
+      { matlab: "data = fetch(curs)", python: 'rows = result.fetchall()' },
+      { matlab: "sqlwrite(conn, 'tbl', tableData)", python: "df.to_sql('tbl', engine, if_exists='append', index=False)", note: 'pandas writes DataFrames to SQL' },
+      { matlab: "insert(conn, 'tbl', cols, vals)", python: "engine.execute(t.insert().values(...))", note: 'SQLAlchemy Core' },
+      { matlab: "update(conn, 'tbl', cols, vals, 'WHERE ...')", python: "engine.execute(t.update().where(...).values(...))" },
+      { matlab: 'sqlread', python: "pd.read_sql_table('tbl', engine)" },
+      { matlab: "runstoredprocedure(conn, 'sp', args)", python: "engine.execute(text('EXEC sp :a :b'), a=..., b=...)" },
+      { matlab: 'istable(conn, name)', python: "engine.dialect.has_table(engine.connect(), name)" },
+      { matlab: 'get(conn, "AutoCommit")', python: "engine.execution_options(autocommit=True)" },
+    ],
+  },
 ]
 
 export function getToolbox(slug: string): ToolboxInfo | undefined {
