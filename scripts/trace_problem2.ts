@@ -14,7 +14,7 @@ for (const input of cases) {
   const tk = tokenize(rq)
   const struct = detectStructure(tk)
   const { transformed } = transform(struct)
-  transformed.forEach(l => {
+  transformed.forEach((l: any) => {
     console.log('OUT:', l.content)
     if (l.flags && l.flags.length) {
       l.flags.forEach((f: any) => console.log('  FLAG:', f.type, f.message.slice(0, 80)))

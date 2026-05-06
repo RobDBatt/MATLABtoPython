@@ -46,3 +46,9 @@ src/lib/converter/test*.ts
 src/lib/converter/count.ts
 
 .vercel
+
+# Python cache / corpus output
+__pycache__/
+*.pyc
+scripts/corpus/output/__pycache__/
+scripts/corpus/repos/
