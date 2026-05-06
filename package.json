@@ -6,10 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run src/lib/converter/__tests__/converter.test.ts",
+    "corpus": "node scripts/run_corpus.mjs",
+    "corpus:diff": "npx tsx scripts/corpus_diff.ts",
+    "drill": "npx tsx scripts/drill_bucket.ts",
+    "flags": "npx tsx scripts/flag_frequency.ts",
+    "inspect": "npx tsx scripts/inspect_errors.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.12",
+    "@vercel/analytics": "^2.0.1",
+    "jszip": "^3.10.1",
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
