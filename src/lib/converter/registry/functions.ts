@@ -83,18 +83,8 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   cumprod: { python: 'np.cumprod',        args: 'passthrough', imports: ['numpy'] },
   mean:    { python: 'np.mean',           args: 'passthrough', imports: ['numpy'] },
   median:  { python: 'np.median',         args: 'passthrough', imports: ['numpy'] },
-  std: {
-    python: 'np.std',
-    args: 'custom', // needs ddof=1 appended
-    imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N.' },
-  },
-  var: {
-    python: 'np.var',
-    args: 'custom',
-    imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N.' },
-  },
+  std: { python: 'np.std', args: 'custom', imports: ['numpy'] },
+  var: { python: 'np.var', args: 'custom', imports: ['numpy'] },
   cross: { python: 'np.cross',           args: 'passthrough', imports: ['numpy'] },
   dot: {
     python: 'np.dot',
@@ -284,9 +274,7 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   acosh:    { python: 'np.arccosh',        args: 'passthrough', imports: ['numpy'] },
   fix:      { python: 'np.fix',            args: 'passthrough', imports: ['numpy'] },
   randperm: { python: 'np.random.permutation', args: 'passthrough', imports: ['numpy'] },
-  randi:    { python: 'np.random.randint',    args: 'passthrough', imports: ['numpy'],
-    flag: { type: 'WARNING', message: 'randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy.' },
-  },
+  randi:    { python: 'np.random.randint',    args: 'custom',      imports: ['numpy'] },
   rng:      { python: 'np.random.seed',       args: 'passthrough', imports: ['numpy'] },
   sqrtm:    { python: 'scipy.linalg.sqrtm', args: 'passthrough', imports: ['scipy.linalg'] },
   expm:     { python: 'scipy.linalg.expm',  args: 'passthrough', imports: ['scipy.linalg'] },

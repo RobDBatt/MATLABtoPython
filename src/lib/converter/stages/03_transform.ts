@@ -6,6 +6,8 @@ import { CONSTANT_MAP } from '../registry/constants'
 import { replaceInCodeOnly } from '../tokenizer/string-extractor'
 import { applyIdioms } from '../analysis/idioms'
 import { extractNarginDefaults } from '../analysis/nargin-defaults'
+import { extractArgumentsDefaults } from '../analysis/arguments-defaults'
+import { extractVarargoutReturns } from '../analysis/varargout-returns'
 
 /**
  * Stage 3: Transform
@@ -25,10 +27,28 @@ export function transform(lines: StructuredLine[]): TransformResult {
   const flags: Flag[] = []
   const transformed: StructuredLine[] = []
 
-  // Function-scope pre-pass: lift `if nargin < N; param = expr; end` blocks
-  // into Python signature defaults so the converted output is callable
-  // without flags.
-  const { paramsWithDefaultsByLine, linesToRemove } = extractNarginDefaults(lines)
+  // Pre-pass 1: Strip R2019b+ `arguments` blocks and lift simple defaults
+  // into the function signature. Must run before the nargin pre-pass so
+  // that lines already scheduled for removal are not double-processed.
+  const {
+    paramsWithDefaultsByLine: argsParams,
+    linesToRemove: argsLinesToRemove,
+  } = extractArgumentsDefaults(lines)
+
+  // Pre-pass 2: Lift `if nargin < N; param = expr; end` blocks into defaults.
+  // Merge the two remove sets so the main loop sees one unified set.
+  const { paramsWithDefaultsByLine: narginParams, linesToRemove: narginLinesToRemove } =
+    extractNarginDefaults(lines)
+
+  // Pre-pass 3: Convert varargout{N} = expr into _vout_N = expr and
+  // record the new returns comment for the function definition line.
+  const { varargoutReturnsByLine, varargoutLineReplacements } =
+    extractVarargoutReturns(lines)
+
+  // Merge: nargin params take priority (they're more specific); arguments
+  // params fill in gaps.
+  const paramsWithDefaultsByLine = new Map([...argsParams, ...narginParams])
+  const linesToRemove = new Set([...argsLinesToRemove, ...narginLinesToRemove])
 
   // Track current function's parameter names for nargin conversion
   let currentFuncParams: string[] = []
@@ -45,14 +65,21 @@ export function transform(lines: StructuredLine[]): TransformResult {
       continue
     }
 
-    // Lines elided by the nargin pre-pass: emit empty content so block
-    // structure stays intact and Stage 5 cleanup can collapse the gap.
+    // Lines elided by the nargin/arguments pre-passes: emit empty content so
+    // block structure stays intact and Stage 5 cleanup can collapse the gap.
     if (linesToRemove.has(line.originalLineStart)) {
       transformed.push({ ...line, content: '' })
       continue
     }
 
     let content = line.content
+
+    // Apply varargout-body line replacements BEFORE any other transform.
+    // The varargout pre-pass collected `varargout{N} = expr` → `_vout_N = expr`
+    // mappings; swap them in here so downstream transforms see plain assignments.
+    if (varargoutLineReplacements.has(line.originalLineStart)) {
+      content = varargoutLineReplacements.get(line.originalLineStart)!
+    }
 
     // Track function signatures to know parameter names
     const funcMatch = content.match(/^\s*function\s+(?:\[?[^\]]*\]?\s*=\s*)?(\w+)\s*\(([^)]*)\)/)
@@ -72,7 +99,7 @@ export function transform(lines: StructuredLine[]): TransformResult {
     content = preTransform(content, imports, lineFlags, line)
 
     // 1. Control flow transformations
-    content = transformControlFlow(content, line, lineFlags, paramsWithDefaultsByLine)
+    content = transformControlFlow(content, line, lineFlags, paramsWithDefaultsByLine, varargoutReturnsByLine)
 
     // On function-definition lines, the registry passes below would
     // mangle the function's name. Skip them and let the def line
@@ -1218,6 +1245,7 @@ function transformControlFlow(
   line: StructuredLine,
   flags: Flag[],
   paramsWithDefaultsByLine?: Map<number, string>,
+  varargoutReturnsByLine?: Map<number, string>,
 ): string {
   const trimmed = content.trim()
 
@@ -1228,13 +1256,14 @@ function transformControlFlow(
   if (funcMatch) {
     const outputs = funcMatch[1] || funcMatch[2] || ''
     const name = funcMatch[3]
-    // If the nargin pre-pass extracted Python defaults for this function,
-    // use the rewritten params string in place of the raw MATLAB inputs.
+    // If the nargin/arguments pre-pass extracted Python defaults, use them.
     const overrideInputs = paramsWithDefaultsByLine?.get(line.originalLineStart)
     const inputs = overrideInputs ?? (funcMatch[4] || '')
     if (outputs) {
-      const outVars = outputs.split(',').map(s => s.trim()).filter(Boolean)
-      const returnPart = outVars.length === 1 ? outVars[0] : outVars.join(', ')
+      // If varargout pre-pass rewrote the returns, use the new names.
+      const overrideReturns = varargoutReturnsByLine?.get(line.originalLineStart)
+      const returnPart = overrideReturns
+        ?? (outputs.split(',').map(s => s.trim()).filter(Boolean).join(', '))
       return `def ${name}(${inputs}):  # returns ${returnPart}`
     }
     return `def ${name}(${inputs}):`
@@ -1615,10 +1644,21 @@ function transformFunctions(
         break
       }
 
-      default:
-        // 'custom' — just do name replacement, flag if needed
-        result = result.replace(pattern, `${mapping.python}(`)
+      default: {
+        // 'custom' — name replacement with per-function argument rewriting
+        if (matlabName === 'std' || matlabName === 'var') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteStdVar(mapping.python, args),
+          )
+        } else if (matlabName === 'randi') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteRandi(args, imports),
+          )
+        } else {
+          result = result.replace(pattern, `${mapping.python}(`)
+        }
         break
+      }
     }
 
     // Add flag if mapping specifies one. `flagWhen`, when present, gates
@@ -1638,7 +1678,87 @@ function transformFunctions(
   return result
 }
 
-// ── Toolbox Functions ─────────��───────────────────────────
+// ── std / var ddof rewriter ───────────────────────────────
+
+/**
+ * Rewrite MATLAB std(x[, w[, dim]]) / var(x[, w[, dim]]) to NumPy equivalents,
+ * injecting ddof=1 (MATLAB normalises by N-1 by default; NumPy default is N).
+ *
+ *   std(x)         → np.std(x, ddof=1)
+ *   std(x, 0)      → np.std(x, ddof=1)      (w=0 means N-1 normalization)
+ *   std(x, 1)      → np.std(x, ddof=0)      (w=1 means N normalization)
+ *   std(x, 0, dim) → np.std(x, ddof=1, axis=dim-1)
+ *   std(x, 1, dim) → np.std(x, ddof=0, axis=dim-1)
+ *   std(x, w)      → np.std(x, ddof=1) + flag for non-trivial weight vector
+ */
+function rewriteStdVar(pyName: string, rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (args.length === 0) return `${pyName}(`
+
+  const data = args[0]
+
+  if (args.length === 1) {
+    return `${pyName}(${data}, ddof=1)`
+  }
+
+  const w = args[1]
+  const ddof = w === '0' ? 1 : w === '1' ? 0 : 1  // default to ddof=1 for other values
+
+  if (args.length === 2) {
+    return `${pyName}(${data}, ddof=${ddof})`
+  }
+
+  // 3-arg: std(x, w, dim)
+  const dim = args[2].trim()
+  const axisExpr = /^\d+$/.test(dim) ? String(parseInt(dim, 10) - 1) : `${dim} - 1`
+  return `${pyName}(${data}, ddof=${ddof}, axis=${axisExpr})`
+}
+
+// ── randi bounds rewriter ─────────────────────────────────
+
+/**
+ * Rewrite MATLAB randi to np.random.randint with correct bounds.
+ *
+ * MATLAB randi is always 1-based and inclusive on both ends:
+ *   randi(N)          → np.random.randint(1, N + 1)
+ *   randi(N, m, n)    → np.random.randint(1, N + 1, (m, n))
+ *   randi([lo, hi])   → np.random.randint(lo, hi + 1)
+ *   randi([lo, hi], m, n) → np.random.randint(lo, hi + 1, (m, n))
+ */
+function rewriteRandi(rawArgs: string, imports: Set<string>): string {
+  imports.add('numpy')
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (args.length === 0) return 'np.random.randint('
+
+  const first = args[0]
+  const sizeArgs = args.slice(1)
+
+  let lo: string, hi: string
+  // Check if first arg is a range vector [lo, hi]
+  const rangeMatch = first.match(/^\[\s*([^\],]+)\s*,\s*([^\],]+)\s*\]$/)
+  if (rangeMatch) {
+    lo = rangeMatch[1].trim()
+    hi = rangeMatch[2].trim()
+  } else {
+    // Scalar N: randi(N) means integers from 1 to N inclusive
+    lo = '1'
+    hi = first
+  }
+
+  // NumPy hi is exclusive so add +1. For numeric literals we fold the +1.
+  const hiExpr = /^\d+$/.test(hi) ? `${parseInt(hi, 10) + 1}` : `${hi} + 1`
+
+  if (sizeArgs.length === 0) {
+    return `np.random.randint(${lo}, ${hiExpr})`
+  }
+  if (sizeArgs.length === 1) {
+    return `np.random.randint(${lo}, ${hiExpr}, ${sizeArgs[0]})`
+  }
+  // Multiple size args: wrap in a tuple
+  return `np.random.randint(${lo}, ${hiExpr}, (${sizeArgs.join(', ')}))`
+}
+
+// ── Toolbox Functions ─────────────────────────────────────
 
 /** Specific actionable guidance for common toolbox function differences */
 const TOOLBOX_SPECIFIC_HELP: Record<string, string> = {
