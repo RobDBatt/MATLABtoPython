@@ -145,6 +145,7 @@ const BLOCK_OPEN_PATTERNS: Array<{ pattern: RegExp; type: BlockType }> = [
   { pattern: /^switch\b/, type: 'switch' },
   { pattern: /^try\b/, type: 'try' },
   { pattern: /^classdef\b/, type: 'classdef' },
+  { pattern: /^arguments\b/, type: 'arguments' },
 ]
 
 const BLOCK_CONTINUATION_PATTERNS: Array<{ pattern: RegExp; type: BlockType }> = [

@@ -26,6 +26,7 @@ export type BlockType =
   | 'catch'
   | 'classdef'
   | 'parfor'
+  | 'arguments'
 
 /** A logical line enriched with structural/indentation info */
 export interface StructuredLine extends LogicalLine {
