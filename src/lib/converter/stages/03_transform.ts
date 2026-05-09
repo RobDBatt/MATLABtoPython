@@ -105,7 +105,7 @@ export function transform(
     // 0b. Matrix-multiply rewrite: bare `*` → `@` when both operands are known
     // 2-D matrices per the shape table.  Must run BEFORE transformOperators
     // converts `.*` → `*`, or the two would become indistinguishable.
-    if (shapeTable && shapeTable.size > 0) {
+    if (shapeTable) {
       content = rewriteMatrixMultiply(content, shapeTable, imports)
     }
 
@@ -1704,7 +1704,7 @@ function transformFunctions(
  */
 function rewriteStdVar(pyName: string, rawArgs: string): string {
   const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
-  if (args.length === 0) return `${pyName}(`
+  if (args.length === 0) return `${pyName}()`
 
   const data = args[0]
 
@@ -1739,7 +1739,7 @@ function rewriteStdVar(pyName: string, rawArgs: string): string {
 function rewriteRandi(rawArgs: string, imports: Set<string>): string {
   imports.add('numpy')
   const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
-  if (args.length === 0) return 'np.random.randint('
+  if (args.length === 0) return 'np.random.randint()'
 
   const first = args[0]
   const sizeArgs = args.slice(1)
@@ -1799,69 +1799,75 @@ function rewriteMatrixMultiply(
   let i = 0
   let inStr = false
   let strCh = ''
+  // O(1) tracking — avoids out.join() inside the hot loop.
+  // lastNonSpace: last non-whitespace character emitted (outside strings).
+  // lastAtom: most recent contiguous run of [\w.] outside strings; reset on
+  //           any non-word non-space character so it always holds the
+  //           identifier immediately to the left of the current position.
+  let lastNonSpace = ''
+  let lastAtom = ''
 
   while (i < code.length) {
     const ch = code[i]
 
-    // ── String handling ───────────────────────────────────
     if (inStr) {
       out.push(ch)
-      if (ch === strCh) inStr = false
+      if (ch === strCh) {
+        inStr = false
+        lastNonSpace = ch
+        lastAtom = ''  // string literal is not a variable
+      }
       i++
       continue
     }
 
     if (ch === "'" || ch === '"') {
-      // MATLAB single-quote after identifier/bracket = transpose (already
-      // resolved by resolveQuotes, but be defensive here too).
       if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\].]/.test(code[i - 1])) {
-        out.push(ch); i++; continue
+        // Transpose operator — not a string opener
+        out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue
       }
       inStr = true; strCh = ch
-      out.push(ch); i++; continue
+      out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue
     }
 
-    // Comment: copy rest verbatim
-    if (ch === '#') { out.push(...code.slice(i)); break }
+    // Comment: copy rest of line verbatim and stop
+    if (ch === '#') { out.push(code.slice(i)); break }
 
-    // ── Star handling ─────────────────────────────────────
     if (ch === '*') {
-      // Skip `.*` — element-wise, should stay as `*` after operator transform
-      const lastNonSpace = out.join('').trimEnd().slice(-1)
-      if (lastNonSpace === '.') { out.push(ch); i++; continue }
+      // Skip `.*` — element-wise multiply; must not become `@`
+      if (lastNonSpace === '.') { out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue }
+      // Skip `**` (defensive)
+      if (i + 1 < code.length && code[i + 1] === '*') { out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue }
 
-      // Skip `**` (defensive — MATLAB doesn't have ** but Python output might)
-      if (i + 1 < code.length && code[i + 1] === '*') { out.push(ch); i++; continue }
-
-      // Extract RHS atom: skip spaces, collect word + dot chars
+      // Extract RHS atom: skip spaces then collect [\w.]+
       let j = i + 1
       while (j < code.length && code[j] === ' ') j++
       let rhs = ''
       while (j < code.length && /[\w.]/.test(code[j])) { rhs += code[j++] }
       const rhsBase = rhs.split('.')[0]
+      const lhsBase = lastAtom.split('.')[0]
 
-      // Extract LHS atom: scan backward in what we've already emitted
-      const sofar = out.join('')
-      const trimmed = sofar.trimEnd()
-      let k = trimmed.length - 1
-      let lhs = ''
-      while (k >= 0 && /[\w.]/.test(trimmed[k])) { lhs = trimmed[k--] + lhs }
-      const lhsBase = lhs.split('.')[0]
-
-      // Replace with @ only when both are confirmed 2-D matrices
       if (lhsBase && rhsBase &&
           shapes.get(lhsBase) === 'matrix' &&
           shapes.get(rhsBase) === 'matrix') {
         imports.add('numpy')
-        out.push('@')
+        out.push('@'); lastNonSpace = '@'; lastAtom = ''
       } else {
-        out.push('*')
+        out.push('*'); lastNonSpace = '*'; lastAtom = ''
       }
       i++
       continue
     }
 
     out.push(ch)
+    if (ch !== ' ' && ch !== '\t') {
+      lastNonSpace = ch
+      if (/[\w.]/.test(ch)) {
+        lastAtom += ch
+      } else {
+        lastAtom = ''
+      }
+    }
     i++
   }
 

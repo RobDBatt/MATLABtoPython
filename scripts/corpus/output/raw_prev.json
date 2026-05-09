@@ -1056,7 +1056,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 296 (_check_3x49hq3k4a9.py, line 29",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 296 (_check_uwej67q61qo.py, line 29",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -1614,8 +1614,8 @@
   },
   {
     "rel": "lightspeed\\graphics\\labeled_curves.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -5849,8 +5849,8 @@
   },
   {
     "rel": "rcnn\\utils\\x10VOCevaldet.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -6079,7 +6079,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_bhpi52yb7af.py, line 366)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_9igy1v902nh.py, line 366)",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -8521,7 +8521,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_zir2js00kk.py, line 299)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_fbgtcqrznrq.py, line 299)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -9520,7 +9520,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_wixwdmi98le.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_7ugsruyriq3.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -9765,7 +9765,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_dk0bq7x26vd.py, line 287)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_9gzqchjwhqn.py, line 287)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -9802,7 +9802,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_71sl7fwh5o6.py, line 307)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_ww1uaebaqfd.py, line 307)",
     "snippet": "",
     "flagCount": 8,
     "flags": [

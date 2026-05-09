@@ -9,5 +9,5 @@ row = v.T
 print('row vector: %s' % (mat2str(row),))
 B = A.T
 print('transposed A has %d rows' % (B.shape[0],))
-result = A*v
+result = A@v
 print('product = [%d, %d]' % (result[0], result[1]))

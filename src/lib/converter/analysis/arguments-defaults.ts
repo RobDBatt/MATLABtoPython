@@ -45,6 +45,7 @@ export function extractArgumentsDefaults(lines: StructuredLine[]): ArgumentsPass
 
   // Independent block-kind stack so we can detect which block an `end` closes.
   const blockKinds: BlockType[] = []
+  let functionBlockCount = 0  // O(1) substitute for blockKinds.filter(==='function')
 
   type FuncCtx = {
     defLine: number
@@ -57,7 +58,6 @@ export function extractArgumentsDefaults(lines: StructuredLine[]): ArgumentsPass
 
   // Whether we are currently inside an `arguments` block for the top function.
   let inArgumentsBlock = false
-  let argumentsBlockDepth = 0
 
   const isSafeDefault = (expr: string): boolean => {
     const e = expr.trim()
@@ -105,9 +105,9 @@ export function extractArgumentsDefaults(lines: StructuredLine[]): ArgumentsPass
 
     if (line.isBlockClose) {
       const closed = blockKinds.pop()
+      if (closed === 'function') functionBlockCount--
 
       if (closed === 'arguments') {
-        // We just closed an arguments block — mark the `end` line too.
         linesToRemove.add(line.originalLineStart)
         inArgumentsBlock = false
         continue
@@ -123,9 +123,9 @@ export function extractArgumentsDefaults(lines: StructuredLine[]): ArgumentsPass
 
     if (content === '') continue
 
-    // Track block opens.
     if (line.isBlockOpen && line.blockType) {
       blockKinds.push(line.blockType)
+      if (line.blockType === 'function') functionBlockCount++
     }
 
     // Function definition: push new context.
@@ -155,16 +155,11 @@ export function extractArgumentsDefaults(lines: StructuredLine[]): ArgumentsPass
 
     // Beginning of an `arguments` block for this function.
     if (line.isBlockOpen && line.blockType === 'arguments') {
-      // Only process the first arguments block directly inside the function
-      // (blockKinds depth minus one for the arguments we just pushed = function depth).
-      const functionDepth = blockKinds.filter(k => k === 'function').length
-      if (functionDepth === fnStack.length) {
-        inArgumentsBlock = true
-        linesToRemove.add(line.originalLineStart)
-        continue
-      }
-      // Nested arguments block inside a sub-function — just strip it.
-      inArgumentsBlock = false
+      // functionBlockCount was just incremented above for this 'arguments' push —
+      // but 'arguments' is not 'function', so the count reflects open function
+      // blocks. If it equals fnStack.length, this arguments block is directly
+      // inside the innermost function (not nested inside a sub-block).
+      inArgumentsBlock = functionBlockCount === fnStack.length
       linesToRemove.add(line.originalLineStart)
       continue
     }

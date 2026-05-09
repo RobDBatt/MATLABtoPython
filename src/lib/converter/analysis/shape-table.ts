@@ -124,8 +124,8 @@ export function buildShapeTable(lines: LogicalLine[]): Map<string, ShapeClass> {
     const forM = content.match(/^(?:for|parfor)\s+(\w+)\s*=/)
     if (forM) { record(forM[1], 'scalar'); continue }
 
-    // ── Function parameters → unknown (we don't know the caller's types) ──
-    // Skip: they default to 'unknown' because they're never recorded.
+    // Function parameters stay 'unknown' — caller types are unknowable without
+    // inter-procedural analysis. arguments-block integration is a TODO.
 
     // ── Multi-return `[a, b] = func(...)` → unknown for each output ───────
     if (/^\[/.test(content)) {
