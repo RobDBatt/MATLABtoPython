@@ -1,4 +1,5 @@
 import type { StructuredLine, Flag, TransformResult } from '../types'
+import type { ShapeClass } from '../analysis/shape-table'
 import { FUNCTION_MAP } from '../registry/functions'
 import { TOOLBOX_MAP } from '../registry/toolboxes'
 import { OPERATOR_MAP } from '../registry/operators'
@@ -22,7 +23,10 @@ import { extractVarargoutReturns } from '../analysis/varargout-returns'
  * 6. Special constructs (grid on, hold on, etc.)
  * 7. Unknown function calls get TODO flag
  */
-export function transform(lines: StructuredLine[]): TransformResult {
+export function transform(
+  lines: StructuredLine[],
+  shapeTable?: Map<string, ShapeClass>,
+): TransformResult {
   const imports = new Set<string>()
   const flags: Flag[] = []
   const transformed: StructuredLine[] = []
@@ -97,6 +101,13 @@ export function transform(lines: StructuredLine[]): TransformResult {
 
     // 0. Pre-transform: MATLAB syntax that needs converting before everything else
     content = preTransform(content, imports, lineFlags, line)
+
+    // 0b. Matrix-multiply rewrite: bare `*` → `@` when both operands are known
+    // 2-D matrices per the shape table.  Must run BEFORE transformOperators
+    // converts `.*` → `*`, or the two would become indistinguishable.
+    if (shapeTable && shapeTable.size > 0) {
+      content = rewriteMatrixMultiply(content, shapeTable, imports)
+    }
 
     // 1. Control flow transformations
     content = transformControlFlow(content, line, lineFlags, paramsWithDefaultsByLine, varargoutReturnsByLine)
@@ -1756,6 +1767,105 @@ function rewriteRandi(rawArgs: string, imports: Set<string>): string {
   }
   // Multiple size args: wrap in a tuple
   return `np.random.randint(${lo}, ${hiExpr}, (${sizeArgs.join(', ')}))`
+}
+
+// ── Matrix-multiply rewriter ──────────────────────────────
+
+/**
+ * Rewrite bare `*` to `@` when both immediate identifier operands are
+ * classified as 'matrix' in the shape table.
+ *
+ * Must run BEFORE transformOperators converts `.*` → `*`, while
+ * element-wise and matrix-multiply operators are still distinguishable:
+ *   - `.*` (element-wise) → the char before `*` is `.` → skip
+ *   - `*`  (matrix-multiply candidate) → no `.` before it
+ *
+ * Conservative rules (never emit false-positive `@`):
+ *   - Only replaces when the atom immediately left of `*` and the atom
+ *     immediately right of `*` are both plain word-char identifiers
+ *     (optionally dotted for `.T`).
+ *   - Complex LHS expressions `(A + B) * C` keep `*` (scan stops at `)`.
+ *   - Function-call LHS `func(A) * B` keeps `*` (scan stops at `)`.
+ *   - Numeric literals, scalars, unknowns all keep `*`.
+ */
+function rewriteMatrixMultiply(
+  code: string,
+  shapes: Map<string, ShapeClass>,
+  imports: Set<string>,
+): string {
+  if (!code.includes('*')) return code
+
+  const out: string[] = []
+  let i = 0
+  let inStr = false
+  let strCh = ''
+
+  while (i < code.length) {
+    const ch = code[i]
+
+    // ── String handling ───────────────────────────────────
+    if (inStr) {
+      out.push(ch)
+      if (ch === strCh) inStr = false
+      i++
+      continue
+    }
+
+    if (ch === "'" || ch === '"') {
+      // MATLAB single-quote after identifier/bracket = transpose (already
+      // resolved by resolveQuotes, but be defensive here too).
+      if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\].]/.test(code[i - 1])) {
+        out.push(ch); i++; continue
+      }
+      inStr = true; strCh = ch
+      out.push(ch); i++; continue
+    }
+
+    // Comment: copy rest verbatim
+    if (ch === '#') { out.push(...code.slice(i)); break }
+
+    // ── Star handling ─────────────────────────────────────
+    if (ch === '*') {
+      // Skip `.*` — element-wise, should stay as `*` after operator transform
+      const lastNonSpace = out.join('').trimEnd().slice(-1)
+      if (lastNonSpace === '.') { out.push(ch); i++; continue }
+
+      // Skip `**` (defensive — MATLAB doesn't have ** but Python output might)
+      if (i + 1 < code.length && code[i + 1] === '*') { out.push(ch); i++; continue }
+
+      // Extract RHS atom: skip spaces, collect word + dot chars
+      let j = i + 1
+      while (j < code.length && code[j] === ' ') j++
+      let rhs = ''
+      while (j < code.length && /[\w.]/.test(code[j])) { rhs += code[j++] }
+      const rhsBase = rhs.split('.')[0]
+
+      // Extract LHS atom: scan backward in what we've already emitted
+      const sofar = out.join('')
+      const trimmed = sofar.trimEnd()
+      let k = trimmed.length - 1
+      let lhs = ''
+      while (k >= 0 && /[\w.]/.test(trimmed[k])) { lhs = trimmed[k--] + lhs }
+      const lhsBase = lhs.split('.')[0]
+
+      // Replace with @ only when both are confirmed 2-D matrices
+      if (lhsBase && rhsBase &&
+          shapes.get(lhsBase) === 'matrix' &&
+          shapes.get(rhsBase) === 'matrix') {
+        imports.add('numpy')
+        out.push('@')
+      } else {
+        out.push('*')
+      }
+      i++
+      continue
+    }
+
+    out.push(ch)
+    i++
+  }
+
+  return out.join('')
 }
 
 // ── Toolbox Functions ─────────────────────────────────────

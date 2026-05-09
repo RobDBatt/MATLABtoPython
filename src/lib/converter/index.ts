@@ -9,6 +9,7 @@ import { detectPreFlags } from './flags/detector'
 import { generateReport } from './report/generator'
 import { buildSymbolTable } from './analysis/scope'
 import { buildRenameMap, applyRenames, renameReservedFields } from './analysis/rename-reserved'
+import { buildShapeTable } from './analysis/shape-table'
 
 /**
  * Convert MATLAB code to Python.
@@ -35,6 +36,9 @@ export function convert(matlabCode: string): ConversionResult {
   // so that every `A(i)` disambiguation downstream uses the same facts.
   const symbols = buildSymbolTable(tokenized)
 
+  // Build shape table (scalar vs matrix) for the * → @ rewrite in Stage 3.
+  const shapeTable = buildShapeTable(tokenized)
+
   // Rename MATLAB identifiers that collide with Python reserved words
   // (`lambda`, `class`, `in`, etc.). Apply to every tokenized line and
   // also update the symbol table so downstream stages see the new names.
@@ -52,7 +56,7 @@ export function convert(matlabCode: string): ConversionResult {
   const structured = detectStructure(logicalLines)
 
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)
-  const { transformed, imports, flags: transformFlags } = transform(structured)
+  const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable)
 
   // Stage 4: Index shifting (1-based → 0-based) — dedicated separate pass
   const { shifted, flags: indexFlags } = shiftIndices(transformed, symbols)
