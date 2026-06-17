@@ -158,6 +158,31 @@ how the rest of the code indexes with a single subscript.
 
 ---
 
+## Colon-range vs `(:)`-flatten in space-separated rows — OPEN (next big item)
+
+**Symptom.** `r = [a(:) b(:)]` → `np.arange(a(, ) + ) b(, ) b()` (garbage,
+SyntaxError). The rest of the smoke `SyntaxError` bucket after the nested-row fix
+below; common in spatialmath-style `[n(:) o(:) a(:)]` rotation-matrix builds.
+
+**Precise trigger (isolated).** ONLY space-separated *multiple* `(:)` flattens in
+one bracket row. All adjacent forms are correct: `a(:)`, `[a(:)]`,
+`a(:) + b(:)`, and column form `[a(:); b(:)]`.
+
+**Cause.** Stage-03 range handlers (`preTransform`, the `(expr:expr)` regexes)
+see the `:` inside `(:)` before Stage-04 rewrites `(:)` → `.flatten(order="F")`,
+and mis-fire across the space-separated elements.
+
+**Candidate fix.** Rewrite `\w+\(:\)` → `.flatten(order="F")` EARLY (start of
+preTransform, before the range regexes) — but it MUST replicate Stage-04's
+LHS-skip so `A(:) = v` still becomes `A[:] = v` (slice assignment), not
+`A.flatten() = v`. 
+
+**Why deferred to Claude Code:** this touches the range/colon core guarded by
+~30 passing tests (reverse-slice, 3-part ranges, complex ranges, `end` idioms,
+LHS slice-assignment). High regression risk — needs the full `npm test` suite to
+gate, which the Cowork sandbox can't run (vitest/rolldown). Diagnosis is done;
+this is a well-specified task to do where the suite runs.
+
 ## Matrix-literal rows with nested elements — FIXED (partial bucket)
 
 **Symptom.** The dominant smoke `SyntaxError` bucket. Rows of a `;`-matrix whose
