@@ -653,6 +653,10 @@ function buildZeroBasedVars(lines: StructuredLine[]): Set<string> {
     // Pattern: var = np.argmax(...) or np.argmin(...)
     const argMatch = content.match(/^\s*(\w+)\s*=\s*np\.arg(?:max|min)\b/)
     if (argMatch) vars.add(argMatch[1])
+    // Pattern: var = signal.find_peaks(...)[0] — 0-based peak indices (from the
+    // two-output findpeaks rewrite). So a later `sig(var)` → `sig[var]`.
+    const fpMatch = content.match(/^\s*(\w+)\s*=\s*signal\.find_peaks\([^\n]*\)\[0\]/)
+    if (fpMatch) vars.add(fpMatch[1])
     // Pattern: _, var = np.where(...) or similar multi-return
     const multiMatch = content.match(/^\s*\w+\s*,\s*(\w+)\s*=\s*.*np\.where\b/)
     if (multiMatch) vars.add(multiMatch[1])

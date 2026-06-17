@@ -163,7 +163,7 @@ corpus shows demand.
 
 ---
 
-## 3. `findpeaks` return-shape mismatch — FIXED (single-output); two-output + options OPEN
+## 3. `findpeaks` return-shape mismatch — FIXED (single + two-output); options OPEN
 
 **Symptom.** `scipy.signal.find_peaks` returns `(indices, properties)`, a tuple.
 MATLAB's `findpeaks(P)` returns peak *values*, so `peaks = findpeaks(P)` →
@@ -183,17 +183,29 @@ TOOLBOX flag. A `WARNING` fires if SIG is an expression (it's evaluated twice).
 Regression tests + curated case `tests/oracle-cases/findpeaks_values.m` (crashed
 before, runs after: `npeaks=3 max=5`).
 
-**Result.** `npm test` 184 → 187. Curated oracle 8/8 (incl. the new case).
+**Result (single-output).** `npm test` 184 → 187. Curated oracle 8/8.
 
-### Still OPEN (deferred deliberately, with a flag in the meantime)
-- **Two-output `[pks, locs] = findpeaks(P)`** — needs a two-line emit
-  (`locs = signal.find_peaks(P)[0]` then `pks = P[locs]`) **and** registering
-  `locs` as 0-based (like `np.argmax`/`np.where` in `buildZeroBasedVars`) so a
-  later `P(locs)` isn't double index-shifted. Currently falls through to the
-  name-swap (`pks, locs = signal.find_peaks(P)`) — wrong but not mangled.
-- **Name/Value options** `findpeaks(P, 'MinPeakHeight', h)` — need
-  `height=`/`distance=`/`prominence=` kwarg mapping. Left as name-swap; dropping
-  the options would silently change results, so we don't.
+**Fix (two-output).** `convertFindpeaks` now also handles
+`[pks, locs] = findpeaks(SIG)` (after the multi-return pre-pass: `pks, locs =
+findpeaks(SIG)`), emitting two statements with no leading indent (Stage 5 indents
+each, incl. inside blocks):
+
+```
+locs = signal.find_peaks(SIG)[0]   # 0-based indices
+pks  = SIG[locs]                   # values at those indices
+```
+
+`locs` is registered 0-based in `buildZeroBasedVars` (`04_index.ts`, matching
+`= signal.find_peaks(...)[0]`), so a later `SIG(locs)` → `SIG[locs]`, not
+`SIG[locs - 1]`. Regression tests (two-output, the 0-based `SIG(locs)` guard) +
+curated case `tests/oracle-cases/findpeaks_locs.m` (crashed before — `locs` was a
+props dict → `dict - 1` `TypeError`; runs after). `npm test` 193 → 195. Curated
+oracle 11/11.
+
+### Still OPEN
+- **Name/Value options** `findpeaks(P, 'MinPeakHeight', h)` (single- *and*
+  two-output) — need `height=`/`distance=`/`prominence=` kwarg mapping. Left as
+  name-swap; dropping the options would silently change results, so we don't.
 
 ---
 
@@ -372,7 +384,7 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
 comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), repmat
 → np.tile arg structure, #3 findpeaks single-output, isfield → membership. Still
-open: #3 follow-ups (findpeaks two-output + Name/Value options), the #4 follow-up
+open: #3 follow-up (findpeaks Name/Value options), the #4 follow-up
 (`size()` on de-2-D'd vectors, evidence-gated), `isa`/`get`/`set`, and the smoke
 **SyntaxError / matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific

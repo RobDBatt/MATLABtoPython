@@ -2038,17 +2038,21 @@ const TOOLBOX_SPECIFIC_HELP: Record<string, string> = {
 
 /**
  * MATLAB `findpeaks(X)` returns peak VALUES; scipy's `signal.find_peaks(X)`
- * returns `(indices, properties)`. For the single-output value form we recover
- * the values by indexing the signal with the returned indices:
+ * returns `(indices, properties)`. We adapt the return shape:
  *
- *   x = findpeaks(SIG)  →  x = SIG[signal.find_peaks(SIG)[0]]
+ *   single-output:  x = findpeaks(SIG)
+ *     → x = SIG[signal.find_peaks(SIG)[0]]
  *
- * Deliberately left for the generic name-swap + TOOLBOX flag (queued separately):
- *   - two-output `[pks, locs] = findpeaks(P)` — needs a two-line emit plus
- *     0-based `locs` tracking so a later `P(locs)` isn't double-shifted;
- *   - Name/Value options `findpeaks(P, 'MinPeakHeight', h)` — need
- *     height=/distance=/prominence= kwargs. Silently dropping them would change
- *     results, so those calls fall through unchanged and the flag explains it.
+ *   two-output:     [pks, locs] = findpeaks(SIG)   (values + locations)
+ *     → locs = signal.find_peaks(SIG)[0]   # 0-based indices
+ *       pks  = SIG[locs]                   # values at those indices
+ *     `locs` is registered 0-based in Stage 4 (buildZeroBasedVars) so a later
+ *     `SIG(locs)` becomes `SIG[locs]`, not `SIG[locs - 1]`.
+ *
+ * Still deferred (generic name-swap + TOOLBOX flag): Name/Value options
+ * `findpeaks(P, 'MinPeakHeight', h)` — need height=/distance=/prominence=
+ * kwargs. Silently dropping them would change results, so those calls fall
+ * through unchanged and the flag explains it.
  */
 function convertFindpeaks(
   content: string,
@@ -2057,11 +2061,57 @@ function convertFindpeaks(
   line: StructuredLine,
 ): string {
   if (!/\bfindpeaks\s*\(/.test(content)) return content
-  // Two-output form (after the multi-return pre-pass this is `a, b = findpeaks`,
-  // but guard the bracket form too). Don't apply the value rewrite — defer.
-  if (/^\s*(?:\[[^\]]*,[^\]]*\]|\w+\s*,\s*\w+)\s*=\s*findpeaks\s*\(/.test(content)) {
+
+  // ── Two-output form: [pks, locs] = findpeaks(SIG) ──────────
+  // (after the multi-return pre-pass this is `pks, locs = findpeaks(SIG)`;
+  // the bracket form is guarded too). pks = values, locs = locations.
+  const twoOut = content.match(
+    /^\s*(?:\[\s*(\w+)\s*,\s*(\w+)\s*\]|(\w+)\s*,\s*(\w+))\s*=\s*findpeaks\s*\(/,
+  )
+  if (twoOut) {
+    const pks = twoOut[1] ?? twoOut[3]
+    const locs = twoOut[2] ?? twoOut[4]
+    // Extract the balanced args of findpeaks(...).
+    let depth = 1
+    let j = twoOut[0].length
+    let inStr = false
+    let sc = ''
+    while (j < content.length && depth > 0) {
+      const c = content[j]
+      if (inStr) { if (c === sc) inStr = false; j++; continue }
+      if (c === "'" || c === '"') { inStr = true; sc = c; j++; continue }
+      if (c === '(') depth++
+      else if (c === ')') { depth--; if (depth === 0) break }
+      j++
+    }
+    const twoArgs = splitArgsRespectingStrings(content.slice(twoOut[0].length, j)).map(s => s.trim())
+    // Only the single-signal form maps cleanly; Name/Value options still defer
+    // to the generic name-swap + flag below.
+    if (twoArgs.length === 1 && twoArgs[0] !== '') {
+      const sig = twoArgs[0]
+      imports.add('scipy.signal')
+      if (sig.includes('(')) {
+        flags.push({
+          type: 'WARNING',
+          message: 'findpeaks signal argument is evaluated twice. Assign it to a variable first if evaluation is expensive or has side effects.',
+          originalLine: line.originalLineStart,
+          outputLine: 0,
+          originalCode: content,
+        })
+      }
+      flags.push({
+        type: 'TOOLBOX',
+        message: `findpeaks (two outputs) → values + locations: \`${locs}\` are 0-based indices from signal.find_peaks; \`${pks}\` are the values at those indices. Used for indexing, ${locs} is correct; as raw position numbers it differs from MATLAB by 1.`,
+        originalLine: line.originalLineStart,
+        outputLine: 0,
+        originalCode: content,
+      })
+      return `${locs} = signal.find_peaks(${sig})[0]\n${pks} = ${sig}[${locs}]`
+    }
+    // Options present → leave for the generic name-swap + flag.
     return content
   }
+
   let rewrote = false
   let evalFlagged = false
   const result = replaceFunctionCalls(content, 'findpeaks', (full, args) => {

@@ -302,11 +302,25 @@ describe('Toolbox Mapping', () => {
     expect(py('m = max(findpeaks(x));')).toBe('m = np.max(x[signal.find_peaks(x)[0]])')
   })
 
-  it('findpeaks two-output and Name/Value forms are left for follow-up (name-swap only)', () => {
-    // Deliberately NOT value-rewritten yet (needs 0-based locs tracking /
-    // kwarg mapping). They must stay valid name-swaps, not get mangled.
-    expect(py('[pks, locs] = findpeaks(P);')).toContain('signal.find_peaks(P)')
+  it('findpeaks two-output → values + locations (two statements)', () => {
+    // [pks, locs] = findpeaks(P): pks = values, locs = 0-based indices.
+    expect(py('[pks, locs] = findpeaks(P);'))
+      .toBe('locs = signal.find_peaks(P)[0]\npks = P[locs]')
+  })
+
+  it('findpeaks two-output: locs is registered 0-based, so P(locs) → P[locs]', () => {
+    // No `- 1` shift on locs (it already came back 0-based from find_peaks).
+    const out = py('x = [1 2 3 2 1];\n[pks, locs] = findpeaks(x);\nvals = x(locs);')
+    expect(out).toContain('locs = signal.find_peaks(x)[0]')
+    expect(out).toContain('vals = x[locs]')
+    expect(out).not.toContain('locs - 1')
+  })
+
+  it('findpeaks Name/Value form still defers to the name-swap (+ flag)', () => {
+    // Options need height=/distance=/prominence= kwargs — not handled yet.
     expect(py("peaks = findpeaks(P, 'MinPeakHeight', 0.5);"))
+      .toContain("signal.find_peaks(P, 'MinPeakHeight', 0.5)")
+    expect(py("[pks, locs] = findpeaks(P, 'MinPeakHeight', 0.5);"))
       .toContain("signal.find_peaks(P, 'MinPeakHeight', 0.5)")
   })
 })
