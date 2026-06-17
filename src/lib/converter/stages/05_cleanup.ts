@@ -44,19 +44,9 @@ export function cleanup(
     }
   }
 
-  // Build import block (with alias renaming for collisions)
-  let importBlock = buildImportBlock(imports)
-  // Rename colliding import aliases in the import block
-  for (const [original, renamed] of Array.from(paramCollisions.entries())) {
-    importBlock = importBlock.replace(
-      new RegExp(`as ${original}$`, 'gm'),
-      `as ${renamed}`,
-    )
-  }
-  if (importBlock) {
-    outputLines.push(importBlock)
-    outputLines.push('') // blank line after imports
-  }
+  // The import block is built at the END (see below): cleanup-stage rewrites
+  // (e.g. matrix literal → np.array) can add imports after the body starts, so
+  // the import set isn't final until the body is fully processed.
 
   // 1F. Switch/case: track when first case after switch should be `if` not `elif`
   let awaitingFirstCase = false
@@ -122,7 +112,7 @@ export function cleanup(
     }
 
     // Clean up MATLAB-specific syntax remnants
-    content = cleanupSyntax(content)
+    content = cleanupSyntax(content, imports)
 
     outputLines.push(indent + content)
   }
@@ -249,6 +239,17 @@ export function cleanup(
   // has its `pass`.
   injectMissingExcept(fixedLines)
 
+  // Build the import block now that the body — and the import set — is final.
+  // Cleanup-stage rewrites (e.g. literal → np.array) may have added imports
+  // after the body loop started, so building it earlier would miss them.
+  let importBlock = buildImportBlock(imports)
+  for (const [original, renamed] of Array.from(paramCollisions.entries())) {
+    importBlock = importBlock.replace(new RegExp(`as ${original}$`, 'gm'), `as ${renamed}`)
+  }
+  if (importBlock) {
+    fixedLines.unshift(importBlock, '') // import block + blank line
+  }
+
   // Add trailing newline
   const initialPython = fixedLines.join('\n') + '\n'
 
@@ -352,7 +353,7 @@ function validatePythonSyntax(lines: string[]): Array<{ line: number; message: s
 /**
  * Clean up remaining MATLAB syntax that doesn't have Python equivalents.
  */
-function cleanupSyntax(content: string): string {
+function cleanupSyntax(content: string, imports: Set<string>): string {
   let result = content
 
   // Remove trailing semicolons (already mostly handled in tokenizer, but catch strays)
@@ -473,7 +474,7 @@ function cleanupSyntax(content: string): string {
   // elementwise vector arithmetic (`[40 60]/(fs/2)`) becomes valid NumPy
   // instead of a Python list op that raises TypeError at runtime.
   if (!result.includes('#')) {
-    result = wrapArithmeticListLiterals(result)
+    result = wrapArithmeticListLiterals(result, imports)
   }
 
   return result
@@ -490,7 +491,7 @@ function cleanupSyntax(content: string): string {
  * assignment LHS (`[b, a] = ...`), argument lists, slices, and already-wrapped
  * `np.array([...])` untouched.
  */
-function wrapArithmeticListLiterals(source: string): string {
+function wrapArithmeticListLiterals(source: string, imports: Set<string>): string {
   const OPS = new Set(['*', '/', '@'])
   const prevNonSpace = (str: string, idx: number): string => {
     let j = idx - 1
@@ -549,7 +550,12 @@ function wrapArithmeticListLiterals(source: string): string {
       !isLHS &&
       (opAdjacent || topLevel)
 
-    result += wrappable ? `np.array(${literal})` : literal
+    if (wrappable) {
+      imports.add('numpy') // np.array introduced here needs the numpy import
+      result += `np.array(${literal})`
+    } else {
+      result += literal
+    }
     i = j + 1
   }
   return result

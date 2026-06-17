@@ -246,6 +246,15 @@ describe('Function Mapping', () => {
   it('detects numpy import', () => {
     expect(imports('x = zeros(3);')).toContain('numpy')
   })
+
+  it('emits numpy import when np.array comes only from literal-wrapping', () => {
+    // Regression (2026-06): `[10 20 30]` → np.array(...) in cleanup, but if no
+    // other np call exists the numpy import was missing → NameError: np.
+    const out = convert('x = [10 20 30];\ny = x(2);').python
+    expect(out).toContain('import numpy as np')
+    expect(out).toContain('np.array([10, 20, 30])')
+    expect(imports('x = [10 20 30];\ny = x(2);')).toContain('numpy')
+  })
 })
 
 // ============================================================

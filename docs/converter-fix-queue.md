@@ -353,19 +353,22 @@ body; if the next same-indent line isn't `except`/`finally`, splice in
 crashed-to-parse before, runs after — `acc=12`). Real corpus file
 `lightspeed/graphics/axis_pct.m` now compiles. `npm test` 195 → 198. Curated 12/12.
 
-## numpy import missing when `np.array` comes only from literal-wrapping — OPEN
+## numpy import missing when `np.array` comes only from literal-wrapping — FIXED
 
 **Symptom.** `data = [1 2 3]` with no other numpy use → `data = np.array([1, 2, 3])`
 but **no `import numpy as np`** is emitted → `NameError: name 'np' is not defined`.
 
-**Cause.** `wrapArithmeticListLiterals` (Stage 5 cleanup) introduces `np.array(...)`
-but doesn't register the numpy import the way the Stage-3 registry passes do.
-Most files import numpy via some other `np.` call, which is why this rarely
-surfaces — but a file whose *only* numpy use is a bare matrix literal breaks.
+**Cause.** `wrapArithmeticListLiterals` (Stage 5 cleanup) introduces `np.array(...)`,
+but the import block was built at the *start* of cleanup — before the body loop
+ran — so the late addition was missed. Most files import numpy via some other
+`np.` call, which is why this rarely surfaced.
 
-**Fix idea.** When `wrapArithmeticListLiterals` wraps a literal, add `numpy` to
-the imports set (or have cleanup scan the final output for `np.`/`plt.`/`signal.`
-and inject any missing imports as a backstop).
+**Fix.** `wrapArithmeticListLiterals` now `imports.add('numpy')` when it wraps,
+and the import block is built at the *end* of cleanup (after the body — and the
+import set — is final) instead of the start. Generalizes to any import a
+cleanup-stage rewrite introduces. Regression test + curated case
+`tests/oracle-cases/literal_array.m` (matrix literal used only by indexing;
+`NameError: np` before, runs after — `s=100`). `npm test` 198 → 199. Curated 13/13.
 
 ## Registry coverage notes (2026-06)
 
@@ -432,8 +435,8 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
 comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), repmat
 → np.tile arg structure, #3 findpeaks single + two-output, isfield → membership,
-bare try/end. Still open: #3 follow-up (findpeaks Name/Value options), numpy
-import from literal-wrapping, the #4 follow-up
+bare try/end, numpy-import-from-literal-wrap. Still open: #3 follow-up (findpeaks
+Name/Value options), the #4 follow-up
 (`size()` on de-2-D'd vectors, evidence-gated), `isa`/`get`/`set`, and the smoke
 **SyntaxError / matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
