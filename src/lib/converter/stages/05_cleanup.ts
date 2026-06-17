@@ -487,24 +487,27 @@ function cleanupSyntax(content: string): string {
  */
 function wrapArithmeticListLiterals(source: string): string {
   const OPS = new Set(['*', '/', '@'])
-  const prevNonSpace = (s: string, idx: number): string => {
+  const prevNonSpace = (str: string, idx: number): string => {
     let j = idx - 1
-    while (j >= 0 && s[j] === ' ') j--
-    return j >= 0 ? s[j] : ''
+    while (j >= 0 && str[j] === ' ') j--
+    return j >= 0 ? str[j] : ''
   }
-  const nextNonSpace = (s: string, idx: number): string => {
+  const nextNonSpace = (str: string, idx: number): string => {
     let j = idx
-    while (j < s.length && s[j] === ' ') j++
-    return j < s.length ? s[j] : ''
+    while (j < str.length && str[j] === ' ') j++
+    return j < str.length ? str[j] : ''
   }
 
   let result = ''
   let i = 0
+  let parenDepth = 0
   while (i < source.length) {
     const ch = source[i]
+    if (ch === '(') { parenDepth++; result += ch; i++; continue }
+    if (ch === ')') { parenDepth = Math.max(0, parenDepth - 1); result += ch; i++; continue }
     if (ch !== '[') { result += ch; i++; continue }
 
-    // Genuine literal? Not preceded by an indexable token (identifier/`)`/`]`).
+    // Genuine array literal? Not preceded by an indexable token (identifier/`)`/`]`).
     const prevChar = prevNonSpace(source, i)
     if (/[\w.\])]/.test(prevChar)) { result += ch; i++; continue }
 
@@ -519,15 +522,29 @@ function wrapArithmeticListLiterals(source: string): string {
       else if (cj === ']') { depth--; if (depth === 0) break }
     }
     if (depth !== 0) { result += ch; i++; continue } // unbalanced — bail
+
     const literal = source.slice(i, j + 1)
+    const inner = source.slice(i + 1, j)
     const after = nextNonSpace(source, j + 1)
-    const opAfter = OPS.has(after)
-    const opBefore = OPS.has(prevChar)
-    if (!hasQuote && literal.length > 2 && (opAfter || opBefore)) {
-      result += `np.array(${literal})`
-    } else {
-      result += literal
-    }
+    const rest = source.slice(j + 1).replace(/^\s+/, '')
+    const isLHS = rest.startsWith('=') && !rest.startsWith('==')
+    const opAdjacent = OPS.has(after) || OPS.has(prevChar)
+    const topLevel = parenDepth === 0
+
+    // MATLAB `[...]` is an array constructor. Wrap as np.array when it's a
+    // top-level value OR an operand of `*`//`@`, so vector arithmetic,
+    // comparison, and reductions get an ndarray instead of a Python list.
+    // Skip: strings, empty `[]`, ranges/slices (colon → handled by arange),
+    // multiple-return LHS (`[a, b] = ...`), and nested rows / np.array() args
+    // (those are at paren-depth > 0 and not operator-adjacent).
+    const wrappable =
+      !hasQuote &&
+      inner.trim() !== '' &&
+      !hasTopLevelColon(inner) &&
+      !isLHS &&
+      (opAdjacent || topLevel)
+
+    result += wrappable ? `np.array(${literal})` : literal
     i = j + 1
   }
   return result

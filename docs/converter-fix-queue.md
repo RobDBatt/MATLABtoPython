@@ -24,21 +24,26 @@ numpy + scipy).
 
 ---
 
-## 0. Array literals emitted as Python lists, not np.array — TOP PRIORITY
+## 0. Array literals emitted as Python lists, not np.array — FIXED
 
 **Symptom.** `v = [1 2 3]; w = v .* 2 + 1` → `v = [1, 2, 3]` (a list), then
 `[1, 2, 3] * 2 + 1` → `TypeError`. Also `v > 5`, `sqrt(v)`, `length(v)` /
 `v.shape`, `[mx, i] = max(v)` all break because `v` is a list, not an ndarray.
 
 **Cause.** MATLAB `[...]` is *always* an array constructor, but the pipeline
-emits a bare Python list. #2 (below) only wrapped literals directly adjacent to
-`*`//`@`; the general case (assignment, function arg, comparison) is unwrapped.
+emitted a bare Python list. #2 only wrapped literals directly adjacent to
+`*`//`@`; the general case (assignment, comparison) was unwrapped.
 
-**Fix idea.** Emit numeric/expression bracket literals as `np.array([...])`
-generally — not just when adjacent to an operator. Must still exclude: cell
-`{...}`, string lists, multiple-return LHS (`[a, b] = ...`), and literals used
-purely as index lists. Measure against curated (should go 6/6) AND smoke
-(SyntaxError bucket must not regress). Supersedes #2's narrow trigger.
+**Fix.** `wrapArithmeticListLiterals` in `stages/05_cleanup.ts` generalized: a
+bracket literal becomes `np.array([...])` when it's a **top-level value**
+(paren-depth 0) OR operator-adjacent. Still skips strings, empty `[]`,
+ranges/slices (`:`), multiple-return LHS (`[a, b] = ...`), indexing, nested
+rows, and already-wrapped `np.array()` args (those are paren-depth > 0 and not
+operator-adjacent). Supersedes #2's narrow trigger; regression test added.
+
+**Result (oracle).** Curated runnable rate **33% → 83%** (2/6 → 5/6). Smoke set
+unchanged at the sampled offsets (no SyntaxError regression). Remaining curated
+failure is a multi-output builtin (`[mx, pos] = max(v)`) — see #3.
 
 ---
 

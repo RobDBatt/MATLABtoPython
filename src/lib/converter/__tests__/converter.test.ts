@@ -1103,3 +1103,15 @@ describe('List-literal arithmetic vectorization', () => {
     expect(code).not.toContain('np.array([1, 2, 3])')
   })
 })
+
+describe('Array-literal np.array wrapping (#0)', () => {
+  it('wraps a top-level numeric vector assignment as np.array', () => {
+    const code = convert('v = [1 2 3 4 5];').python
+    expect(code).toMatch(/v = np\.array\(\[1, 2, 3, 4, 5\]\)/)
+  })
+
+  it('keeps a multiple-return LHS unwrapped', () => {
+    const code = convert("[b, a] = butter(4, 0.5, 'low');").python
+    expect(code).not.toMatch(/np\.array\(\[b, a\]\)/)
+  })
+})
