@@ -370,6 +370,26 @@ cleanup-stage rewrite introduces. Regression test + curated case
 `tests/oracle-cases/literal_array.m` (matrix literal used only by indexing;
 `NameError: np` before, runs after — `s=100`). `npm test` 198 → 199. Curated 13/13.
 
+## MATLAB path commands (addpath/rmpath/savepath/rehash) — FIXED
+
+**Symptom.** `addpath(genpath(pwd))` (common in repo `init.m` files) was left as
+`addpath(...)` → `NameError: name 'addpath' is not defined`.
+
+**Cause.** Unmapped, and there's no meaningful Python equivalent (Python uses
+imports / `sys.path`).
+
+**Fix.** `preTransform` comments the whole line out as a no-op:
+`# addpath(genpath(pwd)) — MATLAB path command; use Python imports / sys.path`.
+Handled early so inner calls (`genpath`) aren't separately transformed. `path` is
+excluded (too common as a variable name); collision-safe (`path_length`,
+`mypath` untouched). Regression test + curated case
+`tests/oracle-cases/path_command.m`. `npm test` 199 → 200. Curated 14/14.
+
+_Note on `entropy`: deliberately NOT mapped — MATLAB's image `entropy(I)`
+(histogram Shannon entropy) and `scipy.stats.entropy` (distribution entropy)
+differ semantically, so a mapping would be silently wrong. Flag-don't-guess: it
+should get a TODO flag, not a wrong mapping._
+
 ## Registry coverage notes (2026-06)
 
 Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already

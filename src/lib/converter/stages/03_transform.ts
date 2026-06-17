@@ -422,6 +422,19 @@ function preTransform(
     }
   }
 
+  // MATLAB path commands (addpath/rmpath/savepath/rehash) have no Python
+  // equivalent — Python uses imports / sys.path. Comment the whole line out as
+  // a clear no-op. Handled early so inner calls like `genpath(pwd)` aren't
+  // separately transformed. Covers both function-call form `addpath(genpath(
+  // pwd))` and command form `addpath ./lib`. `path` is intentionally excluded
+  // (too common as a variable name).
+  {
+    const pathCmd = result.match(/^\s*(addpath|rmpath|savepath|rehash)\b/)
+    if (pathCmd) {
+      result = `# ${result.trim()} — MATLAB path command; use Python imports / sys.path`
+    }
+  }
+
   // Convert MATLAB `~` logical-NOT to Python `not`.
   // MATLAB `~` is logical NOT (returns true/false for scalars). Python `~`
   // is bitwise NOT, which gives wrong semantics for booleans: `~True == -2`

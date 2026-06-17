@@ -382,6 +382,17 @@ describe('Special Constructs', () => {
     expect(py('grid on;')).toBe('plt.grid(True)')
   })
 
+  it('comments out MATLAB path commands (no Python equivalent)', () => {
+    // addpath/rmpath/savepath/rehash → no-op comment (left untouched they are
+    // NameErrors at runtime). Covers function-call and command forms.
+    expect(py('addpath(genpath(pwd));')).toContain('# addpath(genpath(pwd))')
+    expect(py('rmpath(foo);')).toContain('# rmpath(foo)')
+    expect(py('savepath;')).toContain('# savepath')
+    // Collision-safe: a variable/function that merely starts with "path".
+    expect(py('x = path_length(p);')).toBe('x = path_length(p)')
+    expect(py('mypath = 3;')).toBe('mypath = 3')
+  })
+
   it('removes hold on with comment', () => {
     const result = py('hold on;')
     expect(result).toContain('hold on removed')
