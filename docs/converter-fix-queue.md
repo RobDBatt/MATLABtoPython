@@ -158,6 +158,34 @@ how the rest of the code indexes with a single subscript.
 
 ---
 
+## Matrix-literal rows with nested elements — FIXED (partial bucket)
+
+**Symptom.** The dominant smoke `SyntaxError` bucket. Rows of a `;`-matrix whose
+elements contain nested `[...]`/`(...)`/`.T` were left space-separated:
+`[[x[1:2, 1:2] [0, 0].T x[1:2, 2]], ...]` → Python rejects it.
+
+**Cause.** `rewriteVerticalConcat` only space→comma-split a row when it contained
+*no comma at all* (`!row.includes(',')`) — but those commas were inside nested
+brackets, not top-level separators, so rows with nested indexing were skipped.
+
+**Fix.** Rows are now split with the depth-aware `splitAllElements`, which
+separates top-level space-delimited elements while preserving nested commas.
+`[A(1,1) 5; 6 7]` → `np.array([[A[0, 0], 5], [6, 7]])`. Regression test added.
+
+**Result (oracle).** Worst slice (spatialmath, offset 700/70): **51 → 57 runs,
+SyntaxError 19 → 13**. Curated stays 6/6. Not the whole bucket — colon-ranges
+containing function calls (`np.arange(unit(n[, ]) ...)`) are still mangled and
+need separate work.
+
+## Registry coverage notes (2026-06)
+
+Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already
+covered (mod, rem, cumsum, diff, norm, trace, fliplr, dot, cross, floor/ceil/
+round, …). Added this pass: `any`/`all` → `np.any`/`np.all`, `kron` → `np.kron`.
+Still genuinely unmapped / buggy (queued): `isfield` (→ `'f' in s`, needs custom
+arg-reorder), `isa`, `get`/`set` (graphics), and a **`repmat` bug**
+(`repmat(A,2,3)` emits `np.tile((A, 2, 3))` — should be `np.tile(A, (2, 3))`).
+
 ## Dual-return max/min — FIXED
 
 **Symptom.** `[mx, pos] = max(v)` → `mx, pos = np.max(v)` → "cannot unpack

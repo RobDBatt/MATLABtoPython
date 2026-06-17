@@ -819,13 +819,13 @@ function rewriteVerticalConcat(source: string): string {
     // (commas, expressions, nested brackets) — we only restructure the
     // MATLAB `;` separator.
     const pyRows = rows.map(row => {
-      // If the row contains no comma and looks like space-separated
-      // values, convert spaces at depth 0 to commas so it's a proper list.
-      if (!row.includes(',') && /\s/.test(row)) {
-        const vals = splitSpaceSeparatedAtTopLevel(row)
-        return `[${vals.join(', ')}]`
-      }
-      return `[${row}]`
+      // Split each row into top-level elements. `splitAllElements` is depth-
+      // aware, so it separates space-delimited elements even when they contain
+      // nested commas/brackets (e.g. `x[1:2, 1:2] [0, 0].T` → two elements) and
+      // also handles already-comma-separated rows. This is the matrix-literal
+      // SyntaxError fix: rows with nested `[...]` were previously left unsplit.
+      const vals = splitAllElements(row)
+      return `[${vals.join(', ')}]`
     })
     out.push(`np.array([${pyRows.join(', ')}])`)
     i = j + 1

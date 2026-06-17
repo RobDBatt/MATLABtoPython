@@ -1126,3 +1126,11 @@ describe('Dual-return max/min (#3)', () => {
     expect(code).toMatch(/mn, pos = np\.amin\(v\), np\.argmin\(v\)/)
   })
 })
+
+describe('Matrix-literal rows with nested elements (SyntaxError bucket)', () => {
+  it('splits space-separated row elements that contain nested indexing', () => {
+    const code = convert('M = [A(1,1) 5; 6 7];').python
+    // each row must be comma-separated even though A(1,1)->A[0, 0] has an inner comma
+    expect(code).toMatch(/np\.array\(\[\[A\[0, 0\], 5\], \[6, 7\]\]\)/)
+  })
+})

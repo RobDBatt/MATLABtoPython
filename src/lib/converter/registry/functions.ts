@@ -122,6 +122,7 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   pinv:  { python: 'np.linalg.pinv',         args: 'passthrough', imports: ['numpy'] },
   rank:  { python: 'np.linalg.matrix_rank',  args: 'passthrough', imports: ['numpy'] },
   trace: { python: 'np.trace',               args: 'passthrough', imports: ['numpy'] },
+  kron:    { python: 'np.kron',           args: 'passthrough', imports: ['numpy'] },
 
   // ── FFT ────────────────────────────────────────────────
   fft:      { python: 'np.fft.fft',      args: 'passthrough', imports: ['numpy'] },
