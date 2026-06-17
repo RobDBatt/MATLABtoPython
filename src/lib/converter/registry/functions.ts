@@ -14,7 +14,7 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   linspace:  { python: 'np.linspace',       args: 'passthrough', imports: ['numpy'] },
   logspace:  { python: 'np.logspace',       args: 'passthrough', imports: ['numpy'] },
   meshgrid:  { python: 'np.meshgrid',       args: 'passthrough', imports: ['numpy'] },
-  repmat:    { python: 'np.tile',           args: 'reshape',     imports: ['numpy'] },
+  repmat:    { python: 'np.tile',           args: 'tile',        imports: ['numpy'] },
   diag:      { python: 'np.diag',           args: 'passthrough', imports: ['numpy'] },
 
   // ── Array Info ──────────────────────────────────────────

@@ -1610,8 +1610,8 @@ function transformFunctions(
         result = replaceFunctionCalls(result, matlabName, (_, args) => {
           let argList = splitArgsRespectingStrings(args).map(s => s.trim())
           // zeros/ones with a literal leading/trailing 1 are row/col vectors;
-          // emit 1-D so single-subscript indexing works. NOT repmat — its
-          // reps tuple (e.g. np.tile(A, (1, 3))) must keep the 1.
+          // emit 1-D so single-subscript indexing works. Scoped by name so a
+          // future function on this arg-mode whose 1 is meaningful isn't de-2-D'd.
           if (matlabName === 'zeros' || matlabName === 'ones') {
             argList = dropSingletonVectorDim(argList)
           }
@@ -1635,6 +1635,33 @@ function transformFunctions(
             splitArgsRespectingStrings(args).map(s => s.trim()),
           )
           return `${mapping.python}(${argList.join(', ')})`
+        })
+        break
+      }
+
+      case 'tile': {
+        // repmat(A, m, n[, ...]) → np.tile(A, (m, n, ...)). The FIRST arg is
+        // the array to tile; the rest are the reps. The old `reshape` mode
+        // wrongly tupled all args together (np.tile((A, m, n))), leaving
+        // np.tile with one positional arg → "missing 'reps'" at runtime.
+        result = replaceFunctionCalls(result, matlabName, (_, args) => {
+          const argList = splitArgsRespectingStrings(args).map(s => s.trim())
+          if (argList.length === 0) return `${mapping.python}(${args})`
+          const A = argList[0]
+          const reps = argList.slice(1)
+          if (reps.length === 0) return `${mapping.python}(${A})` // degenerate
+          if (reps.length === 1) {
+            const r = reps[0]
+            // repmat(A, [m, n]) — size-vector form. numpy accepts an array-like
+            // reps, so pass the bracket through unchanged.
+            if (r.startsWith('[') && r.endsWith(']')) {
+              return `${mapping.python}(${A}, ${r})`
+            }
+            // repmat(A, n) means n×n in MATLAB; np.tile(A, n) would only tile
+            // the last axis, so expand the scalar to (n, n).
+            return `${mapping.python}(${A}, (${r}, ${r}))`
+          }
+          return `${mapping.python}(${A}, (${reps.join(', ')}))`
         })
         break
       }

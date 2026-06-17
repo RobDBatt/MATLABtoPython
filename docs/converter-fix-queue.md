@@ -294,8 +294,29 @@ Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already
 covered (mod, rem, cumsum, diff, norm, trace, fliplr, dot, cross, floor/ceil/
 round, …). Added this pass: `any`/`all` → `np.any`/`np.all`, `kron` → `np.kron`.
 Still genuinely unmapped / buggy (queued): `isfield` (→ `'f' in s`, needs custom
-arg-reorder), `isa`, `get`/`set` (graphics), and a **`repmat` bug**
-(`repmat(A,2,3)` emits `np.tile((A, 2, 3))` — should be `np.tile(A, (2, 3))`).
+arg-reorder), `isa`, `get`/`set` (graphics).
+
+## repmat → np.tile argument structure — FIXED
+
+**Symptom.** `repmat(A, 2, 3)` → `np.tile((A, 2, 3))` — every arg jammed into one
+tuple, so np.tile got a single positional arg and `reps` was missing →
+`TypeError: tile() missing 1 required positional argument: 'reps'`. All forms
+were affected (`repmat(A, 2)`, `repmat(A, [m, n])`, `repmat(5, 1, n)`, …).
+
+**Cause.** `repmat` was mapped with `args: 'reshape'` — the arg-mode that tuples
+*all* args together (correct for `zeros`/`ones`, where every arg is a dimension).
+But repmat's first arg is the array to tile and the rest are the reps; numpy's
+`np.tile(A, reps)` needs them as two separate positionals.
+
+**Fix.** New `tile` arg-mode (`03_transform.ts`, registry entry switched to it):
+keeps arg 0 as the array and builds the reps from the rest —
+`repmat(A, m, n, …)` → `np.tile(A, (m, n, …))`; `repmat(A, n)` →
+`np.tile(A, (n, n))` (MATLAB's scalar n means n×n; `np.tile(A, n)` would only
+tile the last axis); `repmat(A, [m, n])` → `np.tile(A, [m, n])` (numpy accepts an
+array-like reps). Regression tests added (all four shapes + nested-call first
+arg); curated oracle case `tests/oracle-cases/repmat_tile.m` added.
+
+**Result.** `npm test` 184 → 185. Curated oracle 7/7 → **8/8 clean**.
 
 ## Dual-return max/min — FIXED
 

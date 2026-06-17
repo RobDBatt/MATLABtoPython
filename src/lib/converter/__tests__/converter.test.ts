@@ -161,12 +161,24 @@ describe('Function Mapping', () => {
     expect(py('r = rand(n, 1);')).toBe('r = np.random.rand(n)')
   })
 
-  it('keeps 2-D for genuine matrices and single-arg / repmat forms', () => {
+  it('keeps 2-D for genuine matrices (no literal-1 de-2-D)', () => {
     // No literal 1 in a 2-arg dim list → unchanged 2-D shape.
     expect(py('A = zeros(3, 4);')).toBe('A = np.zeros((3, 4))')
-    // repmat shares the reshape arg-mode but must keep its reps tuple intact.
-    expect(py('B = repmat(A, 1, 3);')).toContain('np.tile')
-    expect(py('B = repmat(A, 1, 3);')).toContain('1, 3')
+  })
+
+  it('repmat → np.tile with array and reps as separate args', () => {
+    // Regression (2026-06): repmat shared the `reshape` arg-mode, which tupled
+    // ALL args together (`np.tile((A, 2, 3))`), leaving np.tile one positional
+    // arg → "missing 'reps'" at runtime. The array and reps must be separate.
+    expect(py('B = repmat(A, 2, 3);')).toBe('B = np.tile(A, (2, 3))')
+    // Single scalar n means n×n in MATLAB; np.tile(A, n) would only tile the
+    // last axis, so it must expand to (n, n).
+    expect(py('B = repmat(A, 2);')).toBe('B = np.tile(A, (2, 2))')
+    // Size-vector form passes the bracket through (numpy accepts array-like reps).
+    expect(py('B = repmat(A, [2, 3]);')).toBe('B = np.tile(A, [2, 3])')
+    // Non-array first arg and a nested-call first arg both stay intact.
+    expect(py('B = repmat(5, 1, n);')).toBe('B = np.tile(5, (1, n))')
+    expect(py('C = repmat(f(x), 2, 3);')).toBe('C = np.tile(f(x), (2, 3))')
   })
 
   it('converts disp to print', () => {
