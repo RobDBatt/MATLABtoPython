@@ -43,6 +43,33 @@ export const IMPORT_STATEMENTS: Record<string, string> = {
   pywt: 'import pywt',
 }
 
+/**
+ * Names the injected import statements bind into the module namespace
+ * (e.g. `import scipy.signal as signal` binds `signal`, `from skimage import io`
+ * binds `io`). A MATLAB variable sharing one of these names would shadow the
+ * import and break generated calls like `signal.butter(...)`, so the rename
+ * pass (see analysis/rename-reserved.ts) treats these as reserved. Derived
+ * from IMPORT_STATEMENTS so it stays in sync automatically.
+ */
+function parseBoundNames(stmt: string): string[] {
+  // `import a.b.c as x`  |  `import a.b.c`
+  let m = stmt.match(/^import\s+([\w.]+)(?:\s+as\s+(\w+))?$/)
+  if (m) return [m[2] ?? m[1].split('.')[0]]
+  // `from pkg import a, b as c, d`
+  m = stmt.match(/^from\s+[\w.]+\s+import\s+(.+)$/)
+  if (m) {
+    return m[1].split(',').map(part => {
+      const seg = part.trim().split(/\s+as\s+/)
+      return (seg[1] ?? seg[0]).trim()
+    })
+  }
+  return []
+}
+
+export const IMPORT_ALIASES: Set<string> = new Set(
+  Object.values(IMPORT_STATEMENTS).flatMap(parseBoundNames),
+)
+
 /** Defines the order in which imports should appear */
 export const IMPORT_ORDER: string[] = [
   'numpy',

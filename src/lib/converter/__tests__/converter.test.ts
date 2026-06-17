@@ -1070,3 +1070,19 @@ describe('matlabtopython-compat runtime shim', () => {
   })
 })
 
+
+describe('Import alias / variable name collisions', () => {
+  it('renames a user variable that collides with an injected import alias', () => {
+    const result = convert(
+      "signal = sin(2*pi*50*t);\n[b, a] = butter(4, 0.5, 'low');\nfiltered = filter(b, a, signal);",
+    )
+    const code = result.python
+    // import alias for the toolbox module must survive
+    expect(code).toContain('import scipy.signal as signal')
+    // the user's `signal` variable must be renamed so it doesn't shadow it
+    expect(code).toMatch(/\bsignal_\b/)
+    expect(code).not.toMatch(/^\s*signal\s*=/m)
+    // generated calls still reference the scipy.signal module
+    expect(code).toMatch(/signal\.(butter|lfilter)/)
+  })
+})
