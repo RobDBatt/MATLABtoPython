@@ -319,6 +319,54 @@ SyntaxError 19 → 13**. Curated stays 6/6. Not the whole bucket — colon-range
 containing function calls (`np.arange(unit(n[, ]) ...)`) are still mangled and
 need separate work.
 
+## Smoke re-triage (2026-06, 400-file sample)
+
+Runnable rate **91% (301/330 attributable)**; 70 environmental; 29 converter
+defects. Buckets: `SyntaxError` 20, `NameError` 8, `IndentationError` 1.
+Sub-analysis (what's worth fixing vs. noise):
+- **`SyntaxError`** — 9 are `export_fig/*` (a print/system utility; heterogeneous
+  "forgot a comma"; won't run regardless), 2 try/catch (fixed below), 2 `'{'
+  never closed` (cell arrays, DeepLearnToolbox), rest scattered.
+- **`NameError`** — 4 = `kmeansRnd` (cross-file dependency, **not a converter
+  bug**); 2 = `n_`/`kappa_` (classdef property `obj.n_` — OOP, deferred
+  Tier-2/3); 1 `entropy` (missing mapping); 1 `addpath` (path command → no-op).
+
+Takeaway: rate is already high; the tail is mostly low-value utility code,
+un-fixable cross-file deps, or deferred OOP. Picked the one clean, generalizable,
+fatal bug — bare `try`/`end` — below.
+
+## Bare `try ... end` (no catch) → valid `try/except` — FIXED
+
+**Symptom.** MATLAB allows `try ... end` with no `catch` (it silently swallows
+errors). The converter only emits `except` when it sees a `catch`, so the
+no-catch form produced `try:` + body with **no `except`/`finally`** →
+`SyntaxError: expected 'except' or 'finally' block` — fatal for the whole file.
+(Empty-*catch* `try/catch/end` already produced `except Exception: pass`; the gap
+was specifically *no catch at all*.)
+
+**Fix.** `injectMissingExcept` in `05_cleanup.ts` (runs after the empty-block
+`pass` injection, on the final indented lines): for each `try:`, walk past its
+body; if the next same-indent line isn't `except`/`finally`, splice in
+`except Exception:` / `pass`. Handles nested try and try-at-EOF; leaves existing
+`try/catch` untouched (no second except). Regression tests + curated case
+`tests/oracle-cases/bare_try.m` (bare try swallows an error, loop continues;
+crashed-to-parse before, runs after — `acc=12`). Real corpus file
+`lightspeed/graphics/axis_pct.m` now compiles. `npm test` 195 → 198. Curated 12/12.
+
+## numpy import missing when `np.array` comes only from literal-wrapping — OPEN
+
+**Symptom.** `data = [1 2 3]` with no other numpy use → `data = np.array([1, 2, 3])`
+but **no `import numpy as np`** is emitted → `NameError: name 'np' is not defined`.
+
+**Cause.** `wrapArithmeticListLiterals` (Stage 5 cleanup) introduces `np.array(...)`
+but doesn't register the numpy import the way the Stage-3 registry passes do.
+Most files import numpy via some other `np.` call, which is why this rarely
+surfaces — but a file whose *only* numpy use is a bare matrix literal breaks.
+
+**Fix idea.** When `wrapArithmeticListLiterals` wraps a literal, add `numpy` to
+the imports set (or have cleanup scan the final output for `np.`/`plt.`/`signal.`
+and inject any missing imports as a backstop).
+
 ## Registry coverage notes (2026-06)
 
 Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already
@@ -383,8 +431,9 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
 comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), repmat
-→ np.tile arg structure, #3 findpeaks single-output, isfield → membership. Still
-open: #3 follow-up (findpeaks Name/Value options), the #4 follow-up
+→ np.tile arg structure, #3 findpeaks single + two-output, isfield → membership,
+bare try/end. Still open: #3 follow-up (findpeaks Name/Value options), numpy
+import from literal-wrapping, the #4 follow-up
 (`size()` on de-2-D'd vectors, evidence-gated), `isa`/`get`/`set`, and the smoke
 **SyntaxError / matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific

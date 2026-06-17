@@ -82,6 +82,26 @@ describe('Control Flow', () => {
     expect(py('catch ME')).toContain('except Exception as ME:')
   })
 
+  it('bare try/end (no catch) gets a synthesized except — not a SyntaxError', () => {
+    // MATLAB allows try/end with no catch (it swallows errors). Without an
+    // injected handler the output is `try:` with no `except` → SyntaxError.
+    expect(py('try\n  x = risky();\nend\ny = 2;'))
+      .toBe('try:\n    x = risky()\nexcept Exception:\n    pass\ny = 2')
+  })
+
+  it('bare try nested in a for indents the synthesized except correctly', () => {
+    const out = py('for i = 1:3\n  try\n    z = f(i);\n  end\nend')
+    expect(out).toContain('    try:')
+    expect(out).toContain('    except Exception:\n        pass')
+  })
+
+  it('does not add a second except when a catch is present', () => {
+    const out = py('try\n  x = risky();\ncatch ME\n  x = 0;\nend')
+    expect(out).toContain('except Exception as ME:')
+    // exactly one except
+    expect(out.match(/except/g)?.length).toBe(1)
+  })
+
   it('converts function definition', () => {
     expect(py('function y = square(x)')).toContain('def square(x):')
   })

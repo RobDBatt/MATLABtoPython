@@ -244,6 +244,11 @@ export function cleanup(
   // single `pass` at the expected inner indent.
   injectPassIntoEmptyBlocks(fixedLines)
 
+  // Ensure every `try:` has a handler (MATLAB allows a bare `try ... end` with
+  // no `catch`). Runs AFTER the empty-block pass so an empty try body already
+  // has its `pass`.
+  injectMissingExcept(fixedLines)
+
   // Add trailing newline
   const initialPython = fixedLines.join('\n') + '\n'
 
@@ -909,6 +914,40 @@ function injectPassIntoEmptyBlocks(lines: string[]): void {
       // Block has no real statements — inject `pass` after last in-block comment
       lines.splice(insertAfter + 1, 0, `${indent}    pass`)
       i++  // skip the injected line to avoid re-processing it as a block opener
+    }
+  }
+}
+
+/**
+ * Ensure every `try:` block has a handler. MATLAB allows a bare `try ... end`
+ * with no `catch` (it silently swallows errors); the control-flow pass only
+ * emits an `except` when it sees a `catch`, so the no-catch form leaves a
+ * `try:` with no `except`/`finally` — a SyntaxError that kills the whole file.
+ * When a try block closes without a same-indent handler, inject
+ * `except Exception:` / `pass`.
+ */
+function injectMissingExcept(lines: string[]): void {
+  const TRY_OPEN = /^(\s*)try\s*:\s*(?:#.*)?$/
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(TRY_OPEN)
+    if (!m) continue
+    const indent = m[1]
+    // Walk past the try body: blank lines, or lines indented deeper than `try`.
+    let j = i + 1
+    while (j < lines.length) {
+      const t = lines[j].trim()
+      if (t === '') { j++; continue }
+      const lineIndent = lines[j].match(/^(\s*)/)?.[1] ?? ''
+      if (lineIndent.length > indent.length) { j++; continue }
+      break
+    }
+    // lines[j] is the first line at indent <= the try's indent (or EOF).
+    const handler = j < lines.length ? lines[j] : ''
+    const handlerIndent = handler.match(/^(\s*)/)?.[1] ?? ''
+    const hasHandler =
+      handlerIndent.length === indent.length && /^(except|finally)\b/.test(handler.trim())
+    if (!hasHandler) {
+      lines.splice(j, 0, `${indent}except Exception:`, `${indent}    pass`)
     }
   }
 }
