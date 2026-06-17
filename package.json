@@ -12,9 +12,11 @@
     "corpus:diff": "npx tsx scripts/corpus_diff.ts",
     "drill": "npx tsx scripts/drill_bucket.ts",
     "flags": "npx tsx scripts/flag_frequency.ts",
-    "inspect": "npx tsx scripts/inspect_errors.ts"
+    "inspect": "npx tsx scripts/inspect_errors.ts",
+    "telemetry:digest": "npx tsx scripts/telemetry-digest.ts --write"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.1",
     "@clerk/nextjs": "^7.0.12",
     "@vercel/analytics": "^2.0.1",
     "jszip": "^3.10.1",

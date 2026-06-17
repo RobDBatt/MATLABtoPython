@@ -1,0 +1,42 @@
+name: Telemetry digest
+
+# Weekly digest of consented, anonymous usage_events (site='matlab').
+# Requires repo secrets: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+# (point them at the shared vbatopython Supabase project).
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Mondays 07:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Script has zero npm deps (node builtins + fetch), so no install needed.
+      - name: Generate digest
+        run: npx --yes tsx scripts/telemetry-digest.ts --write
+
+      - name: Commit digest if changed
+        run: |
+          if git diff --quiet docs/telemetry-digest-latest.md; then
+            echo "Digest unchanged - nothing to commit."
+            exit 0
+          fi
+          git config user.name "telemetry-digest-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/telemetry-digest-latest.md
+          git commit -m "docs: weekly telemetry digest (auto) [skip ci]"
+          git push

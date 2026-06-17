@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "matlab-image-processing-to-scikit-image",
+    "title": "MATLAB Image Processing Toolbox to Python: Complete scikit-image Guide",
+    "keyword": "matlab image processing toolbox python",
+    "description": "Convert every MATLAB Image Processing Toolbox function to Python. imresize, imfilter, edge detection, morphology, and more — mapped to scikit-image, OpenCV, and Pillow with working code."
+  },
+  {
+    "slug": "matlab-ode45-to-scipy",
+    "title": "MATLAB ode45 to Python: Solving ODEs with scipy.integrate",
+    "keyword": "matlab ode45 python equivalent",
+    "description": "Replace MATLAB ode45, ode23, and ode15s with scipy.integrate.solve_ivp. Step-by-step conversion with working examples for initial value problems, events, and stiff systems."
+  },
+  {
+    "slug": "matlab-cell-arrays-to-python",
+    "title": "MATLAB Cell Arrays in Python: Lists, Dicts, and NumPy Arrays",
+    "keyword": "matlab cell array python equivalent",
+    "description": "Cell arrays are MATLAB's heterogeneous container. In Python you have lists, dicts, and NumPy object arrays. Learn which to use and how to convert your existing code."
+  },
+  {
+    "slug": "matlab-struct-to-python-dict",
+    "title": "MATLAB struct to Python: Dicts, Dataclasses, and Named Tuples",
+    "keyword": "matlab struct python",
+    "description": "Convert MATLAB struct and struct arrays to Python. When to use dict, when to use dataclass, and how to handle nested structs and dynamic field names."
+  },
+  {
+    "slug": "matlab-to-python-migration-guide",
+    "title": "MATLAB to Python Migration Guide 2026: The Complete Walkthrough",
+    "keyword": "matlab to python migration",
+    "description": "The complete guide for engineers migrating from MATLAB to Python in 2026. Environment setup, syntax differences, indexing, toolboxes, and a realistic migration strategy for real codebases."
+  }
+]

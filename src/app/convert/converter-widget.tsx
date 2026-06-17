@@ -5,6 +5,8 @@ import { useUser } from '@clerk/nextjs'
 import { track } from '@vercel/analytics'
 import type { ConversionResult } from '@/lib/converter'
 import { BatchWidget } from './batch-widget'
+import { ConsentToggle } from '@/components/ConsentToggle'
+import { telemetryFields } from '@/lib/telemetry/client'
 
 const FREE_LINE_LIMIT = 50
 
@@ -39,7 +41,7 @@ export function ConverterWidget({ exampleCode }: Props) {
       const res = await fetch('/api/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: input }),
+        body: JSON.stringify({ code: input, mode, ...telemetryFields(!!isSignedIn) }),
       })
 
       const data = await res.json()
@@ -63,7 +65,7 @@ export function ConverterWidget({ exampleCode }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [input, mode])
+  }, [input, mode, isSignedIn])
 
   const handleCopy = useCallback(async () => {
     if (!result?.python) return
@@ -122,193 +124,179 @@ export function ConverterWidget({ exampleCode }: Props) {
 
   return (
     <div>
-      {/* Tab bar: Paste / Upload / Batch */}
-      <div className="flex items-center gap-1 mb-3">
-        <button
-          onClick={() => setMode('paste')}
-          className={`px-4 py-1.5 text-sm rounded-t-lg transition-colors ${
-            mode === 'paste'
-              ? 'bg-gray-50 text-slate-900 border border-gray-200 border-b-0'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Paste Code
-        </button>
-        <button
-          onClick={() => setMode('upload')}
-          className={`px-4 py-1.5 text-sm rounded-t-lg transition-colors ${
-            mode === 'upload'
-              ? 'bg-gray-50 text-slate-900 border border-gray-200 border-b-0'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Upload .m File
-        </button>
-        <button
-          onClick={() => setMode('batch')}
-          className={`px-4 py-1.5 text-sm rounded-t-lg transition-colors ${
-            mode === 'batch'
-              ? 'bg-gray-50 text-slate-900 border border-gray-200 border-b-0'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Batch (Team)
-        </button>
+      {/* Tab bar */}
+      <div className="flex items-center gap-1 mb-0">
+        {(['paste', 'upload', 'batch'] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`px-4 py-1.5 text-sm rounded-t-md transition-colors ${
+              mode === m
+                ? 'bg-[#0e1228] text-[#f0f0f8] border border-b-0 border-[#1e2547]'
+                : 'text-[#4d5580] hover:text-[#9ba3c4]'
+            }`}
+          >
+            {m === 'paste' ? 'Paste Code' : m === 'upload' ? 'Upload .m File' : 'Batch (Team)'}
+          </button>
+        ))}
       </div>
 
       {mode === 'batch' && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="rounded-b-lg rounded-tr-lg border border-[#1e2547] bg-[#0e1228] p-6">
           <BatchWidget />
         </div>
       )}
 
       {mode !== 'batch' && (
-      <>
-      {/* Editor panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-gray-200 rounded-lg overflow-hidden">
-        {/* MATLAB input */}
-        <div className="relative border-b lg:border-b-0 lg:border-r border-gray-200">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-            <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
-              {fileName ? fileName : 'MATLAB'}
-            </span>
-            <span className={`text-xs ${lineCount > FREE_LINE_LIMIT && !hasPaidPlan ? 'text-red-600' : 'text-slate-500'}`}>
-              {lineCount} lines
-            </span>
-          </div>
+        <>
+          {/* Editor panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-[#1e2547] rounded-b-lg rounded-tr-lg overflow-hidden">
+            {/* MATLAB input */}
+            <div className="relative border-b lg:border-b-0 lg:border-r border-[#1e2547]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[#0e1228] border-b border-[#1e2547]">
+                <span className="text-xs font-medium text-[#4d5580] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
+                  {fileName ? fileName : 'MATLAB'}
+                </span>
+                <span className={`text-xs font-[family-name:var(--font-jetbrains)] ${lineCount > FREE_LINE_LIMIT && !hasPaidPlan ? 'text-[#ef4444]' : 'text-[#4d5580]'}`}>
+                  {lineCount} lines
+                </span>
+              </div>
 
-          {mode === 'paste' ? (
-            <textarea
-              value={input}
-              onChange={e => { setInput(e.target.value); setFileName(null) }}
-              placeholder="Paste your MATLAB code here..."
-              className="code-editor code-panel w-full h-64 lg:h-[360px] bg-[#1e1e2e] text-[#cbd5e1] px-4 py-3 focus:outline-none placeholder:text-[#64748b]"
-              spellCheck={false}
-            />
-          ) : (
-            <div className="w-full h-64 lg:h-[360px] bg-[#1e1e2e] flex items-center justify-center">
-              {!isSignedIn || !hasPaidPlan ? (
-                <div className="text-center px-8">
-                  <div className="text-slate-500 text-sm mb-3">
-                    File upload requires a paid plan
-                  </div>
-                  <a
-                    href={isSignedIn ? '/pricing' : '/sign-up?redirect_url=/pricing'}
-                    className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-500 transition-colors"
-                  >
-                    {isSignedIn ? 'View plans' : 'Sign up to upgrade'}
-                  </a>
-                </div>
-              ) : fileName ? (
-                <div className="text-center px-8">
-                  <div className="text-green-400 text-sm mb-1">{fileName}</div>
-                  <div className="text-slate-500 text-xs mb-4">{lineCount} lines loaded</div>
-                  <button
-                    onClick={() => { setInput(''); setFileName(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                    className="text-xs text-slate-400 hover:text-white transition-colors"
-                  >
-                    Remove file
-                  </button>
-                </div>
+              {mode === 'paste' ? (
+                <textarea
+                  value={input}
+                  onChange={e => { setInput(e.target.value); setFileName(null) }}
+                  placeholder="Paste your MATLAB code here..."
+                  className="code-editor code-panel w-full h-64 lg:h-[400px] bg-[#0d1117] text-[#cbd5e1] px-4 py-3 focus:outline-none placeholder:text-[#4d5580]"
+                  spellCheck={false}
+                />
               ) : (
-                <label className="cursor-pointer text-center px-8">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg px-12 py-8 hover:border-purple-400 transition-colors">
-                    <div className="text-slate-400 text-sm mb-1">
-                      Drop a .m file here or click to browse
+                <div className="w-full h-64 lg:h-[400px] bg-[#0d1117] flex items-center justify-center">
+                  {!isSignedIn || !hasPaidPlan ? (
+                    <div className="text-center px-8">
+                      <div className="text-[#9ba3c4] text-sm mb-3">
+                        File upload requires a paid plan
+                      </div>
+                      <a
+                        href={isSignedIn ? '/pricing' : '/sign-up?redirect_url=/pricing'}
+                        className="px-4 py-2 bg-[#7c3aed] text-white text-sm rounded-lg hover:bg-[#6d28d9] transition-colors"
+                      >
+                        {isSignedIn ? 'View plans' : 'Sign up to upgrade'}
+                      </a>
                     </div>
-                    <div className="text-slate-600 text-xs">
-                      Accepts .m files only
+                  ) : fileName ? (
+                    <div className="text-center px-8">
+                      <div className="text-[#10b981] text-sm mb-1">{fileName}</div>
+                      <div className="text-[#4d5580] text-xs mb-4">{lineCount} lines loaded</div>
+                      <button
+                        onClick={() => { setInput(''); setFileName(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                        className="text-xs text-[#4d5580] hover:text-[#9ba3c4] transition-colors"
+                      >
+                        Remove file
+                      </button>
                     </div>
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".m"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </label>
+                  ) : (
+                    <label className="cursor-pointer text-center px-8">
+                      <div className="border-2 border-dashed border-[#2d3561] rounded-lg px-12 py-8 hover:border-[#7c3aed]/50 transition-colors">
+                        <div className="text-[#9ba3c4] text-sm mb-1">
+                          Drop a .m file here or click to browse
+                        </div>
+                        <div className="text-[#4d5580] text-xs">
+                          Accepts .m files only
+                        </div>
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".m"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Python output */}
-        <div className="relative">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-            <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
-              Python
-            </span>
-            {result && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleCopy}
-                  className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="text-xs text-purple-600 hover:text-purple-500 transition-colors"
-                >
-                  Download .py
-                </button>
+            {/* Python output */}
+            <div className="relative">
+              <div className="flex items-center justify-between px-4 py-2 bg-[#0e1228] border-b border-[#1e2547]">
+                <span className="text-xs font-medium text-[#4d5580] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
+                  Python
+                </span>
+                {result && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleCopy}
+                      className="text-xs text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors"
+                    >
+                      {copied ? '✓ Copied' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      className="text-xs text-[#7c3aed] hover:text-[#a78bfa] transition-colors"
+                    >
+                      Download .py
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+              <pre className="code-editor code-panel w-full h-64 lg:h-[400px] bg-[#0d1117] text-[#cbd5e1] px-4 py-3 overflow-auto whitespace-pre">
+                {result?.python || (
+                  <span className="text-[#4d5580]">
+                    Python output will appear here...
+                  </span>
+                )}
+              </pre>
+            </div>
           </div>
-          <pre className="code-editor code-panel w-full h-64 lg:h-[360px] bg-[#1e1e2e] text-[#cbd5e1] px-4 py-3 overflow-auto whitespace-pre">
-            {result?.python || (
-              <span className="text-[#64748b]">
-                Python output will appear here...
+
+          {/* Action bar */}
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={handleConvert}
+              disabled={loading || !input.trim()}
+              className="px-6 py-2.5 bg-[#7c3aed] text-white text-sm font-medium rounded-lg hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? 'Converting...' : 'Convert →'}
+            </button>
+            <button
+              onClick={handleClear}
+              className="px-4 py-2.5 text-[#4d5580] text-sm hover:text-[#9ba3c4] transition-colors"
+            >
+              Clear
+            </button>
+            {!input && mode === 'paste' && (
+              <button
+                onClick={handleLoadExample}
+                className="px-4 py-2.5 text-[#4d5580] text-sm hover:text-[#9ba3c4] transition-colors"
+              >
+                Load example
+              </button>
+            )}
+            {result && (
+              <span className="ml-auto text-xs text-[#4d5580] font-[family-name:var(--font-jetbrains)]">
+                {result.processingMs}ms
               </span>
             )}
-          </pre>
-        </div>
-      </div>
+          </div>
 
-      {/* Action bar */}
-      <div className="flex items-center gap-3 mt-4">
-        <button
-          onClick={handleConvert}
-          disabled={loading || !input.trim()}
-          className="px-6 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? 'Converting...' : 'Convert'}
-        </button>
-        <button
-          onClick={handleClear}
-          className="px-4 py-2.5 text-slate-600 text-sm hover:text-slate-900 transition-colors"
-        >
-          Clear
-        </button>
-        {!input && mode === 'paste' && (
-          <button
-            onClick={handleLoadExample}
-            className="px-4 py-2.5 text-slate-500 text-sm hover:text-slate-700 transition-colors"
-          >
-            Load example
-          </button>
-        )}
-        {result && (
-          <span className="ml-auto text-xs text-slate-500">
-            {result.processingMs}ms
-          </span>
-        )}
-      </div>
+          {/* Anonymous, consent-gated telemetry toggle */}
+          <ConsentToggle className="mt-3" />
 
-      {/* Error */}
-      {error && (
-        <div className="mt-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-          {error}
-        </div>
-      )}
+          {/* Error */}
+          {error && (
+            <div className="mt-4 px-4 py-3 border-l-4 border-[#ef4444] bg-[#1a0000] text-[#ef4444] text-sm rounded-r-lg">
+              {error}
+            </div>
+          )}
 
-      {/* Conversion Stats */}
-      {result && <ConversionStats result={result} inputLines={lineCount} />}
+          {/* Conversion Stats */}
+          {result && <ConversionStats result={result} inputLines={lineCount} />}
 
-      {/* Compatibility Report */}
-      {result && <CompatibilityReport report={result.report} />}
-      </>
+          {/* Compatibility Report */}
+          {result && <CompatibilityReport report={result.report} />}
+        </>
       )}
     </div>
   )
@@ -318,39 +306,38 @@ export function ConverterWidget({ exampleCode }: Props) {
 
 function ConversionStats({ result, inputLines }: { result: ConversionResult; inputLines: number }) {
   const { report, processingMs } = result
-  // Time estimate: an engineer manually converts ~30 lines/hour
-  const manualMinutes = Math.round(inputLines * 2) // ~2 min per line manually
-  const hoursSaved = Math.round(manualMinutes / 6) / 10 // round to 1 decimal
+  const manualMinutes = Math.round(inputLines * 2)
+  const hoursSaved = Math.round(manualMinutes / 6) / 10
   const reviewItems = report.flags.filter(f => f.type === 'WARNING' || f.type === 'TODO').length
-  const reviewMinutes = reviewItems * 5 // ~5 min per review item
+  const reviewMinutes = reviewItems * 5
 
   return (
     <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-        <div className="text-green-600 font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
+        <div className="text-[#10b981] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {report.conversionRate}%
         </div>
-        <div className="text-slate-500 text-xs">Converted cleanly</div>
+        <div className="text-[#4d5580] text-xs">Converted cleanly</div>
       </div>
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-        <div className="text-purple-600 font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
+        <div className="text-[#7c3aed] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           ~{hoursSaved}h
         </div>
-        <div className="text-slate-500 text-xs">Dev time saved</div>
+        <div className="text-[#4d5580] text-xs">Dev time saved</div>
       </div>
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-        <div className="text-slate-700 font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
+        <div className="text-[#f0f0f8] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {reviewItems > 0 ? `~${Math.round(reviewMinutes / 60 * 10) / 10}h` : '0h'}
         </div>
-        <div className="text-slate-500 text-xs">
+        <div className="text-[#4d5580] text-xs">
           {reviewItems > 0 ? `${reviewItems} items to review` : 'Nothing to review'}
         </div>
       </div>
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-        <div className="text-slate-700 font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
+        <div className="text-[#f0f0f8] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {processingMs < 1000 ? `${Math.round(processingMs)}ms` : `${(processingMs / 1000).toFixed(1)}s`}
         </div>
-        <div className="text-slate-500 text-xs">Processing time</div>
+        <div className="text-[#4d5580] text-xs">Processing time</div>
       </div>
     </div>
   )
@@ -358,7 +345,6 @@ function ConversionStats({ result, inputLines }: { result: ConversionResult; inp
 
 // ── Compatibility Report ─────────────────────────────────
 
-/** Group duplicate flag messages, collecting line numbers */
 function groupFlags(flags: ConversionResult['report']['flags']): Array<{ type: string; message: string; lines: number[] }> {
   const groups = new Map<string, { type: string; message: string; lines: number[] }>()
   for (const flag of flags) {
@@ -377,69 +363,66 @@ function CompatibilityReport({ report }: { report: ConversionResult['report'] })
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
+    <div className="mt-4 border border-[#1e2547] rounded-lg overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-[#0e1228] hover:bg-[#151a35] transition-colors"
       >
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-green-600">
+          <span className="text-[#10b981]">
             {report.convertedCount} converted
           </span>
           {report.flaggedCount > 0 && (
-            <span className="text-amber-600">
+            <span className="text-[#f59e0b]">
               {report.flaggedCount} flagged
             </span>
           )}
           {report.unsupportedCount > 0 && (
-            <span className="text-red-600">
+            <span className="text-[#ef4444]">
               {report.unsupportedCount} unsupported
             </span>
           )}
-          <span className="text-slate-500">
+          <span className="text-[#4d5580]">
             {report.conversionRate}% converted
           </span>
         </div>
-        <span className="text-slate-500 text-xs">
+        <span className="text-[#4d5580] text-xs">
           {expanded ? 'Hide' : 'Show'} details
         </span>
       </button>
 
       {expanded && (
-        <div className="px-4 py-3 space-y-3 text-sm">
-          {/* Detected toolboxes */}
+        <div className="px-4 py-3 space-y-3 text-sm bg-[#07091a]">
           {report.detectedToolboxes.length > 0 && (
             <div>
-              <span className="text-slate-500">Detected toolboxes: </span>
-              <span className="text-slate-700">
+              <span className="text-[#4d5580]">Detected toolboxes: </span>
+              <span className="text-[#9ba3c4]">
                 {report.detectedToolboxes.join(', ')}
               </span>
             </div>
           )}
 
-          {/* Imports */}
           {report.imports.length > 0 && (
             <div>
-              <span className="text-slate-500">Imports added: </span>
-              <span className="text-slate-700 font-[family-name:var(--font-jetbrains)] text-xs">
+              <span className="text-[#4d5580]">Imports added: </span>
+              <span className="text-[#a78bfa] font-[family-name:var(--font-jetbrains)] text-xs">
                 {report.imports.join(', ')}
               </span>
             </div>
           )}
 
-          {/* Flags — grouped by message to avoid duplicates */}
           {report.flags.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-gray-200">
+            <div className="space-y-2 pt-2 border-t border-[#1e2547]">
               {groupFlags(report.flags).map((group, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
                   <FlagBadge type={group.type} />
                   <div>
-                    <span className="text-slate-600">
+                    <span className="text-[#4d5580]">
                       {group.lines.length === 1
                         ? `Line ${group.lines[0]}: `
                         : `Lines ${group.lines.join(', ')}: `}
                     </span>
-                    <span className="text-slate-700">{group.message}</span>
+                    <span className="text-[#9ba3c4]">{group.message}</span>
                   </div>
                 </div>
               ))}
@@ -453,15 +436,15 @@ function CompatibilityReport({ report }: { report: ConversionResult['report'] })
 
 function FlagBadge({ type }: { type: string }) {
   const styles: Record<string, string> = {
-    WARNING: 'bg-amber-50 text-amber-600',
-    INDEX: 'bg-purple-50 text-purple-600',
-    TOOLBOX: 'bg-blue-50 text-blue-600',
-    TODO: 'bg-gray-100 text-slate-600',
-    UNSUPPORTED: 'bg-red-50 text-red-600',
+    WARNING: 'bg-[#78450a]/30 text-[#f59e0b] border border-[#78450a]',
+    INDEX:   'bg-[#3b1f6e]/30 text-[#a78bfa] border border-[#3b1f6e]',
+    TOOLBOX: 'bg-[#1e3a5f]/30 text-[#60a5fa] border border-[#1e3a5f]',
+    TODO:    'bg-[#1e2547]/50 text-[#9ba3c4] border border-[#2d3561]',
+    UNSUPPORTED: 'bg-[#3b0f0f]/30 text-[#ef4444] border border-[#3b0f0f]',
   }
 
   return (
-    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${styles[type] || styles.TODO}`}>
+    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium uppercase whitespace-nowrap ${styles[type] || styles.TODO}`}>
       {type}
     </span>
   )

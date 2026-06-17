@@ -1,34 +1,34 @@
 # Corpus Analysis Report
 
 Total files analyzed: **923**
-- **Clean** (py_compile passes, zero flags): **629** (68.1%)
-- PASS with flags (needs human review): 167 (18.1%)
-- py_compile fail: 127 (13.8%)
+- **Clean** (py_compile passes, zero flags): **644** (69.8%)
+- PASS with flags (needs human review): 153 (16.6%)
+- py_compile fail: 126 (13.7%)
 - converter threw: 0 (0.0%)
 
 ## Top flagged files (highest review effort)
 
 - 44 flags — `lightspeed\install_lightspeed.m`
 - 25 flags — `vbmc\shared\warpvars_vbmc.m`
-- 14 flags — `vbmc\gplite\private\fminfill.m`
-- 14 flags — `vbmc\utils\fminfill.m`
+- 13 flags — `vbmc\gplite\private\fminfill.m`
+- 13 flags — `vbmc\utils\fminfill.m`
 - 11 flags — `probabilistic_matlab\@stack_object\empirical_moments_convergence.m`
-- 10 flags — `vbmc\private\activesample_vbmc.m`
 - 9 flags — `probabilistic_matlab\@stack_object\empirical_moments.m`
+- 9 flags — `vbmc\private\activesample_vbmc.m`
 - 8 flags — `spatialmath-matlab\Apps\tripleangle.m`
 - 8 flags — `spatialmath-matlab\SO2.m`
-- 8 flags — `vbmc\gplite\gplite_meanfun.m`
+- 8 flags — `vbmc\misc\funlogger_vbmc.m`
 
 ## Failure patterns (grouped by error signature)
 
-### 1. SyntaxError: invalid syntax  —  85 files
+### 1. SyntaxError: invalid syntax  —  84 files
 
 - `autofft\+validation\testCosWindows.m`
 - `autofft\+validation\testKaiserWindow.m`
-- `autofft\freqWeight.m`
 - `DeepLearnToolbox\util\makeLMfilters.m`
 - `export_fig\append_pdfs.m`
-- ...and 80 more
+- `export_fig\pdf2eps.m`
+- ...and 79 more
 
 ### 2. SyntaxError: invalid syntax. Perhaps you forgot a comma?  —  19 files
 
@@ -68,7 +68,7 @@ Total files analyzed: **923**
 
 - `export_fig\hyperlink.m`
 
-### 9. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_hdilapbrik.py, line N  —  1 files
+### 9. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_r2v4nzhkc6e.py, line N  —  1 files
 
 - `export_fig\xkcdify.m`
 
@@ -80,11 +80,11 @@ Total files analyzed: **923**
 
 - `rcnn\utils\receptive_field_sizes.m`
 
-### 12. Sorry: IndentationError: unexpected indent (_check_oubum1zxpji.py, line N)  —  1 files
+### 12. Sorry: IndentationError: unexpected indent (_check_88kfht52u4v.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 
-### 13. Sorry: IndentationError: unexpected indent (_check_stkdwjeg8lr.py, line N)  —  1 files
+### 13. Sorry: IndentationError: unexpected indent (_check_nlxdnvowtsl.py, line N)  —  1 files
 
 - `vbmc\gplite\private\slicesamplebnd.m`
 
@@ -92,7 +92,7 @@ Total files analyzed: **923**
 
 - `vbmc\misc\setupoptions_vbmc.m`
 
-### 15. Sorry: IndentationError: unindent does not match any outer indentation level (_check_qy99gf3qwx.py, line N)  —  1 files
+### 15. Sorry: IndentationError: unindent does not match any outer indentation level (_check_ayoj4gmrm5e.py, line N)  —  1 files
 
 - `vbmc\utils\evalbool.m`
 
@@ -100,11 +100,11 @@ Total files analyzed: **923**
 
 - `vbmc\utils\ibslike.m`
 
-### 17. Sorry: IndentationError: unexpected indent (_check_puohcoljyog.py, line N)  —  1 files
+### 17. Sorry: IndentationError: unexpected indent (_check_qij7yb87k4.py, line N)  —  1 files
 
 - `vbmc\utils\slicesamplebnd.m`
 
-### 18. Sorry: IndentationError: unexpected indent (_check_zgprde2e9la.py, line N)  —  1 files
+### 18. Sorry: IndentationError: unexpected indent (_check_df06aftee1j.py, line N)  —  1 files
 
 - `vbmc\utils\slicesample_vbmc.m`
 

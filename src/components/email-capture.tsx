@@ -11,15 +11,6 @@ interface Props {
   cta?: string
 }
 
-/**
- * Reusable email capture component. `source` identifies where the form
- * was placed so conversion per-placement can be measured later.
- *
- * Variants tune the visual weight:
- *   - inline: single-line form, for footer-like spots
- *   - card: boxed with headline + sub, for CTA sections
- *   - footer: minimal, monospace, for the site footer
- */
 export function EmailCapture({
   source,
   variant = 'card',
@@ -67,7 +58,7 @@ export function EmailCapture({
 
   if (variant === 'inline' || variant === 'footer') {
     return (
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 text-sm">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 text-sm flex-wrap">
         <input
           type="email"
           required
@@ -75,25 +66,17 @@ export function EmailCapture({
           onChange={e => setEmail(e.target.value)}
           placeholder="you@company.com"
           disabled={state === 'submitting' || state === 'success'}
-          className={`px-3 py-1.5 border rounded ${
-            variant === 'footer'
-              ? 'bg-transparent border-slate-300 text-slate-700 placeholder:text-slate-400 w-48'
-              : 'border-gray-300 bg-white text-slate-900 placeholder:text-slate-400 flex-1 min-w-0'
-          } focus:outline-none focus:ring-2 focus:ring-purple-400`}
+          className="px-3 py-1.5 border border-[#2d3561] rounded bg-[#07091a] text-[#f0f0f8] placeholder:text-[#4d5580] w-44 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
         />
         <button
           type="submit"
           disabled={state === 'submitting' || state === 'success'}
-          className="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-500 disabled:opacity-40 shrink-0"
+          className="px-3 py-1.5 bg-[#7c3aed] text-white rounded hover:bg-[#6d28d9] disabled:opacity-40 shrink-0 transition-colors text-sm"
         >
           {state === 'submitting' ? '…' : state === 'success' ? '✓' : cta}
         </button>
         {msg && (
-          <span
-            className={`text-xs ${
-              state === 'success' ? 'text-emerald-600' : 'text-rose-600'
-            }`}
-          >
+          <span className={`text-xs ${state === 'success' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
             {msg}
           </span>
         )}
@@ -103,11 +86,11 @@ export function EmailCapture({
 
   // card variant
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
-      <h3 className="font-[family-name:var(--font-syne)] text-lg font-semibold text-slate-900 mb-1">
+    <div className="rounded-lg border border-[#1e2547] bg-[#0e1228] p-6">
+      <h3 className="font-[family-name:var(--font-syne)] text-lg font-semibold text-[#f0f0f8] mb-1">
         {headline}
       </h3>
-      <p className="text-sm text-slate-600 mb-4">{sub}</p>
+      <p className="text-sm text-[#9ba3c4] mb-4 leading-relaxed">{sub}</p>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
@@ -116,22 +99,18 @@ export function EmailCapture({
           onChange={e => setEmail(e.target.value)}
           placeholder="you@company.com"
           disabled={state === 'submitting' || state === 'success'}
-          className="flex-1 min-w-0 px-4 py-2 border border-gray-300 bg-white rounded text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="flex-1 min-w-0 px-4 py-2 border border-[#2d3561] bg-[#07091a] rounded text-[#f0f0f8] placeholder:text-[#4d5580] focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
         />
         <button
           type="submit"
           disabled={state === 'submitting' || state === 'success'}
-          className="px-5 py-2 bg-purple-600 text-white rounded hover:bg-purple-500 disabled:opacity-40 font-medium"
+          className="px-5 py-2 bg-[#7c3aed] text-white rounded hover:bg-[#6d28d9] disabled:opacity-40 font-medium transition-colors"
         >
-          {state === 'submitting' ? 'Saving…' : state === 'success' ? 'Done' : cta}
+          {state === 'submitting' ? 'Saving…' : state === 'success' ? 'Done ✓' : cta}
         </button>
       </form>
       {msg && (
-        <p
-          className={`mt-3 text-sm ${
-            state === 'success' ? 'text-emerald-700' : 'text-rose-600'
-          }`}
-        >
+        <p className={`mt-3 text-sm ${state === 'success' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
           {msg}
         </p>
       )}

@@ -43,12 +43,12 @@ export default function ConvertPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
       <div className="mb-8">
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-slate-900 mb-2">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8] mb-2">
           Convert MATLAB to Python
         </h1>
-        <p className="text-slate-600 text-sm">
+        <p className="text-[#9ba3c4] text-sm">
           Deterministic conversion. No AI. Same input, same output, every time.
-          <span className="text-slate-500"> Free tier: 50 lines.</span>
+          <span className="text-[#4d5580]"> Free tier: 50 lines.</span>
         </p>
       </div>
 

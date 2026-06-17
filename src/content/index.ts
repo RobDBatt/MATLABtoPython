@@ -10,14 +10,24 @@ import { article as indexingGuide } from './matlab-1-indexed-to-python-0-indexed
 import { article as forLoops } from './matlab-for-loops-to-python'
 import { article as plotToMatplotlib } from './matlab-plot-to-matplotlib'
 import { article as signalToScipy } from './matlab-signal-processing-to-scipy'
+import { article as imageProcessing } from './matlab-image-processing-to-scikit-image'
+import { article as ode45ToScipy } from './matlab-ode45-to-scipy'
+import { article as cellArrays } from './matlab-cell-arrays-to-python'
+import { article as structToDict } from './matlab-struct-to-python-dict'
+import { article as migrationGuide } from './matlab-to-python-migration-guide'
 
 export const articles = [
+  migrationGuide,
   cheatSheet,
   gotchas,
   indexingGuide,
   forLoops,
   plotToMatplotlib,
   signalToScipy,
+  imageProcessing,
+  ode45ToScipy,
+  cellArrays,
+  structToDict,
   matlabVsPython,
   licenseCost,
   whyWeBuiltThis,

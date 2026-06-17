@@ -114,26 +114,16 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "autofft\\+validation\\testKaiserWindow.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "autofft\\+validation\\timeit_stft.m",
@@ -148,7 +138,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 11,
+    "flagCount": 10,
     "flags": [
       {
         "type": "WARNING",
@@ -189,25 +179,16 @@
       {
         "type": "TODO",
         "message": "MException.identifier — no direct Python equivalent"
-      },
-      {
-        "type": "WARNING",
-        "message": "var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       }
     ]
   },
   {
     "rel": "autofft\\freqWeight.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "struct → dict — field access changes from s.field to s[\"field\"]"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "DeepLearnToolbox\\CAE\\caeapplygrads.m",
@@ -270,17 +251,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "DeepLearnToolbox\\CAE\\caeup.m",
@@ -726,13 +698,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "export_fig\\append_pdfs.m",
@@ -1056,7 +1023,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 296 (_check_hdilapbrik.py, line 299",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 296 (_check_r2v4nzhkc6e.py, line 29",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -4425,12 +4392,8 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
       {
         "type": "WARNING",
         "message": "histc → np.histogram — return format differs"
@@ -4757,13 +4720,8 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\summary_squared_diffs.m",
@@ -5243,7 +5201,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
@@ -5256,10 +5214,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -5434,13 +5388,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "rcnn\\imdb\\imdb_from_voc.m",
@@ -5576,13 +5525,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "rcnn\\rcnn_im_crop.m",
@@ -6079,7 +6023,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_oubum1zxpji.py, line 366)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_88kfht52u4v.py, line 366)",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -8079,20 +8023,8 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 2,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
       {
         "type": "WARNING",
         "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
@@ -8153,41 +8085,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 8,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_nlZ.m",
@@ -8202,13 +8101,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_plot.m",
@@ -8260,66 +8154,35 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_sample.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_test.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_train.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 4,
     "flags": [
       {
         "type": "WARNING",
         "message": "optimoptions → dict — convert to scipy minimize options"
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       },
       {
         "type": "TOOLBOX",
@@ -8364,17 +8227,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\private\\derivcheck.m",
@@ -8389,7 +8243,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 11,
+    "flagCount": 10,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -8410,10 +8264,6 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       },
       {
         "type": "TOOLBOX",
@@ -8442,12 +8292,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
       {
         "type": "TOOLBOX",
         "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
@@ -8521,7 +8367,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_stkdwjeg8lr.py, line 299)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_nlxdnvowtsl.py, line 299)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -8714,28 +8560,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\misc\\gplogjoint_weights.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       }
     ]
   },
@@ -8853,29 +8690,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "var → np.var — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\misc\\vbmc_gphyp.m",
@@ -8923,7 +8739,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
@@ -8936,10 +8752,6 @@
       {
         "type": "TOOLBOX",
         "message": "fminunc → optimize.minimize — MATLAB fminunc(fun,x0) → scipy.optimize.minimize(fun,x0). Returns an OptimizeResult object — get x with result.x, function value with result.fun."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -9005,23 +8817,11 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 1,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -9030,12 +8830,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 9,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
       {
         "type": "TOOLBOX",
         "message": "polyfit → np.polyfit — Same interface: np.polyfit(x, y, deg). Returns coefficients highest-degree first, same as MATLAB."
@@ -9469,7 +9265,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 11,
+    "flagCount": 10,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -9490,10 +9286,6 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       },
       {
         "type": "TOOLBOX",
@@ -9520,7 +9312,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_qy99gf3qwx.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_ayoj4gmrm5e.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -9535,13 +9327,8 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\utils\\fminadam.m",
@@ -9561,12 +9348,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
       {
         "type": "TOOLBOX",
         "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
@@ -9626,7 +9409,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '['",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
@@ -9639,14 +9422,6 @@
       {
         "type": "WARNING",
         "message": "histc → np.histogram — return format differs"
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
       }
     ]
   },
@@ -9721,13 +9496,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\utils\\quantile1.m",
@@ -9765,7 +9535,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_puohcoljyog.py, line 287)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_qij7yb87k4.py, line 287)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -9802,7 +9572,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_zgprde2e9la.py, line 307)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_df06aftee1j.py, line 307)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -9866,17 +9636,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      },
-      {
-        "type": "WARNING",
-        "message": "std → np.std — add ddof=1 to match MATLAB (which divides by N-1). NumPy default divides by N."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\vbmc.m",
@@ -10253,7 +10014,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -10270,14 +10031,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -10348,7 +10101,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
@@ -10369,10 +10122,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -10492,7 +10241,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -10513,18 +10262,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       },
       {
         "type": "WARNING",
@@ -10668,7 +10405,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -10685,18 +10422,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -10758,7 +10483,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -10779,10 +10504,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       },
       {
         "type": "UNSUPPORTED",
@@ -10967,7 +10688,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -10984,10 +10705,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },
@@ -11012,7 +10729,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
@@ -11025,14 +10742,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
-      },
-      {
-        "type": "WARNING",
-        "message": "randi → np.random.randint — MATLAB randi([lo hi], m, n) → np.random.randint(lo, hi+1, (m, n)). Note: upper bound is exclusive in NumPy."
       }
     ]
   },

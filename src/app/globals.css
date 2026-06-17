@@ -1,23 +1,45 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-navy-950: #1e1e2e;
-  --color-navy-900: #f8fafc;
-  --color-navy-800: #e2e8f0;
-  --color-navy-700: #cbd5e1;
-  --color-gold-400: #d97706;
-  --color-gold-300: #f59e0b;
+  /* Navy backgrounds */
+  --color-navy:         #07091a;
+  --color-surface:      #0e1228;
+  --color-raised:       #151a35;
+
+  /* Borders */
+  --color-border:       #1e2547;
+  --color-border-bright:#2d3561;
+
+  /* Brand */
+  --color-purple:       #7c3aed;
+  --color-purple-hover: #6d28d9;
+  --color-purple-muted: #3b1f6e;
+  --color-gold:         #f59e0b;
+  --color-gold-muted:   #78450a;
+
+  /* Text */
+  --color-text-primary:   #f0f0f8;
+  --color-text-secondary: #9ba3c4;
+  --color-text-tertiary:  #4d5580;
+  --color-text-code:      #a78bfa;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+  --color-flag:    #f97316;
+
   --font-display: var(--font-syne);
-  --font-body: var(--font-dm-sans);
-  --font-mono: var(--font-jetbrains);
+  --font-body:    var(--font-dm-sans);
+  --font-mono:    var(--font-jetbrains);
 }
 
 body {
-  background: #ffffff;
-  color: #334155;
+  background: #07091a;
+  color: #f0f0f8;
 }
 
-/* Code editor textarea styling — stays dark */
+/* Code editor textarea */
 .code-editor {
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 0.875rem;
@@ -27,24 +49,33 @@ body {
 }
 
 .code-editor::placeholder {
-  color: #94a3b8;
+  color: #4d5580;
 }
 
-/* Scrollbar styling for code panels — stays dark */
+/* Scrollbar styling for code panels */
 .code-panel::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 .code-panel::-webkit-scrollbar-track {
-  background: #1e1e2e;
+  background: #0d1117;
 }
-
 .code-panel::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #2d3561;
   border-radius: 4px;
 }
-
 .code-panel::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #4d5580;
+}
+
+/* Subtle noise texture on navy — makes it feel physical, not digital-flat */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
 }

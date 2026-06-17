@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { convert } from '@/lib/converter'
 import { auth, currentUser } from '@clerk/nextjs/server'
+import { scheduleTelemetry } from '@/lib/telemetry/server'
+import type { Target } from '@/lib/telemetry/types'
 
 const FREE_LINE_LIMIT = 50
 
 export async function POST(req: NextRequest) {
   try {
-    const { code } = await req.json()
+    const body = await req.json()
+    const { code } = body
+    // Optional, consent-gated anonymous telemetry fields (never required).
+    const telemetryConsent = body?.telemetry_consent === true
+    const telemetrySession = typeof body?.session_id === 'string' ? body.session_id : undefined
+    const telemetryMode = (body?.mode === 'upload' || body?.mode === 'batch' ? body.mode : 'paste') as Target
 
     if (!code || typeof code !== 'string') {
       return NextResponse.json(
@@ -48,6 +55,18 @@ export async function POST(req: NextRequest) {
     }
 
     const result = convert(code)
+
+    // Fire-and-forget anonymous telemetry AFTER the response (consent-gated).
+    // Never affects latency or the conversion result.
+    scheduleTelemetry({
+      eventType: 'convert_success',
+      code,
+      flagTypes: result.report.flags.map((f) => f.type),
+      lineCount,
+      sessionId: telemetrySession,
+      consent: telemetryConsent,
+      target: telemetryMode,
+    })
 
     return NextResponse.json(result)
   } catch (err) {

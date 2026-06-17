@@ -89,13 +89,10 @@ export default function PricingPage() {
   const { isSignedIn } = useUser()
   const [loading, setLoading] = useState<string | null>(null)
 
-  // On mount, check if we returned from sign-up with a remembered plan
-  // and auto-continue checkout so the user only clicks once.
   if (typeof window !== 'undefined' && isSignedIn) {
     const pending = window.sessionStorage.getItem('pendingCheckoutPlan')
     if (pending && !loading) {
       window.sessionStorage.removeItem('pendingCheckoutPlan')
-      // Defer to next tick so React finishes its render first
       setTimeout(() => handleCheckout(pending), 0)
     }
   }
@@ -109,8 +106,6 @@ export default function PricingPage() {
     }
 
     if (!isSignedIn) {
-      // Remember intent so after sign-up the user auto-continues to
-      // Stripe without a second "Start Pro" click.
       if (typeof window !== 'undefined') {
         window.sessionStorage.setItem('pendingCheckoutPlan', planKey)
       }
@@ -127,10 +122,8 @@ export default function PricingPage() {
         body: JSON.stringify({ priceId: PRICE_IDS[planKey] }),
       })
 
-      // Check if response is JSON (not an HTML redirect)
       const contentType = res.headers.get('content-type') || ''
       if (!contentType.includes('application/json')) {
-        // Clerk proxy may have redirected to sign-in
         if (res.status === 401 || res.status === 403 || res.redirected) {
           window.location.href = `/sign-in?redirect_url=/pricing`
           return
@@ -158,54 +151,57 @@ export default function PricingPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="text-center mb-12">
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-slate-900 mb-3">
+      <div className="mb-12">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8] mb-3">
           Simple, honest pricing
         </h1>
-        <p className="text-slate-600 max-w-lg mx-auto">
+        <p className="text-[#9ba3c4] max-w-lg text-sm leading-relaxed">
           Free for small conversions. Pay only when you need more lines
-          or file upload. No surprise fees.
+          or file upload. No surprise fees. MATLAB seats cost $2,190+/year —
+          a $49 migration pass pays for itself in minutes.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         {tiers.map((tier) => (
           <div
             key={tier.name}
-            className={`relative flex flex-col p-6 rounded-lg border ${
+            className={`relative flex flex-col p-6 rounded-lg border transition-colors ${
               tier.highlight
-                ? 'border-purple-400 bg-gray-50'
-                : 'border-gray-200 bg-gray-50'
+                ? 'border-[#7c3aed] bg-[#0e1228]'
+                : 'border-[#1e2547] bg-[#0e1228] hover:border-[#2d3561]'
             }`}
           >
             {tier.highlight && (
-              <div className="absolute -top-3 left-6 px-3 py-0.5 bg-purple-600 text-white text-xs font-medium rounded-full">
+              <div className="absolute -top-3 left-5 px-3 py-0.5 bg-[#7c3aed] text-white text-xs font-medium rounded-full">
                 Recommended
               </div>
             )}
 
             <div className="mb-4">
-              <h2 className="text-slate-900 font-semibold text-lg">{tier.name}</h2>
-              <p className="text-slate-500 text-sm mt-1">{tier.description}</p>
+              <h2 className="text-[#f0f0f8] font-semibold text-base">{tier.name}</h2>
+              <p className="text-[#4d5580] text-xs mt-1">{tier.description}</p>
             </div>
 
             <div className="mb-6">
-              <span className="text-3xl font-bold text-slate-900">{tier.price}</span>
+              <span className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8]">
+                {tier.price}
+              </span>
               {tier.period && (
-                <span className="text-slate-500 text-sm ml-1">{tier.period}</span>
+                <span className="text-[#4d5580] text-xs ml-1">{tier.period}</span>
               )}
             </div>
 
             <ul className="space-y-2 mb-6 flex-1">
               {tier.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="text-green-600 mt-0.5">+</span>
+                <li key={f} className="flex items-start gap-2 text-xs text-[#9ba3c4]">
+                  <span className="text-[#10b981] mt-0.5 shrink-0">+</span>
                   {f}
                 </li>
               ))}
               {tier.limits.map((l) => (
-                <li key={l} className="flex items-start gap-2 text-sm text-slate-500">
-                  <span className="text-slate-600 mt-0.5">-</span>
+                <li key={l} className="flex items-start gap-2 text-xs text-[#4d5580]">
+                  <span className="mt-0.5 shrink-0">–</span>
                   {l}
                 </li>
               ))}
@@ -216,8 +212,8 @@ export default function PricingPage() {
               disabled={loading === tier.planKey}
               className={`block w-full text-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 tier.highlight
-                  ? 'bg-purple-600 text-white hover:bg-purple-500'
-                  : 'border border-gray-300 text-slate-700 hover:border-gray-400 hover:text-slate-900'
+                  ? 'bg-[#7c3aed] text-white hover:bg-[#6d28d9]'
+                  : 'border border-[#2d3561] text-[#9ba3c4] hover:border-[#7c3aed]/50 hover:text-[#f0f0f8]'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading === tier.planKey ? 'Loading...' : tier.cta}
@@ -227,49 +223,38 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ */}
-      <div className="mt-20 max-w-2xl mx-auto">
-        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-slate-900 mb-6 text-center">
+      <div className="mt-20 max-w-2xl">
+        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-[#f0f0f8] mb-8">
           Common questions
         </h2>
         <div className="space-y-6 text-sm">
-          <div>
-            <h3 className="text-slate-900 font-medium mb-1">How are lines counted?</h3>
-            <p className="text-slate-600">
-              Only non-empty lines of MATLAB code are counted. Comments count as lines.
-              Blank lines don&apos;t. A typical MATLAB function is 50-200 lines.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-slate-900 font-medium mb-1">What happens when I hit the line limit?</h3>
-            <p className="text-slate-600">
-              The converter will tell you exactly how many lines your code has and
-              which plan covers it. You can upgrade instantly without losing your work.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-slate-900 font-medium mb-1">Is my code sent to an AI service?</h3>
-            <p className="text-slate-600">
-              No. The converter is 100% deterministic and rule-based. Your code is
-              processed entirely on our server and never sent to any third-party AI
-              API. Same input, same output, every time.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-slate-900 font-medium mb-1">What&apos;s the difference between Migration Pass and Pro?</h3>
-            <p className="text-slate-600">
-              Migration Pass is a one-time 30-day purchase for engineers doing a
-              single migration project. Pro is a monthly subscription for researchers
-              who regularly convert MATLAB scripts as part of ongoing work.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-slate-900 font-medium mb-1">Which toolboxes are supported?</h3>
-            <p className="text-slate-600">
-              Signal Processing (scipy.signal), Statistics (scipy.stats), Image Processing
-              (scikit-image), Optimization (scipy.optimize), Control Systems (python-control),
-              Symbolic Math (SymPy), Wavelets (PyWavelets), and Curve Fitting (scipy.interpolate).
-            </p>
-          </div>
+          {[
+            {
+              q: 'How are lines counted?',
+              a: 'Only non-empty lines of MATLAB code are counted. Comments count as lines. Blank lines don\'t. A typical MATLAB function is 50–200 lines.',
+            },
+            {
+              q: 'What happens when I hit the line limit?',
+              a: 'The converter tells you exactly how many lines your code has and which plan covers it. You can upgrade instantly without losing your work.',
+            },
+            {
+              q: 'Is my code sent to an AI service?',
+              a: 'No. The converter is 100% deterministic and rule-based. Your code is processed entirely on our server and never sent to any third-party AI API. Same input, same output, every time.',
+            },
+            {
+              q: 'What\'s the difference between Migration Pass and Pro?',
+              a: 'Migration Pass is a one-time 30-day purchase for engineers doing a single migration project. Pro is a monthly subscription for researchers who regularly convert MATLAB scripts.',
+            },
+            {
+              q: 'Which toolboxes are supported?',
+              a: 'Signal Processing (scipy.signal), Statistics (scipy.stats), Image Processing (scikit-image), Optimization (scipy.optimize), Control Systems (python-control), Symbolic Math (SymPy), Wavelets (PyWavelets), and Curve Fitting (scipy.interpolate).',
+            },
+          ].map(({ q, a }) => (
+            <div key={q} className="border-l border-[#1e2547] pl-4">
+              <h3 className="text-[#f0f0f8] font-medium mb-1.5">{q}</h3>
+              <p className="text-[#9ba3c4] leading-relaxed">{a}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
