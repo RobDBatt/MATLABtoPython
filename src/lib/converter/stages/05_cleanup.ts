@@ -464,6 +464,72 @@ function cleanupSyntax(content: string): string {
     result = rewriteSpaceSeparatedElements(result)
   }
 
+  // Wrap bare list literals that are operands of `*` or `/` so MATLAB
+  // elementwise vector arithmetic (`[40 60]/(fs/2)`) becomes valid NumPy
+  // instead of a Python list op that raises TypeError at runtime.
+  if (!result.includes('#')) {
+    result = wrapArithmeticListLiterals(result)
+  }
+
+  return result
+}
+
+/**
+ * Wrap a bare list literal in `np.array(...)` when it is an operand of `*`,
+ * `/`, `@`, or `**` — MATLAB elementwise vector arithmetic. A Python list
+ * `[40, 60] / 500` raises TypeError; `np.array([40, 60]) / 500` is correct.
+ *
+ * Conservative: only fires when the bracket is a genuine literal (not indexing
+ * — i.e. not preceded by an identifier, `)`, or `]`), contains no quotes, and
+ * sits directly adjacent to a `*`//`@` operator on either side. Leaves
+ * assignment LHS (`[b, a] = ...`), argument lists, slices, and already-wrapped
+ * `np.array([...])` untouched.
+ */
+function wrapArithmeticListLiterals(source: string): string {
+  const OPS = new Set(['*', '/', '@'])
+  const prevNonSpace = (s: string, idx: number): string => {
+    let j = idx - 1
+    while (j >= 0 && s[j] === ' ') j--
+    return j >= 0 ? s[j] : ''
+  }
+  const nextNonSpace = (s: string, idx: number): string => {
+    let j = idx
+    while (j < s.length && s[j] === ' ') j++
+    return j < s.length ? s[j] : ''
+  }
+
+  let result = ''
+  let i = 0
+  while (i < source.length) {
+    const ch = source[i]
+    if (ch !== '[') { result += ch; i++; continue }
+
+    // Genuine literal? Not preceded by an indexable token (identifier/`)`/`]`).
+    const prevChar = prevNonSpace(source, i)
+    if (/[\w.\])]/.test(prevChar)) { result += ch; i++; continue }
+
+    // Match the closing bracket (track nesting).
+    let depth = 0
+    let j = i
+    let hasQuote = false
+    for (; j < source.length; j++) {
+      const cj = source[j]
+      if (cj === '"' || cj === "'") hasQuote = true
+      if (cj === '[') depth++
+      else if (cj === ']') { depth--; if (depth === 0) break }
+    }
+    if (depth !== 0) { result += ch; i++; continue } // unbalanced — bail
+    const literal = source.slice(i, j + 1)
+    const after = nextNonSpace(source, j + 1)
+    const opAfter = OPS.has(after)
+    const opBefore = OPS.has(prevChar)
+    if (!hasQuote && literal.length > 2 && (opAfter || opBefore)) {
+      result += `np.array(${literal})`
+    } else {
+      result += literal
+    }
+    i = j + 1
+  }
   return result
 }
 

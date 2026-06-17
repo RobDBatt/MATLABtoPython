@@ -52,21 +52,33 @@ with no `time` import still becomes `time_`). Harmless and deterministic, but
 could later be scoped to only the imports actually injected (requires moving the
 rename pass to run after import resolution).
 
+**Follow-up fixed.** The rename pass was also rewriting the word inside comments
+(`% Simple signal analysis` → `# Simple signal_ analysis`). `index.ts` now skips
+`isComment` lines when applying renames.
+
 ---
 
-## 2. List arithmetic not vectorized — QUEUED
+## 2. List arithmetic not vectorized — FIXED (first cut)
 
 **Symptom.** `[40, 60]/(fs/2)` is a Python list divided by a float →
 `TypeError: unsupported operand type(s) for /: 'list' and 'float'`.
 
-**Cause.** MATLAB matrix/vector literals in arithmetic are emitted as Python
+**Cause.** MATLAB matrix/vector literals in arithmetic were emitted as Python
 lists instead of `np.array([...])`. Elementwise MATLAB ops (`[40 60]/500`) need
 NumPy arrays.
 
-**Fix idea.** When a bracket literal participates in arithmetic (`/ * + - .^`
-etc.) or is passed where an array is expected, wrap it as `np.array([...])`.
-Detect in the transform stage; conservative trigger to avoid wrapping literals
-used as indices or function-arg lists.
+**Fix.** `stages/05_cleanup.ts` gained `wrapArithmeticListLiterals`: a bare list
+literal that is an operand of `*`, `/`, or `@` (covers `**` too) is wrapped as
+`np.array([...])`. Conservative — fires only when the bracket is a genuine
+literal (not preceded by an identifier/`)`/`]`, so indexing is excluded),
+contains no quotes, and sits directly adjacent to one of those operators. Leaves
+assignment LHS (`[b, a] = ...`), argument lists, slices, and already-wrapped
+`np.array([...])` untouched. Verified against those cases.
+
+**Not yet covered.** Literals that need to be arrays for reasons *other* than
+`*`//`@` adjacency (e.g. passed to a function expecting an ndarray, or added with
+`+`/`-`). Left out deliberately to keep the trigger conservative; revisit if the
+corpus shows demand.
 
 ---
 
@@ -101,7 +113,8 @@ how the rest of the code indexes with a single subscript.
 
 ---
 
-_Found via manual review of converter output (2026-06). #1 fixed in the same
-pass; #2–#4 are open. Telemetry (site='matlab') will show how often these flag
-types appear in real usage, but the specific construct names stay private — so
-prioritize #2–#4 from the corpus + this doc, not from telemetry strings._
+_Found via manual review of converter output (2026-06). #1 and #2 fixed (plus
+the comment-rename follow-up); #3–#4 are open. Telemetry (site='matlab') will
+show how often these flag types appear in real usage, but the specific construct
+names stay private — so prioritize #3–#4 from the corpus + this doc, not from
+telemetry strings._

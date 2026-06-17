@@ -1086,3 +1086,20 @@ describe('Import alias / variable name collisions', () => {
     expect(code).toMatch(/signal\.(butter|lfilter)/)
   })
 })
+
+describe('List-literal arithmetic vectorization', () => {
+  it('vectorizes a list literal divided by a scalar', () => {
+    const code = convert("c = [40 60]/(fs/2);").python
+    expect(code).toMatch(/np\.array\(\[40, 60\]\)\s*\/\s*\(fs\/2\)/)
+  })
+
+  it('does not wrap a multiple-return assignment LHS', () => {
+    const code = convert("[b, a] = butter(4, 0.5, 'low');").python
+    expect(code).not.toMatch(/np\.array\(\[b, a\]\)/)
+  })
+
+  it('does not wrap a list passed as a function argument', () => {
+    const code = convert("y = max([1 2 3]);").python
+    expect(code).not.toContain('np.array([1, 2, 3])')
+  })
+})

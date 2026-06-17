@@ -45,7 +45,9 @@ export function convert(matlabCode: string): ConversionResult {
   const renames = buildRenameMap(symbols.variables)
   const logicalLines = tokenized.map((l) => ({
     ...l,
-    content: renameReservedFields(applyRenames(l.content, renames)),
+    // Don't rewrite identifiers inside comments — renaming a word like
+    // `signal` that merely appears in a comment is wrong (and noisy).
+    content: l.isComment ? l.content : renameReservedFields(applyRenames(l.content, renames)),
   }))
   for (const [oldName, newName] of renames) {
     symbols.variables.delete(oldName)
