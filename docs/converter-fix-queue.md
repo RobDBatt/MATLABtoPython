@@ -24,6 +24,33 @@ numpy + scipy).
 
 ---
 
+## CI: install numpy + scipy in the oracle gate runner — OPEN (Phase 4, load-bearing)
+
+**Problem.** The oracle classifies a case as "environmental" (not a converter
+defect) when the converted Python can't import numpy/scipy. If the CI runner that
+hosts the Phase-4 oracle gate doesn't have **both** installed, *every* curated
+case reports "environmental," the oracle never actually executes the generated
+Python, and the gate passes vacuously — it's toothless and would green-light real
+regressions.
+
+**Evidence.** Locally, the curated set runs 6/6 with **0 converter-attributable
+defects** but reports all 6 as "environmental" purely because scipy isn't
+installed in that env. `pip install numpy scipy` flips them to 6/6 actually
+executed. (Confirmed across the Cowork sandbox and a dev machine — both 179/180
+unit tests + identical oracle behavior, so the methodology is trustworthy; the
+only variable is whether the Python deps are present.)
+
+**Fix (do during Phase 4, when the gate workflow is wired).**
+1. Add a `pip install numpy scipy` step (pin versions) to the CI workflow before
+   the oracle runs.
+2. Make the gate **fail loudly if the runnable count is 0 or any curated case is
+   "environmental"** — i.e. treat a missing-deps environment as a gate failure,
+   not a pass. Otherwise a future runner image change silently re-toothlesses it.
+3. Optionally have `run-oracle.ts` exit non-zero when the entire set is
+   environmental, so the gate can't pass with nothing executed.
+
+---
+
 ## 0. Array literals emitted as Python lists, not np.array — FIXED
 
 **Symptom.** `v = [1 2 3]; w = v .* 2 + 1` → `v = [1, 2, 3]` (a list), then
