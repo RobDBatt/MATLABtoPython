@@ -1562,6 +1562,24 @@ function transformOperators(
 
 // ── Functions ───────────────────────────────────────���─────
 
+/**
+ * MATLAB `zeros(1, N)` / `zeros(N, 1)` (and the `rand`/`randn` equivalents)
+ * build a 2-D row/column vector with a singleton dimension. The rest of the
+ * pipeline accesses these with a single subscript (`z(i)` → `z[i - 1]`),
+ * which indexes axis 0 — fatal for `(1, N)` (axis 0 has size 1 → IndexError).
+ * When a literal `1` sits in the leading or trailing position of a 2-arg
+ * dim list, drop it so we emit a 1-D array (`np.zeros(N)`), for which
+ * single-subscript access is correct. Non-literal or non-1 dims are left
+ * untouched, and only the 2-arg form is affected.
+ */
+function dropSingletonVectorDim(argList: string[]): string[] {
+  if (argList.length === 2) {
+    if (argList[0] === '1') return [argList[1]]
+    if (argList[1] === '1') return [argList[0]]
+  }
+  return argList
+}
+
 function transformFunctions(
   content: string,
   imports: Set<string>,
@@ -1590,11 +1608,33 @@ function transformFunctions(
       case 'reshape': {
         // zeros(m,n) → np.zeros((m,n)) — wrap args in tuple
         result = replaceFunctionCalls(result, matlabName, (_, args) => {
-          const argList = splitArgsRespectingStrings(args).map(s => s.trim())
+          let argList = splitArgsRespectingStrings(args).map(s => s.trim())
+          // zeros/ones with a literal leading/trailing 1 are row/col vectors;
+          // emit 1-D so single-subscript indexing works. NOT repmat — its
+          // reps tuple (e.g. np.tile(A, (1, 3))) must keep the 1.
+          if (matlabName === 'zeros' || matlabName === 'ones') {
+            argList = dropSingletonVectorDim(argList)
+          }
           if (argList.length > 1) {
             return `${mapping.python}((${argList.join(', ')}))`
           }
+          if (argList.length === 1) {
+            return `${mapping.python}(${argList[0]})`
+          }
           return `${mapping.python}(${args})`
+        })
+        break
+      }
+
+      case 'rand_shape': {
+        // rand/randn take SEPARATE dim args (not a tuple): rand(2,3) →
+        // np.random.rand(2, 3). A literal leading/trailing 1 in the 2-arg
+        // form is a row/col vector → emit 1-D (np.random.rand(n)).
+        result = replaceFunctionCalls(result, matlabName, (_, args) => {
+          const argList = dropSingletonVectorDim(
+            splitArgsRespectingStrings(args).map(s => s.trim()),
+          )
+          return `${mapping.python}(${argList.join(', ')})`
         })
         break
       }

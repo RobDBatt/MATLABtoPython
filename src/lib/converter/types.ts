@@ -75,6 +75,7 @@ export interface ConversionResult {
 export type ArgTransform =
   | 'passthrough'      // args transfer directly
   | 'reshape'          // array dims need tuple wrapping: zeros(3,4) → np.zeros((3,4))
+  | 'rand_shape'       // separate dim args (no tuple) + de-2-D row/col vec: rand(1,n) → np.random.rand(n)
   | 'attribute'        // becomes property access: size(A) → A.shape
   | 'template'         // string template with {}: numel(A) → A.size
   | 'format_convert'   // fprintf format string conversion

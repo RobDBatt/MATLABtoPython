@@ -169,19 +169,43 @@ emits a TOOLBOX flag, but the generated code still assigns the raw tuple.
 
 ---
 
-## 4. Row-vector `(1, N)` shape + 1-based loop indexing — QUEUED
+## 4. Row-vector `(1, N)` shape + 1-based loop indexing — FIXED
 
 **Symptom.** `randn(1, length(t))` → `np.random.randn(1, N)` makes a 2-D
-`(1, N)` array. `energy = zeros((1, N))` then `energy[i-1] = filtered[i-1]**2`
-indexes the first axis (size 1) → `IndexError` for `i-1 >= 1`.
+`(1, N)` array. `z = zeros(1, N)` then `z[i-1] = i**2` indexes the first axis
+(size 1) → `IndexError` for `i-1 >= 1`. (Verified: `IndexError: index 1 is out
+of bounds for axis 0 with size 1`.) Only the **leading-1 row vector** crashes —
+`zeros(N, 1)` keeps axis 0 = N so single-index access happened to survive.
 
-**Cause.** MATLAB row vectors are 2-D `(1, N)` but idiomatic NumPy wants 1-D
-`(N,)`; the index-shift pass then indexes the wrong axis.
+**Cause.** MATLAB row/col vectors are 2-D `(1, N)`/`(N, 1)` but the index-shift
+pass (`04_index.ts`, `transformGeneralIndexing`) rewrites single-subscript
+`z(i)` → `z[i - 1]`, indexing axis 0. The constructors emit 2-D: `zeros`/`ones`
+via the `reshape` arg-mode tuple-wrap (`03_transform.ts`), `rand`/`randn` via
+plain passthrough (numpy takes separate dim args, still 2-D).
 
-**Fix idea.** Either emit 1-D shapes for MATLAB row/col vectors where the second
-dim is 1 (`np.zeros(N)`, `np.random.randn(N)`), or, when a 2-D `(1, N)` is kept,
-index the trailing axis (`energy[0, i-1]`). The former is cleaner and matches
-how the rest of the code indexes with a single subscript.
+**Fix (Candidate A).** Drop a **literal `1`** in the leading or trailing position
+of the **2-arg** form so a row/col vector becomes 1-D, for which single-subscript
+access is correct. Shared helper `dropSingletonVectorDim` in `03_transform.ts`,
+applied to `zeros`/`ones` (scoped by name inside the `reshape` case so `repmat` —
+which shares that mode — keeps its reps tuple) and to `rand`/`randn` via a new
+`rand_shape` arg-mode that emits separate dim args (`np.random.rand(n)`, not a
+tuple). Single-arg `zeros(n)` (MATLAB n×n) is untouched. Regression tests added
+(`zeros(1,n)`/`zeros(n,1)` → `np.zeros(n)`; `randn`/`rand`; repmat/matrix kept
+2-D). Curated oracle case `tests/oracle-cases/preallocate_loop.m` added — crashed
+before, runs after; its `length(z)` line guards that `length` stays correct.
+
+**Result.** `npm test` 180 → 184. Curated oracle 6/6 → **7/7 clean**.
+
+### Follow-up: `size()` / `[r,c]=size()` on a de-2-D'd row vector — OPEN (evidence-gated)
+
+After the fix the array is genuinely 1-D, so `length`/`numel` stay correct
+(`np.max(x.shape)` = N, `x.size` = N) but `size()` diverges from MATLAB:
+`size(A)` → `A.shape` = `(N,)` not `[1 N]`, `[r, c] = size(A)` can't unpack, and
+`size(A, 2)` → `A.shape[1]` → IndexError. Accepted tradeoff: the
+preallocate-then-loop idiom (the common case) now runs correctly, which is what
+moves the runnable rate. **Do not** add shape-aware `size`/`length` speculatively
+— revisit only if the corpus shows real `size(rowvec, 2)` / `[r,c]=size(rowvec)`
+usage on a de-2-D'd vector.
 
 ---
 
@@ -279,9 +303,10 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 ---
 
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
-comment-rename), #2, dual-return max/min — curated set now 6/6. Still open: #3
-(findpeaks return-shape), #4 (row-vector `(1,N)` + 1-based loop indexing), and
-the smoke **SyntaxError / matrix-literal** bucket (the big one — see baseline).
+comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D) —
+curated set now 7/7. Still open: #3 (findpeaks return-shape), the #4 follow-up
+(`size()` on de-2-D'd vectors, evidence-gated), and the smoke **SyntaxError /
+matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
 construct names stay private — prioritize the open buckets from the corpus +
 oracle, not telemetry strings._

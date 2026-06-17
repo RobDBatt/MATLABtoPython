@@ -145,6 +145,30 @@ describe('Function Mapping', () => {
     expect(py('A = ones(2, 3);')).toBe('A = np.ones((2, 3))')
   })
 
+  it('emits 1-D for row-vector zeros(1, n) so single-subscript access works', () => {
+    // Regression (2026-06): `zeros(1, n)` → `np.zeros((1, n))` (2-D, axis 0
+    // size 1), but `z(i)` → `z[i - 1]` indexes axis 0 → IndexError. Drop the
+    // literal leading 1 → 1-D `np.zeros(n)`.
+    expect(py('z = zeros(1, n);')).toBe('z = np.zeros(n)')
+  })
+
+  it('emits 1-D for column-vector zeros(n, 1)', () => {
+    expect(py('z = zeros(n, 1);')).toBe('z = np.zeros(n)')
+  })
+
+  it('emits 1-D for randn/rand row/col vectors (separate dim args, no tuple)', () => {
+    expect(py('r = randn(1, n);')).toBe('r = np.random.randn(n)')
+    expect(py('r = rand(n, 1);')).toBe('r = np.random.rand(n)')
+  })
+
+  it('keeps 2-D for genuine matrices and single-arg / repmat forms', () => {
+    // No literal 1 in a 2-arg dim list → unchanged 2-D shape.
+    expect(py('A = zeros(3, 4);')).toBe('A = np.zeros((3, 4))')
+    // repmat shares the reshape arg-mode but must keep its reps tuple intact.
+    expect(py('B = repmat(A, 1, 3);')).toContain('np.tile')
+    expect(py('B = repmat(A, 1, 3);')).toContain('1, 3')
+  })
+
   it('converts disp to print', () => {
     expect(py("disp('hello');")).toBe("print('hello')")
   })
