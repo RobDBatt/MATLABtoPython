@@ -5,6 +5,43 @@ minimal repro and current status. Source case: a Signal Processing example
 (noisy sine → bandpass → FFT → peaks → energy loop) that exercised four
 distinct weaknesses at once.
 
+## Oracle baseline (2026-06)
+
+`scripts/oracle/run-oracle.ts` converts each .m and **executes** the Python
+(numpy/scipy), not just `py_compile`. First baselines reordered the priorities:
+
+- **Smoke set** (cloned repos, ~230 sampled): `SyntaxError` is the dominant
+  converter defect (~6–8% of files, up to 27% in matrix-heavy code). Root cause:
+  matrix-literal space→comma and colon-range handling choke when an element
+  itself contains `[...]` indexing, a function call, or `.T`.
+- **Curated set** (`tests/oracle-cases/`, self-contained): 5/6 basic idioms fail
+  on one root cause — **numeric array literals `[1 2 3]` are emitted as Python
+  lists, not `np.array`** — so vector arithmetic, comparison, reduction, and
+  `.shape` all break. This is the single biggest lever (see #0 below).
+
+Run: `npx tsx scripts/oracle/run-oracle.ts --set curated` (needs python3 +
+numpy + scipy).
+
+---
+
+## 0. Array literals emitted as Python lists, not np.array — TOP PRIORITY
+
+**Symptom.** `v = [1 2 3]; w = v .* 2 + 1` → `v = [1, 2, 3]` (a list), then
+`[1, 2, 3] * 2 + 1` → `TypeError`. Also `v > 5`, `sqrt(v)`, `length(v)` /
+`v.shape`, `[mx, i] = max(v)` all break because `v` is a list, not an ndarray.
+
+**Cause.** MATLAB `[...]` is *always* an array constructor, but the pipeline
+emits a bare Python list. #2 (below) only wrapped literals directly adjacent to
+`*`//`@`; the general case (assignment, function arg, comparison) is unwrapped.
+
+**Fix idea.** Emit numeric/expression bracket literals as `np.array([...])`
+generally — not just when adjacent to an operator. Must still exclude: cell
+`{...}`, string lists, multiple-return LHS (`[a, b] = ...`), and literals used
+purely as index lists. Measure against curated (should go 6/6) AND smoke
+(SyntaxError bucket must not regress). Supersedes #2's narrow trigger.
+
+---
+
 ## Reference: the example that surfaced these
 
 MATLAB in:
