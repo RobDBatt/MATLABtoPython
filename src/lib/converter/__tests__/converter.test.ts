@@ -345,12 +345,20 @@ describe('Toolbox Mapping', () => {
     expect(out).not.toContain('locs - 1')
   })
 
-  it('findpeaks Name/Value form still defers to the name-swap (+ flag)', () => {
-    // Options need height=/distance=/prominence= kwargs — not handled yet.
+  it('findpeaks Name/Value options map to find_peaks kwargs', () => {
     expect(py("peaks = findpeaks(P, 'MinPeakHeight', 0.5);"))
-      .toContain("signal.find_peaks(P, 'MinPeakHeight', 0.5)")
-    expect(py("[pks, locs] = findpeaks(P, 'MinPeakHeight', 0.5);"))
-      .toContain("signal.find_peaks(P, 'MinPeakHeight', 0.5)")
+      .toBe('peaks = P[signal.find_peaks(P, height=0.5)[0]]')
+    expect(py("p = findpeaks(x, 'MinPeakHeight', 0.5, 'MinPeakDistance', 3);"))
+      .toBe('p = x[signal.find_peaks(x, height=0.5, distance=3)[0]]')
+    // two-output with options
+    expect(py("[pks, locs] = findpeaks(x, 'MinPeakProminence', 2);"))
+      .toBe('locs = signal.find_peaks(x, prominence=2)[0]\npks = x[locs]')
+  })
+
+  it('findpeaks unmappable option (NPeaks) defers to the name-swap', () => {
+    // No clean scipy equivalent → leave as a name-swap (don't silently drop it).
+    expect(py("p = findpeaks(x, 'NPeaks', 5);"))
+      .toContain("signal.find_peaks(x, 'NPeaks', 5)")
   })
 })
 

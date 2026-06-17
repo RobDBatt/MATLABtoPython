@@ -163,7 +163,7 @@ corpus shows demand.
 
 ---
 
-## 3. `findpeaks` return-shape mismatch — FIXED (single + two-output); options OPEN
+## 3. `findpeaks` return-shape mismatch — FIXED (single + two-output + options)
 
 **Symptom.** `scipy.signal.find_peaks` returns `(indices, properties)`, a tuple.
 MATLAB's `findpeaks(P)` returns peak *values*, so `peaks = findpeaks(P)` →
@@ -202,10 +202,16 @@ curated case `tests/oracle-cases/findpeaks_locs.m` (crashed before — `locs` wa
 props dict → `dict - 1` `TypeError`; runs after). `npm test` 193 → 195. Curated
 oracle 11/11.
 
-### Still OPEN
-- **Name/Value options** `findpeaks(P, 'MinPeakHeight', h)` (single- *and*
-  two-output) — need `height=`/`distance=`/`prominence=` kwarg mapping. Left as
-  name-swap; dropping the options would silently change results, so we don't.
+**Fix (Name/Value options).** `mapFindpeaksOptions` maps the MATLAB options to
+find_peaks kwargs — `MinPeakHeight→height`, `MinPeakDistance→distance`,
+`MinPeakProminence→prominence`, `MinPeakWidth→width`, `Threshold→threshold` —
+folded into the value rewrite (single + two-output):
+`findpeaks(P, 'MinPeakHeight', h)` → `P[signal.find_peaks(P, height=h)[0]]`.
+Options with no clean scipy equivalent (`NPeaks`, `SortStr`, `Annotate`) or a
+malformed list defer to the name-swap + flag — dropping them would silently
+change results. Regression tests + curated case
+`tests/oracle-cases/findpeaks_opts.m` (`n=2 max=8`). `npm test` 200 → 201.
+Curated 15/15. **#3 fully closed.**
 
 ---
 
@@ -454,10 +460,11 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
 comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), repmat
-→ np.tile arg structure, #3 findpeaks single + two-output, isfield → membership,
-bare try/end, numpy-import-from-literal-wrap. Still open: #3 follow-up (findpeaks
-Name/Value options), the #4 follow-up
-(`size()` on de-2-D'd vectors, evidence-gated), `isa`/`get`/`set`, and the smoke
+→ np.tile arg structure, #3 findpeaks (single + two-output + options), isfield →
+membership, bare try/end, numpy-import-from-literal-wrap, path commands. Still
+open: the #4 follow-up (`size()` on de-2-D'd vectors, evidence-gated),
+`isa`/`get`/`set`, multi-line cell/matrix literals (`'{' was never closed` —
+needs tokenizer bracket-continuation), `entropy` (flag-not-map), and the smoke
 **SyntaxError / matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
 construct names stay private — prioritize the open buckets from the corpus +

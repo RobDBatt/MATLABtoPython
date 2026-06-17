@@ -2062,11 +2062,39 @@ const TOOLBOX_SPECIFIC_HELP: Record<string, string> = {
  *     `locs` is registered 0-based in Stage 4 (buildZeroBasedVars) so a later
  *     `SIG(locs)` becomes `SIG[locs]`, not `SIG[locs - 1]`.
  *
- * Still deferred (generic name-swap + TOOLBOX flag): Name/Value options
- * `findpeaks(P, 'MinPeakHeight', h)` — need height=/distance=/prominence=
- * kwargs. Silently dropping them would change results, so those calls fall
- * through unchanged and the flag explains it.
+ * Name/Value options `findpeaks(P, 'MinPeakHeight', h)` are mapped to
+ * find_peaks kwargs (height/distance/prominence/width/threshold) and folded
+ * into the value rewrite: `P[signal.find_peaks(P, height=h)[0]]`. Options with
+ * no clean scipy equivalent (NPeaks, SortStr, …) are left as a name-swap + flag
+ * — dropping them would silently change results.
  */
+
+// MATLAB findpeaks Name/Value option → scipy.signal.find_peaks kwarg.
+const FINDPEAKS_OPT_MAP: Record<string, string> = {
+  minpeakheight: 'height',
+  minpeakdistance: 'distance',
+  minpeakprominence: 'prominence',
+  minpeakwidth: 'width',
+  threshold: 'threshold',
+}
+
+/**
+ * Map a findpeaks Name/Value tail (everything after the signal arg) to scipy
+ * find_peaks kwargs. Returns `null` if any option is unmappable or the list is
+ * malformed (odd length) — the caller then defers to the name-swap + flag.
+ */
+function mapFindpeaksOptions(rest: string[]): string[] | null {
+  if (rest.length % 2 !== 0) return null
+  const kwargs: string[] = []
+  for (let i = 0; i < rest.length; i += 2) {
+    const name = rest[i].replace(/^['"]|['"]$/g, '').toLowerCase()
+    const py = FINDPEAKS_OPT_MAP[name]
+    if (!py) return null
+    kwargs.push(`${py}=${rest[i + 1]}`)
+  }
+  return kwargs
+}
+
 function convertFindpeaks(
   content: string,
   imports: Set<string>,
@@ -2098,11 +2126,13 @@ function convertFindpeaks(
       j++
     }
     const twoArgs = splitArgsRespectingStrings(content.slice(twoOut[0].length, j)).map(s => s.trim())
-    // Only the single-signal form maps cleanly; Name/Value options still defer
-    // to the generic name-swap + flag below.
-    if (twoArgs.length === 1 && twoArgs[0] !== '') {
+    if (twoArgs.length >= 1 && twoArgs[0] !== '') {
       const sig = twoArgs[0]
+      const kwargs = mapFindpeaksOptions(twoArgs.slice(1))
+      // Unmappable / malformed options → leave for the generic name-swap + flag.
+      if (kwargs === null) return content
       imports.add('scipy.signal')
+      const callArgs = kwargs.length ? `${sig}, ${kwargs.join(', ')}` : sig
       if (sig.includes('(')) {
         flags.push({
           type: 'WARNING',
@@ -2119,7 +2149,7 @@ function convertFindpeaks(
         outputLine: 0,
         originalCode: content,
       })
-      return `${locs} = signal.find_peaks(${sig})[0]\n${pks} = ${sig}[${locs}]`
+      return `${locs} = signal.find_peaks(${callArgs})[0]\n${pks} = ${sig}[${locs}]`
     }
     // Options present → leave for the generic name-swap + flag.
     return content
@@ -2129,9 +2159,11 @@ function convertFindpeaks(
   let evalFlagged = false
   const result = replaceFunctionCalls(content, 'findpeaks', (full, args) => {
     const argList = splitArgsRespectingStrings(args).map(s => s.trim())
-    // Only the single-signal form (no Name/Value options) maps cleanly to values.
-    if (argList.length !== 1 || argList[0] === '') return full
+    if (argList.length === 0 || argList[0] === '') return full
     const sig = argList[0]
+    // Map any Name/Value options; unmappable ones → defer to the name-swap.
+    const kwargs = mapFindpeaksOptions(argList.slice(1))
+    if (kwargs === null) return full
     rewrote = true
     // SIG appears twice; warn once if it's an expression with side effects.
     if (sig.includes('(') && !evalFlagged) {
@@ -2144,7 +2176,8 @@ function convertFindpeaks(
         originalCode: content,
       })
     }
-    return `${sig}[signal.find_peaks(${sig})[0]]`
+    const callArgs = kwargs.length ? `${sig}, ${kwargs.join(', ')}` : sig
+    return `${sig}[signal.find_peaks(${callArgs})[0]]`
   })
   if (rewrote) {
     imports.add('scipy.signal')
