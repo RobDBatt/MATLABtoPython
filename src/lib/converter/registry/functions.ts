@@ -78,6 +78,8 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   max:     { python: 'np.max',            args: 'passthrough', imports: ['numpy'] },
   min:     { python: 'np.min',            args: 'passthrough', imports: ['numpy'] },
   sum:     { python: 'np.sum',            args: 'passthrough', imports: ['numpy'] },
+  any:     { python: 'np.any',            args: 'passthrough', imports: ['numpy'] },
+  all:     { python: 'np.all',            args: 'passthrough', imports: ['numpy'] },
   prod:    { python: 'np.prod',           args: 'passthrough', imports: ['numpy'] },
   cumsum:  { python: 'np.cumsum',         args: 'passthrough', imports: ['numpy'] },
   cumprod: { python: 'np.cumprod',        args: 'passthrough', imports: ['numpy'] },
