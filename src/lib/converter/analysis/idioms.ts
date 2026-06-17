@@ -168,6 +168,20 @@ export function applyIdioms(source: string): { code: string; imports: Set<string
   const imports = new Set<string>()
   let code = source
 
+  // Line-aware flatten rewrite: X(:) becomes .flatten(order="F") only on
+  // the RHS of an assignment. LHS occurrences (e.g. `last(:) = ...` or
+  // `[~, label(:)] = max(...)`) are left alone so the paren→bracket pass
+  // can turn them into slice assignments.
+  //
+  // MUST run BEFORE the bracket-range idiom rules below. The 3-part
+  // `[a:step:b]` rule's permissive char class (`[^\[\],;]+?`) allows
+  // parens and colons, so on a space-separated row of flatten calls like
+  // `[a(:) b(:)]` it would read the colons inside `(:)` as range
+  // separators and mangle the line into `np.arange(a(, ) + ) b(...)`.
+  // Resolving `(:)` → `.flatten(order="F")` first removes those colons so
+  // the range rules can't misfire.
+  code = code.split('\n').map(rewriteFlattenCall).join('\n')
+
   for (const rule of IDIOM_RULES) {
     const before = code
     code = code.replace(rule.pattern, rule.replacement)
@@ -175,12 +189,6 @@ export function applyIdioms(source: string): { code: string; imports: Set<string
       for (const imp of rule.imports) imports.add(imp)
     }
   }
-
-  // Line-aware flatten rewrite: X(:) becomes .flatten(order="F") only on
-  // the RHS of an assignment. LHS occurrences (e.g. `last(:) = ...` or
-  // `[~, label(:)] = max(...)`) are left alone so the paren→bracket pass
-  // can turn them into slice assignments.
-  code = code.split('\n').map(rewriteFlattenCall).join('\n')
 
   return { code, imports }
 }

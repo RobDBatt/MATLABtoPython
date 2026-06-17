@@ -158,30 +158,56 @@ how the rest of the code indexes with a single subscript.
 
 ---
 
-## Colon-range vs `(:)`-flatten in space-separated rows — OPEN (next big item)
+## Colon-range vs `(:)`-flatten in space-separated rows — FIXED
 
 **Symptom.** `r = [a(:) b(:)]` → `np.arange(a(, ) + ) b(, ) b()` (garbage,
-SyntaxError). The rest of the smoke `SyntaxError` bucket after the nested-row fix
-below; common in spatialmath-style `[n(:) o(:) a(:)]` rotation-matrix builds.
+SyntaxError). Part of the smoke `SyntaxError` bucket; common in spatialmath-style
+`[n(:) o(:) a(:)]` rotation-matrix builds.
 
 **Precise trigger (isolated).** ONLY space-separated *multiple* `(:)` flattens in
 one bracket row. All adjacent forms are correct: `a(:)`, `[a(:)]`,
 `a(:) + b(:)`, and column form `[a(:); b(:)]`.
 
-**Cause.** Stage-03 range handlers (`preTransform`, the `(expr:expr)` regexes)
-see the `:` inside `(:)` before Stage-04 rewrites `(:)` → `.flatten(order="F")`,
-and mis-fire across the space-separated elements.
+**Cause (refined by tracing).** Not a Stage-03 range handler — the corruption
+happens earlier, inside the **idiom pass** (`analysis/idioms.ts`, the first
+sub-step of `preTransform`). The 3-part bracket-range rule
+`[a:step:b] → np.arange(a, b + step, step)` uses a permissive char class
+(`[^\[\],;]+?`) that allows parens, spaces, and colons, so on `[a(:) b(:)]` it
+reads the three colons inside the `(:)` calls as a `start:step:stop` range. Its
+2-part sibling (char class `[\w.+\-*/]+`) excludes parens and never misfired —
+that asymmetry made the 3-part rule the sole offender. The line-aware flatten
+rewrite (`rewriteFlattenCall`) ran *after* the idiom-rule loop, too late.
 
-**Candidate fix.** Rewrite `\w+\(:\)` → `.flatten(order="F")` EARLY (start of
-preTransform, before the range regexes) — but it MUST replicate Stage-04's
-LHS-skip so `A(:) = v` still becomes `A[:] = v` (slice assignment), not
-`A.flatten() = v`. 
+**Fix.** Reordered `applyIdioms` so the line-aware `rewriteFlattenCall` pass runs
+**before** the `IDIOM_RULES` loop. `(:)` becomes `.flatten(order="F")` first, so
+the colons are gone before the bracket-range rules run and they can't misfire.
+`rewriteFlattenCall` already has the required LHS-skip (it only rewrites the RHS
+of a top-level `=`), so `A(:) = v` is untouched and still becomes a Stage-04
+slice assignment. No new regex; reuses existing LHS-aware logic. Regression test
+added (`[a(:) b(:)]` and `[n(:) o(:) a(:)]` → flatten form, no `np.arange`);
+full `npm test` green (179 → 180).
 
-**Why deferred to Claude Code:** this touches the range/colon core guarded by
-~30 passing tests (reverse-slice, 3-part ranges, complex ranges, `end` idioms,
-LHS slice-assignment). High regression risk — needs the full `npm test` suite to
-gate, which the Cowork sandbox can't run (vitest/rolldown). Diagnosis is done;
-this is a well-specified task to do where the suite runs.
+## Horizontal concat of column vectors → np.column_stack — OPEN
+
+**Symptom.** `r = [a(:) b(:)]` now emits valid Python
+`r = [a.flatten(order="F"), b.flatten(order="F")]` — a Python *list of two
+arrays*, not MATLAB's N×2 horizontal concatenation. The semantically faithful
+output is `np.column_stack([a.flatten(order="F"), b.flatten(order="F")])` (or
+`np.array([...]).T`).
+
+**Scope.** This is a pre-existing **row-concat-of-vectors shape gap**, not
+specific to `(:)`: the same question applies to `[a b]` of two column vectors,
+and to #0's `np.array([...])` wrapping (what shape does a space-separated row of
+vectors produce?). The colon-range fix above deliberately stayed in scope —
+"stop the corruption, emit valid Python" — which is what moves the oracle
+runnable rate. Correct N×2 shaping is a separate, lower-urgency semantics item:
+the current output is valid Python and runs; it's just shaped as a list rather
+than a 2-D array.
+
+**Fix idea.** When a bracket row is a space-separated concat of ≥2 column
+vectors / `(:)` flattens (no `;` row separators), emit
+`np.column_stack([...])` instead of a bare list. Coordinate with #0's array-
+literal wrapping so the two rules agree on the shape contract for row-of-vectors.
 
 ## Matrix-literal rows with nested elements — FIXED (partial bucket)
 

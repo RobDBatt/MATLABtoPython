@@ -309,6 +309,24 @@ describe('Index Shifting', () => {
     expect(py('v = A(:);')).toContain('A.flatten(order="F")')
   })
 
+  it('converts space-separated multiple (:) flattens in one row without np.arange corruption', () => {
+    // Regression (2026-06): `[a(:) b(:)]` was mangled into
+    // `np.arange(a(, ) + ) b(, ) b()` because the idiom pass's 3-part
+    // bracket-range rule (`[a:step:b]`) read the colons inside `(:)` as
+    // range separators. Fixed by running the flatten rewrite BEFORE the
+    // idiom rules so the colons are gone before the range rules run.
+    const r = py('r = [a(:) b(:)];')
+    expect(r).toContain('a.flatten(order="F")')
+    expect(r).toContain('b.flatten(order="F")')
+    expect(r).not.toContain('np.arange')
+    // Three-element rotation-matrix form must survive too.
+    const r3 = py('R = [n(:) o(:) a(:)];')
+    expect(r3).toContain('n.flatten(order="F")')
+    expect(r3).toContain('o.flatten(order="F")')
+    expect(r3).toContain('a.flatten(order="F")')
+    expect(r3).not.toContain('np.arange')
+  })
+
   it('converts A(N/2:end) to A[N/2:]', () => {
     expect(py('y = A(N/2:end);')).toContain('A[N/2:]')
   })
