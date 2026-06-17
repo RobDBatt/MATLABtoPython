@@ -415,6 +415,16 @@ describe('Special Constructs', () => {
     expect(py('mypath = 3;')).toBe('mypath = 3')
   })
 
+  it('converts every struct() on a line to a dict literal (not just the first)', () => {
+    // Two structs on one line (a cell row): the old code did only the first,
+    // leaving the second as an invalid `dict('k', v, ...)`.
+    expect(py("c = {struct('x', 1) struct('y', 2, 'z', 3)};"))
+      .toBe("c = [{'x': 1}, {'y': 2, 'z': 3}]")
+    // Nested struct value converts too.
+    expect(py("n = struct('a', 1, 'b', struct('c', 2));"))
+      .toBe("n = {'a': 1, 'b': {'c': 2}}")
+  })
+
   it('removes hold on with comment', () => {
     const result = py('hold on;')
     expect(result).toContain('hold on removed')

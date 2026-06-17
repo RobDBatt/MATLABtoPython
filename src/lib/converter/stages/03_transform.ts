@@ -3313,45 +3313,23 @@ function findMldivRhsEnd(s: string, start: number): number {
  * Handles nested function calls in values like ci_boot(1).
  */
 function convertStructCreation(content: string): string {
-  const idx = content.search(/\bstruct\s*\(/)
-  if (idx === -1) return content
-
-  // Find the opening paren
-  const openParen = content.indexOf('(', idx)
-  if (openParen === -1) return content
-
-  // Find matching closing paren using balanced matching
-  let depth = 1
-  let i = openParen + 1
-  while (i < content.length && depth > 0) {
-    if (content[i] === '(') depth++
-    else if (content[i] === ')') depth--
-    i++
-  }
-  if (depth !== 0) return content // unbalanced
-
-  const argsStr = content.slice(openParen + 1, i - 1)
-  const args = splitFormatArgs(argsStr)
-
-  if (args.length >= 2 && args.length % 2 === 0) {
+  if (!/\bstruct\s*\(/.test(content)) return content
+  // Convert EVERY struct(...) on the line — a cell row can hold several. The
+  // old version converted only the first, leaving later ones to a `struct`→
+  // `dict` fallback that produced invalid `dict('k', v, …)`.
+  return replaceFunctionCalls(content, 'struct', (full, argsStr) => {
+    const args = splitFormatArgs(argsStr)
+    if (args.length < 2 || args.length % 2 !== 0) return full // can't parse — leave
     const pairs: string[] = []
-    let allKeysAreStrings = true
     for (let k = 0; k < args.length; k += 2) {
       const key = args[k].trim()
-      const val = args[k + 1].trim()
-      if (!(key.startsWith("'") || key.startsWith('"'))) {
-        allKeysAreStrings = false
-        break
-      }
+      if (!(key.startsWith("'") || key.startsWith('"'))) return full // non-string key — leave
+      // Recurse so a nested struct(...) value converts too.
+      const val = convertStructCreation(args[k + 1].trim())
       pairs.push(`${key}: ${val}`)
     }
-    if (allKeysAreStrings && pairs.length > 0) {
-      const replacement = `{${pairs.join(', ')}}`
-      return content.slice(0, idx) + replacement + content.slice(i)
-    }
-  }
-
-  return content // can't parse, leave as-is
+    return `{${pairs.join(', ')}}`
+  })
 }
 
 /**

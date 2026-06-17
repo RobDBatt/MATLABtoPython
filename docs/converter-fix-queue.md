@@ -428,9 +428,14 @@ curated case `tests/oracle-cases/multiline_cell.m` (`x=200`). `npm test` 201 →
   `np.array([[1, 2], [3, 4]])`. Regression test + curated case
   `tests/oracle-cases/multiline_matrix.m` (`rows=2 cols=3 sum=21`). `npm test`
   202 → 203. Curated 17/17.
-- **`struct()` with >2 name/value pairs → `dict(positional...)` — OPEN.** e.g.
-  `struct('type','c','n',6)` → `dict('type', 'c', 'n', 6)` (invalid). Separate
-  struct-conversion bug.
+- **Multiple `struct()` on one line → invalid `dict(positional...)` — FIXED.**
+  `{struct('x',1) struct('y',2,'z',3)}` → was `[{'x': 1}, dict('y', 2, 'z', 3)]`.
+  `convertStructCreation` only converted the *first* struct on a line; the rest
+  fell through to a `struct`→`dict` fallback. Rewrote it (via `replaceFunctionCalls`)
+  to convert **every** struct on the line, recursing on values for nested
+  structs → `[{'x': 1}, {'y': 2, 'z': 3}]`, `struct('a',1,'b',struct('c',2))` →
+  `{'a': 1, 'b': {'c': 2}}`. Regression test + curated case
+  `tests/oracle-cases/struct_cell.m` (`n=2`). `npm test` 203 → 204. Curated 18/18.
 
 ## Registry coverage notes (2026-06)
 
