@@ -41,8 +41,12 @@ jobs:
       - name: Sanity-check deps are importable by python3
         run: python3 -c "import numpy, scipy; print('numpy', numpy.__version__, 'scipy', scipy.__version__)"
 
+      # Use `npm install` (not `npm ci`): the committed lockfile is valid for the
+      # local npm but a slightly different CI npm version rejects an exact nested
+      # @emnapi pin under `npm ci`'s strict check. `npm install` is lenient about
+      # that drift — same as the Vercel build — and still respects the lockfile.
       - name: Install Node dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Unit tests
         run: npm test
