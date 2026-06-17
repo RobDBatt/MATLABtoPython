@@ -158,8 +158,24 @@ how the rest of the code indexes with a single subscript.
 
 ---
 
-_Found via manual review of converter output (2026-06). #1 and #2 fixed (plus
-the comment-rename follow-up); #3–#4 are open. Telemetry (site='matlab') will
-show how often these flag types appear in real usage, but the specific construct
-names stay private — so prioritize #3–#4 from the corpus + this doc, not from
-telemetry strings._
+## Dual-return max/min — FIXED
+
+**Symptom.** `[mx, pos] = max(v)` → `mx, pos = np.max(v)` → "cannot unpack
+non-iterable" (np.max is value-only). The last curated red.
+
+**Fix.** Idiom rules in `analysis/idioms.ts`: `[v, i] = max(X)` →
+`v, i = np.amax(X), np.argmax(X)` (and `min`/`argmin`). Uses `amax`/`amin` so
+the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
+0-based per the existing `[~, idx]` convention. Regression test added.
+
+**Result.** Curated runnable rate **83% → 100% (6/6)**. Smoke unchanged.
+
+---
+
+_Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
+comment-rename), #2, dual-return max/min — curated set now 6/6. Still open: #3
+(findpeaks return-shape), #4 (row-vector `(1,N)` + 1-based loop indexing), and
+the smoke **SyntaxError / matrix-literal** bucket (the big one — see baseline).
+Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
+construct names stay private — prioritize the open buckets from the corpus +
+oracle, not telemetry strings._

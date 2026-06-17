@@ -91,6 +91,27 @@ export const IDIOM_RULES: IdiomRule[] = [
     imports: ['numpy'],
   },
 
+  // ── Dual-return max/min (value + index) ───────────────────
+  //
+  // MATLAB's `[v, i] = max(X)` returns the value AND its index. Python's
+  // `np.max` is value-only and `np.argmax` is index-only, so emit a tuple
+  // unpack. Index is 0-based (numpy convention) — consistent with the
+  // `[~, idx] = max(X)` rule above; downstream index tracking treats
+  // argmax results as already 0-based.
+
+  {
+    name: '[v, i] = max(X) -> v, i = np.max(X), np.argmax(X)',
+    pattern: /\[\s*(\w+)\s*,\s*(\w+)\s*\]\s*=\s*max\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    replacement: '$1, $2 = np.amax($3), np.argmax($3)',
+    imports: ['numpy'],
+  },
+  {
+    name: '[v, i] = min(X) -> v, i = np.min(X), np.argmin(X)',
+    pattern: /\[\s*(\w+)\s*,\s*(\w+)\s*\]\s*=\s*min\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    replacement: '$1, $2 = np.amin($3), np.argmin($3)',
+    imports: ['numpy'],
+  },
+
   // ── Dual-return sort (values + indices) ───────────────────
   //
   // MATLAB's `[sorted_vals, idx] = sort(X)` returns BOTH. Python's

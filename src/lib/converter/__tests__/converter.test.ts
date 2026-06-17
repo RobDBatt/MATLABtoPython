@@ -1115,3 +1115,14 @@ describe('Array-literal np.array wrapping (#0)', () => {
     expect(code).not.toMatch(/np\.array\(\[b, a\]\)/)
   })
 })
+
+describe('Dual-return max/min (#3)', () => {
+  it('[v, i] = max(x) returns value and index', () => {
+    const code = convert('[mx, pos] = max(v);').python
+    expect(code).toMatch(/mx, pos = np\.amax\(v\), np\.argmax\(v\)/)
+  })
+  it('[v, i] = min(x) returns value and index', () => {
+    const code = convert('[mn, pos] = min(v);').python
+    expect(code).toMatch(/mn, pos = np\.amin\(v\), np\.argmin\(v\)/)
+  })
+})
