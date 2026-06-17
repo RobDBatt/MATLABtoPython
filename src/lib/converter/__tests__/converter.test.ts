@@ -1129,8 +1129,9 @@ describe('Dual-return max/min (#3)', () => {
 
 describe('Matrix-literal rows with nested elements (SyntaxError bucket)', () => {
   it('splits space-separated row elements that contain nested indexing', () => {
-    const code = convert('M = [A(1,1) 5; 6 7];').python
-    // each row must be comma-separated even though A(1,1)->A[0, 0] has an inner comma
-    expect(code).toMatch(/np\.array\(\[\[A\[0, 0\], 5\], \[6, 7\]\]\)/)
+    // Define A so it's a known array (so A(1,1) index-shifts to A[0, 0]); the
+    // point of the test is that the row splits despite the nested comma in A[0, 0].
+    const code = convert('A = [1 2; 3 4];\nM = [A(1,1) 5; 6 7];').python
+    expect(code).toMatch(/M = np\.array\(\[\[A\[0, 0\], 5\], \[6, 7\]\]\)/)
   })
 })
