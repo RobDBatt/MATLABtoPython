@@ -1963,6 +1963,66 @@ const TOOLBOX_SPECIFIC_HELP: Record<string, string> = {
   wthresh: 'pywt.threshold(data, value, mode) — mode is \'soft\' or \'hard\' (MATLAB uses \'s\' or \'h\').',
 }
 
+/**
+ * MATLAB `findpeaks(X)` returns peak VALUES; scipy's `signal.find_peaks(X)`
+ * returns `(indices, properties)`. For the single-output value form we recover
+ * the values by indexing the signal with the returned indices:
+ *
+ *   x = findpeaks(SIG)  →  x = SIG[signal.find_peaks(SIG)[0]]
+ *
+ * Deliberately left for the generic name-swap + TOOLBOX flag (queued separately):
+ *   - two-output `[pks, locs] = findpeaks(P)` — needs a two-line emit plus
+ *     0-based `locs` tracking so a later `P(locs)` isn't double-shifted;
+ *   - Name/Value options `findpeaks(P, 'MinPeakHeight', h)` — need
+ *     height=/distance=/prominence= kwargs. Silently dropping them would change
+ *     results, so those calls fall through unchanged and the flag explains it.
+ */
+function convertFindpeaks(
+  content: string,
+  imports: Set<string>,
+  flags: Flag[],
+  line: StructuredLine,
+): string {
+  if (!/\bfindpeaks\s*\(/.test(content)) return content
+  // Two-output form (after the multi-return pre-pass this is `a, b = findpeaks`,
+  // but guard the bracket form too). Don't apply the value rewrite — defer.
+  if (/^\s*(?:\[[^\]]*,[^\]]*\]|\w+\s*,\s*\w+)\s*=\s*findpeaks\s*\(/.test(content)) {
+    return content
+  }
+  let rewrote = false
+  let evalFlagged = false
+  const result = replaceFunctionCalls(content, 'findpeaks', (full, args) => {
+    const argList = splitArgsRespectingStrings(args).map(s => s.trim())
+    // Only the single-signal form (no Name/Value options) maps cleanly to values.
+    if (argList.length !== 1 || argList[0] === '') return full
+    const sig = argList[0]
+    rewrote = true
+    // SIG appears twice; warn once if it's an expression with side effects.
+    if (sig.includes('(') && !evalFlagged) {
+      evalFlagged = true
+      flags.push({
+        type: 'WARNING',
+        message: 'findpeaks signal argument is evaluated twice in `SIG[signal.find_peaks(SIG)[0]]`. Assign it to a variable first if evaluation is expensive or has side effects.',
+        originalLine: line.originalLineStart,
+        outputLine: 0,
+        originalCode: content,
+      })
+    }
+    return `${sig}[signal.find_peaks(${sig})[0]]`
+  })
+  if (rewrote) {
+    imports.add('scipy.signal')
+    flags.push({
+      type: 'TOOLBOX',
+      message: 'findpeaks → peak values via signal.find_peaks(x)[0] (MATLAB returns values; scipy returns indices). For Name/Value options, pass height=/distance=/prominence= to find_peaks.',
+      originalLine: line.originalLineStart,
+      outputLine: 0,
+      originalCode: content,
+    })
+  }
+  return result
+}
+
 function transformToolboxFunctions(
   content: string,
   imports: Set<string>,
@@ -1970,6 +2030,10 @@ function transformToolboxFunctions(
   line: StructuredLine,
 ): string {
   let result = content
+
+  // findpeaks needs return-shape adaptation (values vs indices) before the
+  // generic name-swap below; handle the single-output form here.
+  result = convertFindpeaks(result, imports, flags, line)
 
   for (const [matlabName, mapping] of Object.entries(TOOLBOX_MAP)) {
     // Use negative lookbehind to avoid matching inside already-converted dotted names (np.interp etc.)

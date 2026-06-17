@@ -163,18 +163,37 @@ corpus shows demand.
 
 ---
 
-## 3. `findpeaks` return-shape mismatch — QUEUED (semantic)
+## 3. `findpeaks` return-shape mismatch — FIXED (single-output); two-output + options OPEN
 
 **Symptom.** `scipy.signal.find_peaks` returns `(indices, properties)`, a tuple.
-Downstream `peaks.shape` / treating `peaks` as peak values → `AttributeError`
-and wrong semantics. MATLAB's `findpeaks(P)` returns peak *values*.
+MATLAB's `findpeaks(P)` returns peak *values*, so `peaks = findpeaks(P)` →
+`peaks = signal.find_peaks(P)` assigned the tuple; downstream value use
+(`max(peaks)` etc.) raised `ValueError`/`AttributeError`.
 
-**Cause.** Direct name mapping without adapting the return contract. Already
-emits a TOOLBOX flag, but the generated code still assigns the raw tuple.
+**Cause.** `findpeaks` is `args: 'custom'` in `TOOLBOX_MAP`, but
+`transformToolboxFunctions` treats `custom` identically to passthrough — a bare
+name-swap — so the return contract was never adapted.
 
-**Fix idea.** For `findpeaks`, emit something like
-`peaks = P[signal.find_peaks(P)[0]]` (values at the returned indices), or assign
-`peaks_idx, _ = signal.find_peaks(P)` and flag clearly. Keep the TOOLBOX warning.
+**Fix (approach a, single-output).** `convertFindpeaks` in `03_transform.ts`,
+run before the generic toolbox name-swap: `x = findpeaks(SIG)` →
+`x = SIG[signal.find_peaks(SIG)[0]]` (peak values = signal indexed by the
+returned peak indices). Works inline too (`max(findpeaks(x))` →
+`np.max(x[signal.find_peaks(x)[0]])`). Adds `scipy.signal` import + a sharpened
+TOOLBOX flag. A `WARNING` fires if SIG is an expression (it's evaluated twice).
+Regression tests + curated case `tests/oracle-cases/findpeaks_values.m` (crashed
+before, runs after: `npeaks=3 max=5`).
+
+**Result.** `npm test` 184 → 187. Curated oracle 8/8 (incl. the new case).
+
+### Still OPEN (deferred deliberately, with a flag in the meantime)
+- **Two-output `[pks, locs] = findpeaks(P)`** — needs a two-line emit
+  (`locs = signal.find_peaks(P)[0]` then `pks = P[locs]`) **and** registering
+  `locs` as 0-based (like `np.argmax`/`np.where` in `buildZeroBasedVars`) so a
+  later `P(locs)` isn't double index-shifted. Currently falls through to the
+  name-swap (`pks, locs = signal.find_peaks(P)`) — wrong but not mangled.
+- **Name/Value options** `findpeaks(P, 'MinPeakHeight', h)` — need
+  `height=`/`distance=`/`prominence=` kwarg mapping. Left as name-swap; dropping
+  the options would silently change results, so we don't.
 
 ---
 
@@ -312,10 +331,11 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 ---
 
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
-comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D) —
-curated set now 7/7. Still open: #3 (findpeaks return-shape), the #4 follow-up
-(`size()` on de-2-D'd vectors, evidence-gated), and the smoke **SyntaxError /
-matrix-literal** bucket (the big one — see baseline).
+comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), #3
+findpeaks single-output. Still open: #3 follow-ups (findpeaks two-output +
+Name/Value options), the #4 follow-up (`size()` on de-2-D'd vectors,
+evidence-gated), and the smoke **SyntaxError / matrix-literal** bucket (the big
+one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
 construct names stay private — prioritize the open buckets from the corpus +
 oracle, not telemetry strings._
