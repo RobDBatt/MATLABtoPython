@@ -252,6 +252,26 @@ describe('Toolbox Mapping', () => {
   it('converts imread to skimage', () => {
     expect(py("I = imread('test.png');")).toContain("io.imread('test.png')")
   })
+
+  // findpeaks return-shape: MATLAB returns peak VALUES; scipy's find_peaks
+  // returns (indices, properties). Single-output recovers values by indexing
+  // the signal with the returned indices. (2026-06)
+  it('findpeaks (single output) → peak values via find_peaks indices', () => {
+    expect(py('pks = findpeaks(P);')).toBe('pks = P[signal.find_peaks(P)[0]]')
+    expect(imports('pks = findpeaks(P);')).toContain('scipy.signal')
+  })
+
+  it('findpeaks rewrites inside a larger expression too', () => {
+    expect(py('m = max(findpeaks(x));')).toBe('m = np.max(x[signal.find_peaks(x)[0]])')
+  })
+
+  it('findpeaks two-output and Name/Value forms are left for follow-up (name-swap only)', () => {
+    // Deliberately NOT value-rewritten yet (needs 0-based locs tracking /
+    // kwarg mapping). They must stay valid name-swaps, not get mangled.
+    expect(py('[pks, locs] = findpeaks(P);')).toContain('signal.find_peaks(P)')
+    expect(py("peaks = findpeaks(P, 'MinPeakHeight', 0.5);"))
+      .toContain("signal.find_peaks(P, 'MinPeakHeight', 0.5)")
+  })
 })
 
 // ============================================================
