@@ -33,11 +33,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mtopython.com"),
   title: {
-    default: "MATLABtoPython — Deterministic MATLAB to Python Converter",
+    default: "MATLAB to Python Converter — Deterministic, No AI Guessing",
     template: "%s | MATLABtoPython",
   },
   description:
-    "Convert MATLAB code to Python with deterministic, rule-based transformation. No AI hallucinations. Toolbox-aware. Same input, same output, every time.",
+    "Convert MATLAB to Python instantly with a deterministic, toolbox-aware converter — not generic AI. Same input, same output, with honest flags. Free for 50 lines.",
   keywords: [
     "matlab to python",
     "matlab python converter",

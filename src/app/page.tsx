@@ -25,12 +25,56 @@ const homeJsonLd = {
   ],
 }
 
+// Single source of truth for the FAQ: the visible copy below earns the
+// body-keyword value, the JSON-LD (built from the same array) earns the rich
+// snippet. Questions are drawn from the GSC query list + buyer objections.
+const faqs = [
+  {
+    q: 'How do I convert MATLAB code to Python?',
+    a: 'Paste your MATLAB into the converter and it returns runnable Python (NumPy/SciPy) instantly. The engine is rule-based and deterministic — it maps MATLAB syntax, indexing, and toolbox functions to their Python equivalents and flags anything it can’t translate, rather than guessing.',
+  },
+  {
+    q: 'Does this MATLAB to Python converter use AI?',
+    a: 'No. It is a deterministic, rule-based converter: the same MATLAB input always produces the same Python output. Unlike generic AI translators, it never hallucinates code — when a construct is ambiguous or unsupported, it flags it for review instead of producing silently wrong output.',
+  },
+  {
+    q: 'Is the MATLAB to Python converter free?',
+    a: 'Yes — you can convert up to 50 lines free, no signup. Paid plans add file upload, batch conversion, and larger limits.',
+  },
+  {
+    q: 'Which MATLAB toolboxes does it support?',
+    a: 'It maps functions from 10 common toolboxes — including Signal Processing (to scipy.signal), Statistics (scipy.stats), Image Processing (scikit-image), and Optimization (scipy.optimize) — and injects the correct Python imports automatically.',
+  },
+  {
+    q: 'Does it convert MATLAB to NumPy and SciPy?',
+    a: 'Yes. Matrix operations, indexing, and math map to NumPy; toolbox functions map to SciPy and other standard libraries, with imports added for you.',
+  },
+  {
+    q: 'Is my MATLAB code uploaded or stored?',
+    a: 'Conversion runs server-side and your source is not retained. Determinism means the tool is auditable — you can re-run the same input and get the same, reviewable output.',
+  },
+]
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+
 export default function Home() {
   return (
     <div className="mx-auto max-w-6xl px-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       {/* Hero */}
@@ -40,13 +84,14 @@ export default function Home() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed] animate-pulse" />
             923 real-world scripts tested · 69.8% compile clean first try
           </div>
-          <h1 className="font-[family-name:var(--font-syne)] text-4xl lg:text-5xl font-bold text-[#f0f0f8] leading-tight mb-4">
-            Your MATLAB code runs the research.
-            <br />
-            <span className="text-[#7c3aed]">Now get it off the lease.</span>
+          <h1 className="font-[family-name:var(--font-syne)] text-4xl lg:text-5xl font-bold text-[#f0f0f8] leading-tight mb-3">
+            MATLAB&nbsp;to&nbsp;Python Converter
           </h1>
+          <p className="font-[family-name:var(--font-syne)] text-xl lg:text-2xl text-[#7c3aed] font-semibold mb-5">
+            Your code runs the research — now get it off the lease.
+          </p>
           <p className="text-lg text-[#9ba3c4] mb-8 max-w-2xl leading-relaxed">
-            Deterministic MATLAB → Python. No AI hallucinations — rule-based, toolbox-aware,
+            Deterministic MATLAB to Python conversion. No AI hallucinations — rule-based, toolbox-aware,
             auditable. Flags what it can&apos;t convert instead of guessing wrong.
             Same input, same output, every time.
           </p>
@@ -191,6 +236,21 @@ export default function Home() {
             See all toolbox pages →
           </a>
         </p>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 border-t border-[#1e2547]">
+        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-8">
+          MATLAB to Python converter — FAQ
+        </h2>
+        <div className="grid md:grid-cols-2 gap-x-12 gap-y-8 max-w-4xl">
+          {faqs.map(f => (
+            <div key={f.q}>
+              <h3 className="text-[#f0f0f8] font-medium mb-1.5 text-[15px]">{f.q}</h3>
+              <p className="text-[#9ba3c4] text-sm leading-relaxed">{f.a}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* CTA */}
