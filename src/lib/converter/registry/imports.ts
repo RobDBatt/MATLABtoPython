@@ -155,3 +155,31 @@ export function buildImportBlock(imports: Set<string>): string {
 
   return lines.join('\n')
 }
+
+
+import { FUNCTION_MAP } from './functions'
+import { TOOLBOX_MAP } from './toolboxes'
+import { CONSTANT_MAP } from './constants'
+
+/**
+ * Aliases that will ACTUALLY be imported for a given source — used to scope the
+ * import-alias rename so a user variable named `signal`/`time`/`stats` is only
+ * renamed when the matching module is genuinely imported (i.e. the code uses a
+ * function/constant that triggers that import). Avoids renaming bare variables
+ * that shadow nothing.
+ */
+export function importedAliasesForSource(src: string): Set<string> {
+  const out = new Set<string>()
+  const addKeys = (keys?: string[]) => {
+    for (const k of keys || []) {
+      for (const a of parseBoundNames(IMPORT_STATEMENTS[k] || '')) out.add(a)
+    }
+  }
+  const words = new Set(src.match(/\b[A-Za-z_]\w*\b/g) || [])
+  for (const w of words) {
+    if (FUNCTION_MAP[w]) addKeys(FUNCTION_MAP[w].imports)
+    if (TOOLBOX_MAP[w]) addKeys(TOOLBOX_MAP[w].imports)
+    if (CONSTANT_MAP[w]) addKeys(CONSTANT_MAP[w].imports)
+  }
+  return out
+}

@@ -42,7 +42,10 @@ const MATLAB_KEYWORDS = new Set([
  * Build a map of MATLAB-name → safe-Python-name for every variable
  * whose name collides with a Python reserved word.
  */
-export function buildRenameMap(variables: Set<string>): Map<string, string> {
+export function buildRenameMap(
+  variables: Set<string>,
+  reservedAliases: ReadonlySet<string> = IMPORT_ALIASES,
+): Map<string, string> {
   const map = new Map<string, string>()
   const taken = new Set(variables)
   for (const name of variables) {
@@ -50,7 +53,7 @@ export function buildRenameMap(variables: Set<string>): Map<string, string> {
     // Python reserved words AND names bound by injected imports both need a
     // rename: a user variable called `signal` would otherwise shadow
     // `import scipy.signal as signal` and break generated `signal.butter(...)`.
-    if (!PYTHON_RESERVED.has(name) && !IMPORT_ALIASES.has(name)) continue
+    if (!PYTHON_RESERVED.has(name) && !reservedAliases.has(name)) continue
     let renamed = `${name}_`
     while (taken.has(renamed)) renamed += '_'
     taken.add(renamed)

@@ -9,6 +9,7 @@ import { detectPreFlags } from './flags/detector'
 import { generateReport } from './report/generator'
 import { buildSymbolTable } from './analysis/scope'
 import { buildRenameMap, applyRenames, renameReservedFields } from './analysis/rename-reserved'
+import { importedAliasesForSource } from './registry/imports'
 import { buildShapeTable } from './analysis/shape-table'
 
 /**
@@ -42,7 +43,7 @@ export function convert(matlabCode: string): ConversionResult {
   // Rename MATLAB identifiers that collide with Python reserved words
   // (`lambda`, `class`, `in`, etc.). Apply to every tokenized line and
   // also update the symbol table so downstream stages see the new names.
-  const renames = buildRenameMap(symbols.variables)
+  const renames = buildRenameMap(symbols.variables, importedAliasesForSource(matlabCode))
   const logicalLines = tokenized.map((l) => ({
     ...l,
     // Don't rewrite identifiers inside comments — renaming a word like

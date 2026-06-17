@@ -88,11 +88,14 @@ rename map in `analysis/rename-reserved.ts` renames any colliding user variable
 shadowed. Regression test in `__tests__/converter.test.ts`
 ("Import alias / variable name collisions").
 
-**Known tradeoff.** The rename fires whenever a variable matches an alias name,
-even if that module isn't imported in the given file (e.g. a variable `time`
-with no `time` import still becomes `time_`). Harmless and deterministic, but
-could later be scoped to only the imports actually injected (requires moving the
-rename pass to run after import resolution).
+**Scoping refinement (fixed).** Originally the rename fired whenever a variable
+matched *any* alias name, even with no matching import — so a parameter named
+`signal` became `signal_` unnecessarily (caught by the "function parameter
+treated as variable" test). Now `importedAliasesForSource` (in `imports.ts`)
+scans the source for functions/constants that actually trigger each import, and
+`buildRenameMap` only reserves *those* aliases. So `signal` stays `signal`
+unless the code uses a `scipy.signal` function; renames only when there's a real
+shadow.
 
 **Follow-up fixed.** The rename pass was also rewriting the word inside comments
 (`% Simple signal analysis` → `# Simple signal_ analysis`). `index.ts` now skips
