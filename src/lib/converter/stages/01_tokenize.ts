@@ -59,7 +59,11 @@ export function tokenize(matlabCode: string): LogicalLine[] {
       // row-separator semantics survive into stage 5. Spaces are safe
       // for `(...)` and `{...}` contexts.
       const joiner = isInsideBrackets(line) ? '; ' : ' '
-      line = line.trimEnd() + joiner + rawLines[i + 1].trimStart()
+      // Strip inline `% comments` off both sides before joining. A comment on
+      // an element line of a multi-line literal would otherwise swallow the
+      // rest of the joined line — including its closing bracket and remaining
+      // elements — producing an unterminated `[`/`{`.
+      line = stripInlineComment(line).trimEnd() + joiner + stripInlineComment(rawLines[i + 1]).trimStart()
       i++
     }
 
@@ -128,6 +132,33 @@ export function tokenize(matlabCode: string): LogicalLine[] {
  * ones (i.e. the line continues onto the next). Respects strings so `(`
  * inside a string literal doesn't count.
  */
+/**
+ * Return `line` with any top-level `% comment` removed. Skips `%` inside string
+ * literals (e.g. `sprintf('%d')`) and respects the transpose-vs-quote heuristic.
+ * Used only when flattening multi-line literals, where an inline element comment
+ * must not swallow the rest of the joined line.
+ */
+function stripInlineComment(line: string): string {
+  let inString = false, sc = ''
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inString) {
+      if (ch === sc) {
+        if (i + 1 < line.length && line[i + 1] === sc) { i++; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === '%') return line.slice(0, i)
+    if (ch === "'" || ch === '"') {
+      if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\]}.']/.test(line[i - 1])) continue
+      inString = true
+      sc = ch
+    }
+  }
+  return line
+}
+
 function hasUnbalancedOpens(line: string): boolean {
   let paren = 0, bracket = 0, brace = 0
   let inString = false, sc = ''

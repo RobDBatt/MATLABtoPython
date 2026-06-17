@@ -396,6 +396,40 @@ _Note on `entropy`: deliberately NOT mapped — MATLAB's image `entropy(I)`
 differ semantically, so a mapping would be silently wrong. Flag-don't-guess: it
 should get a TODO flag, not a wrong mapping._
 
+## Multi-line cell/matrix literal with inline element comments — FIXED
+
+**Symptom.** A multi-line cell/matrix whose element lines carry `%` comments —
+```matlab
+cnn.layers = {
+    struct('type', 'i') %input layer
+    struct('type', 'c') %conv layer
+};
+```
+→ `SyntaxError: '{' was never closed` (the dominant non-`export_fig` SyntaxError
+in the smoke set; common in DeepLearnToolbox-style configs).
+
+**Cause.** The tokenizer already joins lines inside an unbalanced bracket (so
+comment-free multi-line literals work). But it appended each line *including its
+inline `% comment`* — so the first element's comment swallowed the rest of the
+joined line, including the closing `}` and remaining elements.
+
+**Fix.** `stripInlineComment` (Stage 1) removes the top-level `% comment` from
+both the accumulator and the next line before joining (skips `%` inside strings,
+e.g. `sprintf('%d')`). Comment-free literals are unchanged. Regression test +
+curated case `tests/oracle-cases/multiline_cell.m` (`x=200`). `npm test` 201 →
+202. Curated 16/16.
+
+### Surfaced (adjacent, NOT fixed here — new OPEN items)
+- **Multi-line matrix with `[` on its own line → spurious empty rows.**
+  `M = [\n 1 2\n 3 4\n]` → `np.array([[], [1, 2], [3, 4], []])`. The `;`-joiner
+  inserts a separator right after `[` and before `]`, creating empty leading/
+  trailing rows. **Pre-existing** (happens without comments too). Fix idea: skip
+  the `;` separator when the accumulator ends with `[` or the next line starts
+  with `]`.
+- **`struct()` with >2 name/value pairs → `dict(positional...)`.** e.g.
+  `struct('type','c','n',6)` → `dict('type', 'c', 'n', 6)` (invalid). Separate
+  struct-conversion bug.
+
 ## Registry coverage notes (2026-06)
 
 Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already

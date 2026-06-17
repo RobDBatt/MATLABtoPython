@@ -49,6 +49,14 @@ describe('Core Syntax', () => {
   it('handles continuation lines', () => {
     expect(py('x = 1 + ...\n    2;')).toBe('x = 1 + 2')
   })
+
+  it('joins multi-line literals with inline element comments (no swallowed bracket)', () => {
+    // Inline `%` comments on element lines must be stripped during the join, or
+    // the comment swallows the closing brace → `'{' was never closed`.
+    expect(py('c = {\n  1 %a\n  2 %b\n  3 %c\n};')).toContain('np.array([1, 2, 3])')
+    // A `%` inside a string is NOT a comment and must survive.
+    expect(py("y = sprintf('%d', ...\n  x);")).toContain("'%d'")
+  })
 })
 
 // ============================================================
