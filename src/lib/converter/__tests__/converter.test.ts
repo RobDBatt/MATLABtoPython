@@ -229,6 +229,43 @@ describe('Function Mapping', () => {
 })
 
 // ============================================================
+// STRUCT FIELD MEMBERSHIP (isfield)
+// ============================================================
+
+describe('isfield → dict membership', () => {
+  // MATLAB structs convert to dicts, so isfield(s, f) is `f in s` (reversed
+  // args). Emitted unparenthesized — correct in boolean/assignment/logical
+  // contexts. (2026-06)
+  it('rewrites isfield(s, field) to `field in s`', () => {
+    expect(py("if isfield(s, 'name')")).toContain("if 'name' in s:")
+    expect(py("tf = isfield(s, 'name');")).toBe("tf = 'name' in s")
+  })
+
+  it('handles a variable field name', () => {
+    expect(py('tf = isfield(s, fname);')).toBe('tf = fname in s')
+  })
+
+  it('negated form becomes `not field in s` (in binds tighter than not)', () => {
+    // `if ~isfield(...)` stays clean; the assignment RHS form picks up the
+    // existing defensive parens from the ~→not pass (still valid Python).
+    expect(py("if ~isfield(s, 'tol')")).toContain("if not 'tol' in s:")
+    expect(py("tf = ~isfield(s, 'tol');")).toBe("tf = (not 'tol' in s)")
+  })
+
+  it('composes in a logical expression', () => {
+    expect(py("ok = isfield(s, 'a') && isfield(s, 'b');"))
+      .toBe("ok = 'a' in s and 'b' in s")
+  })
+
+  it('leaves the multi-field cell form unconverted and flags it', () => {
+    // isfield(s, {'a','b'}) returns a logical array — no clean one-liner.
+    const r = convert("tf = isfield(s, {'a','b'});")
+    expect(r.python).toContain('isfield(s,')
+    expect(r.report.flags.map(f => f.type)).toContain('TODO')
+  })
+})
+
+// ============================================================
 // TOOLBOX FUNCTIONS
 // ============================================================
 

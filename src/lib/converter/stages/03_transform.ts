@@ -664,6 +664,47 @@ function preTransform(
 
 // ── Post-Transform (remaining MATLAB syntax) ──────────────
 
+/**
+ * MATLAB `isfield(S, F)` tests whether struct S has field F. Structs convert to
+ * Python dicts (`struct(...)` → `{...}`), so the test is dict membership with
+ * the arguments reversed: `F in S`.
+ *
+ *   isfield(s, 'name')   →  'name' in s
+ *   tf = isfield(s, f)   →  tf = f in s
+ *   ~isfield(s, 'name')  →  not 'name' in s   (the ~→not pass already ran;
+ *                            `in` binds tighter than `not`, so no parens needed)
+ *
+ * Emitted unparenthesized for clean output — correct in every boolean /
+ * assignment / logical context (the common cases). The cell-array field-list
+ * form `isfield(s, {'a','b'})` returns a logical ARRAY in MATLAB (no clean
+ * one-liner) — left unconverted and flagged.
+ */
+function convertIsfield(
+  content: string,
+  flags: Flag[],
+  line: StructuredLine,
+): string {
+  if (!/\bisfield\s*\(/.test(content)) return content
+  return replaceFunctionCalls(content, 'isfield', (full, args) => {
+    const argList = splitArgsRespectingStrings(args).map(s => s.trim())
+    if (argList.length !== 2 || argList[0] === '' || argList[1] === '') return full
+    const [s, f] = argList
+    // Multi-field form: by here a cell `{...}` may already be a list `[...]`.
+    // Either way it's a logical-array result, not a scalar membership test.
+    if (/^[[{]/.test(f)) {
+      flags.push({
+        type: 'TODO',
+        message: 'isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]]).',
+        originalLine: line.originalLineStart,
+        outputLine: 0,
+        originalCode: content,
+      })
+      return full
+    }
+    return `${f} in ${s}`
+  })
+}
+
 function postTransform(
   content: string,
   imports: Set<string>,
@@ -671,6 +712,11 @@ function postTransform(
   line: StructuredLine,
 ): string {
   let result = content
+
+  // isfield(s, 'f') → 'f' in s (structs convert to dicts). Runs here, after
+  // the ~→not pass in preTransform, so `~isfield(...)` is already `not
+  // isfield(...)` and becomes `not 'f' in s`.
+  result = convertIsfield(result, flags, line)
 
   // Convert MATLAB plot named arguments: 'LineWidth', 1.5 → linewidth=1.5
   result = convertMatlabNamedArgs(result)

@@ -312,8 +312,26 @@ need separate work.
 Corpus scan: ~360 functions mapped; most *common* MATLAB functions are already
 covered (mod, rem, cumsum, diff, norm, trace, fliplr, dot, cross, floor/ceil/
 round, …). Added this pass: `any`/`all` → `np.any`/`np.all`, `kron` → `np.kron`.
-Still genuinely unmapped / buggy (queued): `isfield` (→ `'f' in s`, needs custom
-arg-reorder), `isa`, `get`/`set` (graphics).
+Still genuinely unmapped / buggy (queued): `isa`, `get`/`set` (graphics).
+
+## isfield(s, 'f') → 'f' in s — FIXED
+
+**Symptom.** `isfield` was mapped nowhere (only registered as a known builtin
+name), so `if isfield(s, 'name')` passed through unchanged →
+`NameError: name 'isfield' is not defined` at runtime.
+
+**Cause.** No registry mapping, and the rewrite isn't expressible as one — it
+needs an argument **reorder** plus the `in` operator, not a `name(args)` call.
+
+**Fix.** `convertIsfield` in `03_transform.ts`, run in `postTransform` (after the
+`~`→`not` pass): `isfield(S, F)` → `F in S` (structs convert to dicts, so this is
+dict membership). Emitted unparenthesized for clean output — correct in
+boolean/assignment/logical contexts (`if 'name' in s:`, `tf = 'a' in s and 'b'
+in s`). The cell-array field-list form `isfield(s, {'a','b'})` returns a logical
+array (no clean one-liner) — left unconverted and flagged TODO. Regression tests
++ curated case `tests/oracle-cases/isfield_struct.m`.
+
+**Result.** `npm test` 188 → 193. Curated oracle 10/10.
 
 ## repmat → np.tile argument structure — FIXED
 
@@ -353,9 +371,9 @@ the registry's `max`→`np.max` rule doesn't re-prefix to `np.np.max`. Index is
 
 _Found via manual review + execution oracle (2026-06). Fixed: #0, #1 (+scoping +
 comment-rename), #2, dual-return max/min, #4 (row-vector `(1,N)` de-2-D), repmat
-→ np.tile arg structure, #3 findpeaks single-output. Still open: #3 follow-ups
-(findpeaks two-output + Name/Value options), the #4 follow-up (`size()` on
-de-2-D'd vectors, evidence-gated), `isfield`/`isa`/`get`/`set`, and the smoke
+→ np.tile arg structure, #3 findpeaks single-output, isfield → membership. Still
+open: #3 follow-ups (findpeaks two-output + Name/Value options), the #4 follow-up
+(`size()` on de-2-D'd vectors, evidence-gated), `isa`/`get`/`set`, and the smoke
 **SyntaxError / matrix-literal** bucket (the big one — see baseline).
 Telemetry (site='matlab') shows flag-type frequency in real usage, but specific
 construct names stay private — prioritize the open buckets from the corpus +
