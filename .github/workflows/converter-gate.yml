@@ -1,0 +1,53 @@
+name: Converter gate
+
+# Protects the converter's runnable-rate floor: the unit suite must stay green
+# AND every curated oracle case must still RUN (numpy/scipy executed), so the
+# curated runnable rate can never silently regress.
+#
+# The oracle executes the converted Python, so the runner needs numpy + scipy
+# importable by the SAME interpreter the oracle spawns (`python3`). They are
+# pinned below. If they were missing, the curated cases would report
+# "environmental" and the gate is built to FAIL loudly rather than pass
+# vacuously (see scripts/oracle/run-oracle.ts `--gate`).
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Pinned so the runnable rate is reproducible. Install into the same
+      # interpreter the oracle spawns (`python3`), not a bare `pip`.
+      - name: Install Python scientific stack
+        run: python3 -m pip install numpy==2.4.6 scipy==1.17.1
+
+      - name: Sanity-check deps are importable by python3
+        run: python3 -c "import numpy, scipy; print('numpy', numpy.__version__, 'scipy', scipy.__version__)"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      # --gate exits non-zero on any converter defect OR a missing-deps env
+      # (curated all-environmental / nothing executed). Both are gate failures.
+      - name: Curated oracle gate
+        run: npx tsx scripts/oracle/run-oracle.ts --set curated --gate

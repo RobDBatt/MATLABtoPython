@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Pre-push hook: mirror the CI converter gate locally so the curated
+# runnable-rate floor can't regress before you push.
+#
+# Install once:  git config core.hooksPath .githooks
+# Verify:        git config --get core.hooksPath   (should print .githooks)
+# Bypass:        git push --no-verify   (only if you truly mean to)
+
+set -e
+
+# Skip if pushing a tag or deleting a ref — only gate real branch pushes.
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+    case "$remote_ref" in
+        refs/tags/*) exit 0 ;;
+    esac
+done
+
+# 1. Unit suite — always runs; mirrors CI `npm test`.
+echo "pre-push: running npm test (bypass with --no-verify)..."
+if ! npm test --silent; then
+    echo ""
+    echo "pre-push: UNIT TESTS FAILED — push aborted."
+    echo "  Fix the failures above, or run \`git push --no-verify\` to push anyway."
+    exit 1
+fi
+echo "pre-push: unit tests OK."
+
+# 2. Curated oracle gate — needs numpy + scipy importable by the SAME
+#    interpreter the oracle spawns (`python3`). If they're missing locally,
+#    skip cleanly (CI is the real enforcement) rather than blocking an
+#    unrelated push. The `--gate` flag itself FAILS on a missing-deps env,
+#    so we must gate on importability here, not just run it blindly.
+if command -v python3 >/dev/null 2>&1 && python3 -c "import numpy, scipy" 2>/dev/null; then
+    echo "pre-push: running curated oracle gate..."
+    if ! npx tsx scripts/oracle/run-oracle.ts --set curated --gate; then
+        echo ""
+        echo "pre-push: CURATED ORACLE GATE FAILED — push aborted."
+        echo "  A curated case no longer runs. Investigate, or --no-verify to override."
+        exit 1
+    fi
+    echo "pre-push: curated oracle gate OK."
+else
+    echo "pre-push: skipping curated oracle gate — numpy/scipy not importable by python3."
+    echo "  Install for full local coverage: python3 -m pip install numpy scipy"
+    echo "  (CI runs the real curated gate on Linux. Not a measured drop.)"
+fi

@@ -24,30 +24,39 @@ numpy + scipy).
 
 ---
 
-## CI: install numpy + scipy in the oracle gate runner — OPEN (Phase 4, load-bearing)
+## Phase 4: CI runnable-rate gate — DONE
 
-**Problem.** The oracle classifies a case as "environmental" (not a converter
-defect) when the converted Python can't import numpy/scipy. If the CI runner that
-hosts the Phase-4 oracle gate doesn't have **both** installed, *every* curated
-case reports "environmental," the oracle never actually executes the generated
-Python, and the gate passes vacuously — it's toothless and would green-light real
-regressions.
+**Goal.** The curated runnable rate can never silently regress, and the gate can
+never pass vacuously (e.g. because numpy/scipy were missing so nothing ran).
 
-**Evidence.** Locally, the curated set runs 6/6 with **0 converter-attributable
-defects** but reports all 6 as "environmental" purely because scipy isn't
-installed in that env. `pip install numpy scipy` flips them to 6/6 actually
-executed. (Confirmed across the Cowork sandbox and a dev machine — both 179/180
-unit tests + identical oracle behavior, so the methodology is trustworthy; the
-only variable is whether the Python deps are present.)
+**What landed.**
+1. `.github/workflows/converter-gate.yml` — runs on `pull_request` and `push` to
+   `master`: checkout → setup-node 20 → setup-python 3.12 →
+   `python3 -m pip install numpy==2.4.6 scipy==1.17.1` → import sanity-check →
+   `npm ci` → `npm test` → `npx tsx scripts/oracle/run-oracle.ts --set curated --gate`.
+   Deps are pinned and installed into the same interpreter the oracle spawns
+   (`python3`), which is the documented way the gate would otherwise go toothless.
+2. `run-oracle.ts --gate` hardened: it now exits non-zero not only on converter
+   defects but also on a **missing-deps environment** — any curated case that
+   reports "environmental", or `runs == 0`. Curated cases are self-contained
+   (numpy/scipy only), so an environmental result there means the deps aren't
+   importable, and the gate fails loudly instead of passing on nothing. A
+   one-line summary (`ORACLE SUMMARY [curated]: runs=X/Y defects=Z environmental=W
+   attributable-rate=R%`) prints to the CI log every run.
+3. `.githooks/pre-push` — local mirror: always `npm test`, then the curated gate
+   **only when** numpy/scipy are importable by `python3` (else it skips with an
+   install hint, since CI is the real enforcement; a dev without the stack isn't
+   blocked from pushing unrelated work). `.gitattributes` forces the hook to LF
+   so the shebang works on Linux/macOS.
 
-**Fix (do during Phase 4, when the gate workflow is wired).**
-1. Add a `pip install numpy scipy` step (pin versions) to the CI workflow before
-   the oracle runs.
-2. Make the gate **fail loudly if the runnable count is 0 or any curated case is
-   "environmental"** — i.e. treat a missing-deps environment as a gate failure,
-   not a pass. Otherwise a future runner image change silently re-toothlesses it.
-3. Optionally have `run-oracle.ts` exit non-zero when the entire set is
-   environmental, so the gate can't pass with nothing executed.
+   Enable locally:  `git config core.hooksPath .githooks`
+   Verify:          `git config --get core.hooksPath`  → `.githooks`
+   Bypass once:     `git push --no-verify`
+
+**Verified.** `npm test` 184 green. Curated gate exits 0 at 7/7; a deliberately
+broken curated case (undefined var → `NameError`, non-environmental) made the
+gate exit 1, then reverted. The missing-deps branch shares the same exit path
+(`reasons` → `process.exit(1)`), driven by the `envFail`/`runs` counts.
 
 ---
 

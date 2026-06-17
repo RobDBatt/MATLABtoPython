@@ -1,0 +1,2 @@
+# Git hooks are bash scripts — must stay LF so the shebang works on Linux/macOS.
+.githooks/** text eol=lf

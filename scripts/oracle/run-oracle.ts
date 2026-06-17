@@ -16,7 +16,13 @@
  * Usage:
  *   npx tsx scripts/oracle/run-oracle.ts --set curated
  *   npx tsx scripts/oracle/run-oracle.ts --set smoke --limit 300
- *   npx tsx scripts/oracle/run-oracle.ts --set smoke --gate 0       # CI: fail if any curated case regresses
+ *   npx tsx scripts/oracle/run-oracle.ts --set curated --gate        # CI: fail on defects OR missing deps
+ *
+ * The `--gate` flag (curated set) exits non-zero on ANY converter defect, AND
+ * on a missing-deps environment (any ENVIRONMENTAL failure / nothing executed).
+ * That last guard is deliberate: curated cases are self-contained and need only
+ * numpy/scipy, so if they report "environmental" the runner's python3 can't
+ * import the deps — and without it the gate would pass vacuously (toothless).
  *
  * Requires python3 on PATH with numpy + scipy importable.
  * Writes scripts/oracle/output/{report.md,raw.json}.
@@ -157,13 +163,40 @@ function main() {
   writeFileSync(join(OUT, `raw-${set}.json`), JSON.stringify(results, null, 2))
   process.stdout.write(md)
 
-  // CI gate: on the curated set, fail if any case is a converter defect.
+  // One-line summary for the CI log (always printed, to stderr so it doesn't
+  // pollute the markdown captured from stdout).
+  const total = results.length
+  const runs = results.filter(r => r.status === 'RUNS').length
+  const envFail = results.filter(r => r.status === 'ENV_FAIL').length
+  const defects = results.filter(r => r.status === 'CONVERTER_FAIL' || r.status === 'CONVERT_THROW')
+  const attributable = total - envFail
+  const rate = attributable > 0 ? Math.round((runs / attributable) * 100) : 0
+  process.stderr.write(
+    `\nORACLE SUMMARY [${set}]: runs=${runs}/${total} defects=${defects.length} ` +
+    `environmental=${envFail} attributable-rate=${rate}%\n`,
+  )
+
+  // CI gate (curated set only): must never pass vacuously.
   if (set === 'curated' && process.argv.includes('--gate')) {
-    const defects = results.filter(r => r.status === 'CONVERTER_FAIL' || r.status === 'CONVERT_THROW')
-    if (defects.length > 0) {
-      process.stderr.write(`\nGATE FAILED: ${defects.length} curated case(s) do not run.\n`)
+    const reasons: string[] = []
+    if (defects.length > 0) reasons.push(`${defects.length} converter defect(s)`)
+    // Curated cases are self-contained — they need only numpy/scipy. Any
+    // ENVIRONMENTAL failure means python3 can't import the deps, so the gate
+    // would otherwise pass without executing the Python. Fail loudly instead.
+    if (envFail > 0) {
+      reasons.push(
+        `${envFail} environmental failure(s) — numpy/scipy not importable in python3 ` +
+        `(install with: python3 -m pip install numpy scipy)`,
+      )
+    }
+    if (total === 0) reasons.push('no curated cases found')
+    else if (runs === 0) reasons.push('0 cases ran to completion — nothing executed (gate would be vacuous)')
+
+    if (reasons.length > 0) {
+      process.stderr.write(`\nGATE FAILED [curated]: ${reasons.join('; ')}.\n`)
       process.exit(1)
     }
+    process.stderr.write(`\nGATE PASSED [curated]: ${runs}/${total} ran clean, 0 defects.\n`)
   }
 }
 
