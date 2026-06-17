@@ -55,15 +55,21 @@ export function tokenize(matlabCode: string): LogicalLine[] {
     // requires these to be on one logical line. Keep joining until the
     // balance is zero.
     while (i + 1 < rawLines.length && hasUnbalancedOpens(line)) {
-      // Insert `;` when merging lines that are inside `[...]` so the
-      // row-separator semantics survive into stage 5. Spaces are safe
-      // for `(...)` and `{...}` contexts.
-      const joiner = isInsideBrackets(line) ? '; ' : ' '
       // Strip inline `% comments` off both sides before joining. A comment on
       // an element line of a multi-line literal would otherwise swallow the
       // rest of the joined line — including its closing bracket and remaining
       // elements — producing an unterminated `[`/`{`.
-      line = stripInlineComment(line).trimEnd() + joiner + stripInlineComment(rawLines[i + 1]).trimStart()
+      const acc = stripInlineComment(line).trimEnd()
+      const next = stripInlineComment(rawLines[i + 1]).trim()
+      // Insert `;` when merging lines that are inside `[...]` so the
+      // row-separator semantics survive into stage 5. Spaces are safe
+      // for `(...)` and `{...}` contexts. But the `;` belongs only BETWEEN two
+      // element rows — not right after an opening bracket or right before a
+      // closing one (a `[` / `]` on its own line), or it injects empty rows
+      // (`np.array([[], [1, 2], …])`).
+      let joiner = isInsideBrackets(line) ? '; ' : ' '
+      if (/[[({]$/.test(acc) || /^[\])}]/.test(next)) joiner = ' '
+      line = acc + joiner + next
       i++
     }
 

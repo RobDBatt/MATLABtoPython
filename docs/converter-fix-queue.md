@@ -419,14 +419,16 @@ e.g. `sprintf('%d')`). Comment-free literals are unchanged. Regression test +
 curated case `tests/oracle-cases/multiline_cell.m` (`x=200`). `npm test` 201 →
 202. Curated 16/16.
 
-### Surfaced (adjacent, NOT fixed here — new OPEN items)
-- **Multi-line matrix with `[` on its own line → spurious empty rows.**
-  `M = [\n 1 2\n 3 4\n]` → `np.array([[], [1, 2], [3, 4], []])`. The `;`-joiner
-  inserts a separator right after `[` and before `]`, creating empty leading/
-  trailing rows. **Pre-existing** (happens without comments too). Fix idea: skip
-  the `;` separator when the accumulator ends with `[` or the next line starts
-  with `]`.
-- **`struct()` with >2 name/value pairs → `dict(positional...)`.** e.g.
+### Surfaced (adjacent)
+- **Multi-line matrix with `[` on its own line → spurious empty rows — FIXED.**
+  `M = [\n 1 2\n 3 4\n]` → was `np.array([[], [1, 2], [3, 4], []])`. The
+  `;`-joiner inserted a separator right after `[` and before `]`. Fix: in the
+  Stage-1 join loop, drop the `;` separator when the accumulator ends with an
+  opening bracket or the next line starts with a closing one. Now
+  `np.array([[1, 2], [3, 4]])`. Regression test + curated case
+  `tests/oracle-cases/multiline_matrix.m` (`rows=2 cols=3 sum=21`). `npm test`
+  202 → 203. Curated 17/17.
+- **`struct()` with >2 name/value pairs → `dict(positional...)` — OPEN.** e.g.
   `struct('type','c','n',6)` → `dict('type', 'c', 'n', 6)` (invalid). Separate
   struct-conversion bug.
 

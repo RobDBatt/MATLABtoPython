@@ -57,6 +57,12 @@ describe('Core Syntax', () => {
     // A `%` inside a string is NOT a comment and must survive.
     expect(py("y = sprintf('%d', ...\n  x);")).toContain("'%d'")
   })
+
+  it('multi-line matrix with bracket on its own line — no empty rows', () => {
+    // `[` / `]` on their own line must not inject empty rows (`[[], …, []]`).
+    expect(py('M = [\n  1 2\n  3 4\n];')).toBe('M = np.array([[1, 2], [3, 4]])')
+    expect(py('M = [1 2\n  3 4\n];')).toBe('M = np.array([[1, 2], [3, 4]])')
+  })
 })
 
 // ============================================================
