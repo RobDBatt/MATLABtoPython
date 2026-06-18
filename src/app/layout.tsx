@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "MATLABtoPython",
     title: "MATLABtoPython — Deterministic MATLAB to Python Converter",
     description:
-      "Paste MATLAB, get Python. Deterministic rule-based engine. No AI. 10 toolboxes mapped. Honest flags instead of silent wrong answers. Free for 50 lines.",
+      "Paste MATLAB, get Python. Deterministic rule-based engine. No AI. 8 toolboxes auto-converted, 3 migration guides. Honest flags instead of silent wrong answers. Free for 50 lines.",
     url: "https://mtopython.com",
     locale: "en_US",
   },
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MATLABtoPython — Deterministic MATLAB to Python Converter",
     description:
-      "Paste MATLAB, get Python. Deterministic rule-based engine. No AI. 10 toolboxes mapped. Honest flags instead of silent wrong answers.",
+      "Paste MATLAB, get Python. Deterministic rule-based engine. No AI. 8 toolboxes auto-converted, 3 migration guides. Honest flags instead of silent wrong answers.",
   },
   robots: {
     index: true,

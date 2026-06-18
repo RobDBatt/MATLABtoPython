@@ -157,8 +157,8 @@ export default function PricingPage() {
         </h1>
         <p className="text-[#9ba3c4] max-w-lg text-sm leading-relaxed">
           Free for small conversions. Pay only when you need more lines
-          or file upload. No surprise fees. MATLAB seats cost $2,190+/year —
-          a $49 migration pass pays for itself in minutes.
+          or file upload. No surprise fees. MATLAB licenses now run $2,000+/seat/year
+          on subscription — a $49 migration pass pays for itself in minutes.
         </p>
       </div>
 

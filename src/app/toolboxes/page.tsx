@@ -4,7 +4,7 @@ import { TOOLBOXES } from './toolbox-data'
 export const metadata: Metadata = {
   title: 'MATLAB Toolbox to Python Mapping',
   description:
-    'Complete function mapping tables for 10 MATLAB toolboxes: Signal Processing, Statistics, Image Processing, Optimization, Control Systems, Deep Learning, Curve Fitting, Parallel Computing, Symbolic Math, and Database.',
+    'Function mapping tables for 11 MATLAB toolboxes: Signal Processing, Statistics, Image Processing, Optimization, Control Systems, Symbolic Math, Curve Fitting, Wavelets, Deep Learning, Parallel Computing, and Database. Eight are auto-converted; three are hand-migration guides.',
 }
 
 export default function ToolboxesPage() {
@@ -15,8 +15,11 @@ export default function ToolboxesPage() {
           MATLAB Toolbox to Python Mapping
         </h1>
         <p className="text-[#9ba3c4] max-w-2xl leading-relaxed">
-          Each MATLAB toolbox has a Python equivalent. These pages map every function
-          to its Python counterpart with the correct import statement and usage notes.
+          Each MATLAB toolbox has a Python equivalent. These pages map the most-used
+          functions to their Python counterparts with the correct import statement and
+          usage notes. Toolboxes marked <span className="text-[#34d399]">Auto-converted</span> are
+          transformed by the engine; those marked <span className="text-[#fbbf24]">Migration guide</span> have
+          no 1:1 mapping — the converter flags them and points you here.
         </p>
       </div>
 
@@ -27,15 +30,28 @@ export default function ToolboxesPage() {
             href={`/toolboxes/${tb.slug}`}
             className="group p-6 bg-[#0e1228] border border-[#1e2547] rounded-lg hover:border-[#7c3aed]/50 transition-colors"
           >
-            <h2 className="text-[#f0f0f8] font-semibold text-base mb-1 group-hover:text-[#a78bfa] transition-colors">
-              {tb.name}
-            </h2>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <h2 className="text-[#f0f0f8] font-semibold text-base group-hover:text-[#a78bfa] transition-colors">
+                {tb.name}
+              </h2>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  tb.autoConverted
+                    ? 'bg-[#34d399]/10 text-[#34d399] border border-[#34d399]/30'
+                    : 'bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30'
+                }`}
+              >
+                {tb.autoConverted ? 'Auto-converted' : 'Migration guide'}
+              </span>
+            </div>
             <div className="text-[#7c3aed] text-xs font-[family-name:var(--font-jetbrains)] mb-3">
               {tb.pythonLib}
             </div>
             <p className="text-[#9ba3c4] text-sm mb-3">{tb.description}</p>
             <div className="text-[#4d5580] text-xs">
-              {tb.mappings.length} functions mapped
+              {tb.autoConverted
+                ? `${tb.mappings.length} functions mapped`
+                : `${tb.mappings.length} equivalents documented — not auto-converted`}
             </div>
           </a>
         ))}

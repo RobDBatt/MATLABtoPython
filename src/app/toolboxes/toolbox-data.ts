@@ -5,6 +5,13 @@ export interface ToolboxInfo {
   pythonLib: string
   installCmd: string
   description: string
+  /**
+   * True when the converter engine has registry rules that auto-transform this
+   * toolbox's calls. False means this page is a migration guide only — the
+   * engine flags these functions rather than converting them (e.g. deep
+   * learning, parallel constructs, and DB connections have no 1:1 mapping).
+   */
+  autoConverted: boolean
   mappings: Array<{ matlab: string; python: string; note?: string }>
 }
 
@@ -16,6 +23,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'scipy.signal',
     installCmd: 'pip install scipy',
     description: 'Filter design, spectral analysis, and signal transforms. The most commonly migrated MATLAB toolbox.',
+    autoConverted: true,
     mappings: [
       { matlab: 'butter(n, Wn)', python: 'signal.butter(n, Wn)', note: 'Butterworth filter design' },
       { matlab: 'cheby1(n, Rp, Wn)', python: 'signal.cheby1(n, Rp, Wn)', note: 'Chebyshev Type I' },
@@ -42,6 +50,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'scipy.stats + pandas',
     installCmd: 'pip install scipy pandas',
     description: 'Statistical distributions, hypothesis testing, and regression. Maps to scipy.stats and pandas.',
+    autoConverted: true,
     mappings: [
       { matlab: 'normpdf(x, mu, sig)', python: 'stats.norm.pdf(x, mu, sig)' },
       { matlab: 'normcdf(x, mu, sig)', python: 'stats.norm.cdf(x, mu, sig)' },
@@ -67,6 +76,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'scikit-image + scipy.ndimage',
     installCmd: 'pip install scikit-image',
     description: 'Image filtering, segmentation, and morphological operations. Maps to scikit-image and OpenCV.',
+    autoConverted: true,
     mappings: [
       { matlab: "imread('file')", python: "io.imread('file')" },
       { matlab: "imwrite(I, 'file')", python: "io.imsave('file', I)", note: 'Argument order reversed' },
@@ -90,6 +100,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'scipy.optimize',
     installCmd: 'pip install scipy',
     description: 'Nonlinear optimization, root finding, and linear programming. Maps to scipy.optimize.',
+    autoConverted: true,
     mappings: [
       { matlab: 'fminunc(f, x0)', python: 'optimize.minimize(f, x0)' },
       { matlab: 'fminsearch(f, x0)', python: "optimize.minimize(f, x0, method='Nelder-Mead')" },
@@ -107,6 +118,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'python-control',
     installCmd: 'pip install control',
     description: 'Transfer functions, state space models, and frequency domain analysis. Maps to python-control.',
+    autoConverted: true,
     mappings: [
       { matlab: 'tf(num, den)', python: 'control.tf(num, den)' },
       { matlab: 'ss(A, B, C, D)', python: 'control.ss(A, B, C, D)' },
@@ -133,6 +145,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'PyTorch or TensorFlow/Keras',
     installCmd: 'pip install torch  # or: pip install tensorflow',
     description: "MATLAB's neural network stack. No 1:1 function mapping — deep learning frameworks differ in their whole mental model. Use PyTorch if you prefer defining layers in code; TensorFlow/Keras if you prefer a declarative builder. Both are mature, free, and dominant in research.",
+    autoConverted: false,
     mappings: [
       { matlab: 'trainNetwork(X, Y, layers, options)', python: 'model.fit(X, Y, ...)  # Keras', note: 'Keras: define Sequential, compile, fit' },
       { matlab: 'trainingOptions(solver, ...)', python: 'optimizer = torch.optim.Adam(...)', note: 'PyTorch: create optimizer directly' },
@@ -163,6 +176,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'scipy.optimize + numpy.polyfit',
     installCmd: 'pip install scipy',
     description: "Fit curves to data. scipy.optimize.curve_fit covers 95% of MATLAB's fit() usage; polyfit/polyval match directly. For interactive fitting, the MATLAB `cftool` GUI has no Python equivalent — but a Jupyter notebook with matplotlib widgets comes close.",
+    autoConverted: true,
     mappings: [
       { matlab: "fit(x, y, 'poly2')", python: 'np.polyfit(x, y, 2)', note: 'Polynomial order N → degree N' },
       { matlab: "fit(x, y, 'poly1')", python: 'np.polyfit(x, y, 1)', note: 'Linear fit' },
@@ -180,6 +194,28 @@ export const TOOLBOXES: ToolboxInfo[] = [
     ],
   },
 
+  // ── Wavelet ──────────────────────────────────────────────
+
+  {
+    slug: 'wavelet',
+    name: 'Wavelet',
+    matlabName: 'Wavelet Toolbox',
+    pythonLib: 'PyWavelets (pywt)',
+    installCmd: 'pip install PyWavelets',
+    description: 'Discrete and continuous wavelet transforms, multilevel decomposition, and thresholding. Maps directly to PyWavelets.',
+    autoConverted: true,
+    mappings: [
+      { matlab: 'wavedec(x, n, wname)', python: 'pywt.wavedec(x, wname, level=n)', note: 'Multilevel 1-D decomposition' },
+      { matlab: 'waverec(c, wname)', python: 'pywt.waverec(c, wname)', note: 'Reconstruction from coefficients' },
+      { matlab: 'dwt(x, wname)', python: 'pywt.dwt(x, wname)', note: 'Single-level DWT' },
+      { matlab: 'idwt(cA, cD, wname)', python: 'pywt.idwt(cA, cD, wname)', note: 'Inverse single-level DWT' },
+      { matlab: 'dwt2(X, wname)', python: 'pywt.dwt2(X, wname)', note: '2-D DWT' },
+      { matlab: 'idwt2(cA, cH, cV, cD, wname)', python: 'pywt.idwt2((cA, (cH, cV, cD)), wname)', note: 'Inverse 2-D DWT' },
+      { matlab: 'cwt(x, scales, wname)', python: 'pywt.cwt(x, scales, wname)', note: 'Continuous wavelet transform' },
+      { matlab: 'wthresh(x, sorh, t)', python: "pywt.threshold(x, t, mode='soft')", note: "sorh: 's' → soft, 'h' → hard" },
+    ],
+  },
+
   // ── Parallel Computing ───────────────────────────────────
 
   {
@@ -189,6 +225,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'joblib / multiprocessing / dask',
     installCmd: 'pip install joblib dask',
     description: "MATLAB's parfor and spmd parallelize loops and distribute work across cores. Python's equivalent choices are joblib (simple, parallel map), multiprocessing (stdlib, explicit), or dask (for out-of-core data that doesn't fit in RAM). Pick joblib for drop-in parfor replacement.",
+    autoConverted: false,
     mappings: [
       { matlab: 'parfor i = 1:n\\n    y(i) = f(x(i));\\nend', python: "from joblib import Parallel, delayed\\ny = Parallel(n_jobs=-1)(delayed(f)(xi) for xi in x)", note: 'Drop-in parfor replacement' },
       { matlab: 'parpool', python: 'joblib uses auto-detected pool', note: 'No explicit pool setup needed' },
@@ -215,6 +252,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'sympy',
     installCmd: 'pip install sympy',
     description: "Symbolic algebra — solve equations, simplify expressions, compute derivatives and integrals. sympy is a nearly-complete functional superset of MATLAB's Symbolic Math Toolbox, including LaTeX rendering in Jupyter. Most one-liners port directly.",
+    autoConverted: true,
     mappings: [
       { matlab: "syms x y", python: "x, y = sp.symbols('x y')", note: "Explicit 'import sympy as sp' first" },
       { matlab: "f = x^2 + 3*x + 2", python: "f = x**2 + 3*x + 2", note: 'sympy uses Python ** not ^' },
@@ -248,6 +286,7 @@ export const TOOLBOXES: ToolboxInfo[] = [
     pythonLib: 'SQLAlchemy + pandas',
     installCmd: 'pip install sqlalchemy pandas pyodbc  # pyodbc for SQL Server, psycopg2 for Postgres, PyMySQL for MySQL',
     description: "Connect to SQL databases and run queries. Python's SQL ecosystem is richer than MATLAB's: SQLAlchemy for ORM and connection management, pandas.read_sql for tabular queries, DBAPI drivers for each engine. Migration is usually an improvement.",
+    autoConverted: false,
     mappings: [
       { matlab: "conn = database(dsn, user, pwd)", python: "from sqlalchemy import create_engine\\nengine = create_engine('postgresql://user:pwd@host/db')", note: 'Connection URL format per DB' },
       { matlab: "conn = database('', user, pwd, driver, url)", python: 'create_engine(url)', note: 'SQLAlchemy encodes driver in the URL' },

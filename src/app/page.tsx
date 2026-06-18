@@ -16,7 +16,7 @@ const homeJsonLd = {
     { '@type': 'Offer', name: 'Team', price: '79', priceCurrency: 'USD' },
   ],
   featureList: [
-    '10 MATLAB toolboxes mapped',
+    '8 MATLAB toolboxes auto-converted, 3 migration guides',
     'Deterministic output',
     'Toolbox-aware function substitution',
     'File upload and batch conversion',
@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: 'Which MATLAB toolboxes does it support?',
-    a: 'It maps functions from 10 common toolboxes — including Signal Processing (to scipy.signal), Statistics (scipy.stats), Image Processing (scikit-image), and Optimization (scipy.optimize) — and injects the correct Python imports automatically.',
+    a: 'It auto-converts functions from eight toolboxes — including Signal Processing (to scipy.signal), Statistics (scipy.stats), Image Processing (scikit-image), Optimization (scipy.optimize), and Wavelets (PyWavelets) — injecting the correct Python imports for you. Three more (Deep Learning, Parallel Computing, Database) have no faithful 1:1 mapping, so the converter flags them and links to a hand-migration guide instead of guessing.',
   },
   {
     q: 'Does it convert MATLAB to NumPy and SciPy?',
@@ -120,11 +120,11 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-8 text-sm">
           <div>
             <div className="text-[#f59e0b] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
-              $2,190+
+              $2,000+
             </div>
             <div className="text-[#9ba3c4] leading-relaxed">
-              Per seat, per year — MathWorks ended perpetual licenses in January 2026.
-              Every MATLAB installation is now a recurring cost that compounds.
+              MATLAB licenses now run $2,000+/seat/year on subscription.
+              Every installation is a recurring cost that compounds.
             </div>
           </div>
           <div>
@@ -164,16 +164,18 @@ export default function Home() {
             <p className="text-[#9ba3c4] leading-relaxed">
               Rule-based, no LLM in the loop. Same MATLAB input produces the
               exact same Python output every time. Auditable, reproducible,
-              testable — we run it against 923 real-world scripts on every release.
+              testable — we test it against 923 real-world scripts.
             </p>
           </div>
           <div className="border-l-2 border-[#7c3aed] pl-5">
             <h3 className="text-[#f0f0f8] font-medium mb-1.5">Toolbox-aware</h3>
             <p className="text-[#9ba3c4] leading-relaxed">
-              10 toolboxes mapped: Signal Processing, Statistics, Image Processing,
-              Optimization, Control Systems, Deep Learning, Curve Fitting, Parallel
-              Computing, Symbolic Math, and Database. Each maps to the right
-              SciPy, PyTorch, or scikit-image equivalent with correct imports.
+              Eight toolboxes are auto-converted — Signal Processing, Statistics,
+              Image Processing, Optimization, Control Systems, Symbolic Math, Curve
+              Fitting, and Wavelets — each mapped to the right SciPy, scikit-image,
+              or python-control equivalent with imports added. Deep Learning, Parallel
+              Computing, and Database ship as hand-migration guides, where no
+              faithful 1:1 mapping exists.
             </p>
           </div>
           <div className="border-l-2 border-[#7c3aed] pl-5">
@@ -202,28 +204,38 @@ export default function Home() {
           Toolbox coverage
         </h2>
         <p className="text-[#9ba3c4] text-sm mb-6">
-          Each page maps every function. Not a best-effort list — an auditable lookup table.
+          Each page maps the most-used functions to their Python equivalents.
+          <span className="text-[#34d399]"> Auto-converted</span> toolboxes are transformed by the
+          engine;<span className="text-[#fbbf24]"> migration-guide</span> toolboxes have no 1:1 mapping,
+          so the converter flags them instead of guessing.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
           {[
-            { slug: 'signal-processing', name: 'Signal Processing', lib: 'scipy.signal' },
-            { slug: 'statistics', name: 'Statistics', lib: 'scipy.stats' },
-            { slug: 'image-processing', name: 'Image Processing', lib: 'scikit-image' },
-            { slug: 'optimization', name: 'Optimization', lib: 'scipy.optimize' },
-            { slug: 'control-systems', name: 'Control Systems', lib: 'python-control' },
-            { slug: 'deep-learning', name: 'Deep Learning', lib: 'PyTorch / Keras' },
-            { slug: 'curve-fitting', name: 'Curve Fitting', lib: 'scipy.optimize' },
-            { slug: 'parallel-computing', name: 'Parallel Computing', lib: 'joblib / dask' },
-            { slug: 'symbolic-math', name: 'Symbolic Math', lib: 'sympy' },
-            { slug: 'database', name: 'Database', lib: 'SQLAlchemy' },
+            { slug: 'signal-processing', name: 'Signal Processing', lib: 'scipy.signal', auto: true },
+            { slug: 'statistics', name: 'Statistics', lib: 'scipy.stats', auto: true },
+            { slug: 'image-processing', name: 'Image Processing', lib: 'scikit-image', auto: true },
+            { slug: 'optimization', name: 'Optimization', lib: 'scipy.optimize', auto: true },
+            { slug: 'control-systems', name: 'Control Systems', lib: 'python-control', auto: true },
+            { slug: 'deep-learning', name: 'Deep Learning', lib: 'PyTorch / Keras', auto: false },
+            { slug: 'curve-fitting', name: 'Curve Fitting', lib: 'scipy.optimize', auto: true },
+            { slug: 'wavelet', name: 'Wavelet', lib: 'pywt', auto: true },
+            { slug: 'parallel-computing', name: 'Parallel Computing', lib: 'joblib / dask', auto: false },
+            { slug: 'symbolic-math', name: 'Symbolic Math', lib: 'sympy', auto: true },
+            { slug: 'database', name: 'Database', lib: 'SQLAlchemy', auto: false },
           ].map(tb => (
             <a
               key={tb.slug}
               href={`/toolboxes/${tb.slug}`}
               className="p-3.5 bg-[#0e1228] border border-[#1e2547] rounded-lg hover:border-[#7c3aed]/50 hover:bg-[#151a35] transition-colors group"
             >
-              <div className="text-[#f0f0f8] font-medium text-xs mb-1 group-hover:text-[#a78bfa] transition-colors">
-                {tb.name}
+              <div className="flex items-start justify-between gap-1.5 mb-1">
+                <div className="text-[#f0f0f8] font-medium text-xs group-hover:text-[#a78bfa] transition-colors">
+                  {tb.name}
+                </div>
+                <span
+                  title={tb.auto ? 'Auto-converted by the engine' : 'Migration guide — flagged, not auto-converted'}
+                  className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${tb.auto ? 'bg-[#34d399]' : 'bg-[#fbbf24]'}`}
+                />
               </div>
               <div className="text-[#4d5580] text-xs font-[family-name:var(--font-jetbrains)]">
                 {tb.lib}
@@ -231,6 +243,14 @@ export default function Home() {
             </a>
           ))}
         </div>
+        <p className="text-[10px] text-[#4d5580] mt-3 flex items-center gap-3">
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#34d399]" /> Auto-converted
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#fbbf24]" /> Migration guide
+          </span>
+        </p>
         <p className="text-xs text-[#4d5580] mt-4">
           <a href="/toolboxes" className="text-[#7c3aed] hover:text-[#a78bfa] transition-colors">
             See all toolbox pages →
