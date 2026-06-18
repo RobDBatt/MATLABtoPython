@@ -9,7 +9,7 @@ export const article = {
       heading: 'This is not a Python fanboy article',
       body: `MATLAB is a good tool. It has been the standard in engineering, signal processing, and control systems for decades for real reasons. This article is not going to pretend Python is better at everything.
 
-What has changed in 2026 is not the technical capability — Python's scientific computing stack has been competitive with MATLAB for years. What changed is the economics. MathWorks ended perpetual licenses, making every seat a recurring cost. That changes the calculus for every engineering team.
+What has changed in 2026 is not the technical capability — Python's scientific computing stack has been competitive with MATLAB for years. What changed is the economics. MathWorks discontinued perpetual Home and Student licenses and steers new commercial buyers toward annual subscriptions, so for a growing share of users every seat is now a recurring cost — and toolboxes, billed separately each year, stack on top. That changes the calculus for every engineering team.
 
 Here is where each language actually stands today.`,
     },
@@ -35,7 +35,7 @@ Here is where each language actually stands today.`,
 
 **Community and packages.** PyPI has over 500,000 packages. MATLAB File Exchange has useful contributions but the ecosystem is orders of magnitude smaller. If you need a specific algorithm, library, or integration, it almost certainly exists in Python.
 
-**Cost.** $0 vs $2,000+/year/seat. This is the factor that makes every other comparison secondary for most teams.`,
+**Cost.** $0 vs ~$860+/year/seat for base MATLAB on subscription — and far more once toolboxes stack on, every year. This is the factor that makes every other comparison secondary for most teams.`,
     },
     {
       heading: 'Where they are roughly equal',

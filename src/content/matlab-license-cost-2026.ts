@@ -1,23 +1,25 @@
 export const article = {
   slug: 'matlab-license-cost-2026',
   title: 'MATLAB License Cost in 2026: What Engineering Teams Are Actually Paying',
-  description: 'MathWorks ended perpetual licenses in January 2026. Here is what MATLAB actually costs per seat, per toolbox, and per team — and what switching to Python saves.',
+  description: 'MathWorks discontinued perpetual Home and Student licenses in January 2026 and pushes new buyers toward annual subscriptions. Here is what MATLAB actually costs per seat, per toolbox, and per team — and what switching to Python saves.',
   publishedAt: '2026-04-13',
   keyword: 'matlab license cost 2026',
   sections: [
     {
-      heading: 'The perpetual license is gone',
-      body: `In January 2026, MathWorks ended perpetual MATLAB licenses. Every new license is subscription-only. If your team previously bought MATLAB once and used it indefinitely, that option no longer exists. Every seat is now a recurring annual cost.
+      heading: 'The license model is shifting to subscription',
+      body: `In January 2026, MathWorks discontinued perpetual **Home and Student** licenses. Personal and student use is now annual-subscription only (Student around $119/year, Home around $165/year for the suite). If you hold an existing perpetual Home or Student license you can keep using it indefinitely, but you can no longer renew maintenance or add new toolboxes to it.
 
-This is the single biggest change to MATLAB pricing in the product's history, and it is driving the largest migration wave from MATLAB to Python that the engineering community has ever seen.`,
+Commercial licensing is less affected: businesses can still buy a perpetual license (around $2,150 one-time per seat) or an annual subscription (around $860/year per seat for base MATLAB). But MathWorks increasingly steers new buyers toward subscriptions, and for most teams the recurring annual model is now the default.
+
+The shift toward subscription pricing — combined with toolboxes billed separately, year after year — is driving the largest migration wave from MATLAB to Python the engineering community has seen.`,
     },
     {
       heading: 'What MATLAB costs per seat',
-      body: `**MATLAB base license:**
-Individual: approximately $940/year
-Enterprise: approximately $2,150/year (includes online access and more deployment options)
+      body: `**MATLAB base license (commercial):**
+Annual subscription: approximately $860/year per seat
+Perpetual: approximately $2,150 one-time per seat (still available for commercial use; optional annual maintenance for updates)
 
-**Common toolbox add-ons (each priced separately):**
+**Common toolbox add-ons (each priced separately, annual):**
 Signal Processing Toolbox: ~$500/year
 Image Processing Toolbox: ~$500/year
 Statistics and Machine Learning Toolbox: ~$500/year
@@ -25,35 +27,35 @@ Optimization Toolbox: ~$500/year
 Control System Toolbox: ~$500/year
 Simulink: ~$3,250/year
 
-A single engineer with MATLAB + Simulink + two toolboxes pays approximately $4,650/year. That is before deployment licenses, shared server licenses, or any of the 90+ other toolboxes MathWorks sells.
+A single engineer on subscription with MATLAB + Simulink + two toolboxes pays approximately $5,100/year — recurring. That is before deployment licenses, shared server licenses, or any of the 90+ other toolboxes MathWorks sells.
 
-These are approximate prices as of early 2026. MathWorks adjusts pricing by region and volume. Academic pricing is significantly lower but still recurring.`,
+These are approximate prices as of early 2026. MathWorks adjusts pricing by region and volume and quotes most commercial pricing directly. Academic pricing is significantly lower but still recurring.`,
     },
     {
       heading: 'What a team actually pays',
-      body: `Here is the real math for common team sizes:
+      body: `Here is the real math for common team sizes, on annual subscriptions (~$860/seat for base MATLAB):
 
 **5-person signal processing team:**
-5 MATLAB licenses: $10,750/year
+5 MATLAB licenses: $4,300/year
 5 Signal Processing Toolbox: $2,500/year
 5 Statistics Toolbox: $2,500/year
-**Total: ~$15,750/year**
-3-year cost: ~$47,250
+**Total: ~$9,300/year**
+3-year cost: ~$27,900
 
 **10-person controls engineering team:**
-10 MATLAB licenses: $21,500/year
+10 MATLAB licenses: $8,600/year
 10 Simulink: $32,500/year
 10 Control System Toolbox: $5,000/year
-**Total: ~$59,000/year**
-3-year cost: ~$177,000
+**Total: ~$46,100/year**
+3-year cost: ~$138,300
 
 **20-person research lab:**
-20 MATLAB licenses: $43,000/year
+20 MATLAB licenses: $17,200/year
 Assorted toolboxes across different researchers: ~$30,000/year
-**Total: ~$73,000/year**
-3-year cost: ~$219,000
+**Total: ~$47,200/year**
+3-year cost: ~$141,600
 
-These numbers are real. They are why engineering managers are having the Python conversation right now.`,
+Toolboxes — not the base seat — dominate these totals, and they recur every year. That is why engineering managers are having the Python conversation right now.`,
     },
     {
       heading: 'What Python costs',
@@ -89,13 +91,15 @@ With automated converter: 1-2 weeks of review after conversion.
 Manual conversion: 6-12 months.
 With automated converter: 1-2 months of review and testing.
 
-For most teams, the migration pays for itself within the first year. A 10-person team spending $59,000/year on MATLAB licenses can spend $5,000-$10,000 on migration effort and tools, and the remaining $49,000+ is savings — every year, permanently.`,
+For most teams, the migration pays for itself within the first year. A 10-person team spending ~$46,000/year on MATLAB licenses and toolboxes can spend $5,000-$10,000 on migration effort and tools, and the remaining $36,000+ is savings — every year, permanently.`,
     },
     {
       heading: 'What about MATLAB Home and academic licenses?',
-      body: `MathWorks offers lower-cost options for non-commercial use:
+      body: `MathWorks offers lower-cost options for non-commercial use, though these are exactly the tiers where perpetual licenses went away in January 2026:
 
-**MATLAB Home:** approximately $149/year for individual non-commercial use. Limited to personal projects — cannot be used for any work that generates revenue or is done on behalf of an employer.
+**MATLAB Home:** approximately $165/year for the suite (MATLAB plus a dozen common toolboxes), individual non-commercial use only. The old one-time perpetual Home license is no longer sold — it is annual subscription now. Limited to personal projects — cannot be used for any work that generates revenue or is done on behalf of an employer.
+
+**MATLAB Student:** approximately $119/year for the student suite (MATLAB, Simulink, and 10+ toolboxes). Like Home, this is subscription-only as of 2026; the perpetual student license was discontinued.
 
 **Academic licenses:** significantly discounted, often bundled through university site licenses. Many students and researchers have access through their institution. But when they graduate or change institutions, they lose access — and the code they wrote still needs MATLAB to run.
 
@@ -117,7 +121,7 @@ The academic pathway is one of the biggest drivers of migration: researchers who
       heading: 'Start the migration',
       body: `The converter handles the bulk of the translation work automatically. Paste your MATLAB code — 50 lines free, no account required — and see the Python output with a compatibility report showing exactly what converted cleanly and what needs review.
 
-For full codebase migrations, the Migration Pass gives you 30 days of unlimited conversions with file upload for $49 — less than 3% of one MATLAB seat for one year.`,
+For full codebase migrations, the Migration Pass gives you 30 days of unlimited conversions with file upload for $49 — a small fraction of a single MATLAB seat-year.`,
     },
   ],
 }

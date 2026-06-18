@@ -7,7 +7,7 @@ export const article = {
   sections: [
     {
       heading: 'Why 2026 is the inflection point',
-      body: `MathWorks ended perpetual MATLAB licenses in January 2026. Every seat is now a recurring subscription — $2,190+/year for the base product, more with toolboxes. For a team of ten engineers, that's $30,000+ annually just to keep existing code running.
+      body: `In January 2026, MathWorks discontinued perpetual Home and Student licenses and now steers new commercial buyers toward annual subscriptions — roughly $860/year per seat for base MATLAB, far more with toolboxes (a perpetual commercial seat is still sold at around $2,150 one-time). For a team of ten engineers running Simulink and a couple of toolboxes, that's $40,000+ annually, recurring, just to keep existing code running.
 
 Python has been the dominant scientific computing language for years. NumPy, SciPy, matplotlib, pandas, scikit-learn, PyTorch — the Python scientific stack covers everything MATLAB does, and more. The migration cost is real but it's a one-time investment, not a recurring fee.
 

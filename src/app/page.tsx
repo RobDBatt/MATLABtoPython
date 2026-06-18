@@ -120,11 +120,11 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-8 text-sm">
           <div>
             <div className="text-[#f59e0b] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
-              $2,000+
+              $860+
             </div>
             <div className="text-[#9ba3c4] leading-relaxed">
-              MATLAB licenses now run $2,000+/seat/year on subscription.
-              Every installation is a recurring cost that compounds.
+              Per seat, per year — a commercial MATLAB subscription before toolboxes,
+              each of which adds hundreds more. A recurring cost that compounds.
             </div>
           </div>
           <div>

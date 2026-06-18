@@ -7,7 +7,7 @@ export const article = {
   sections: [
     {
       heading: 'The state of MATLAB-to-Python conversion',
-      body: `MathWorks ended perpetual MATLAB licenses in January 2026. Engineers and researchers who previously bought once are now facing $2,000+ per seat, per year. The migration from MATLAB to Python is accelerating, and the first thing most people search for is a converter.
+      body: `In January 2026, MathWorks discontinued perpetual Home and Student licenses and increasingly steers commercial buyers toward annual subscriptions — base MATLAB runs around $860/year per seat, and toolboxes add hundreds more apiece, every year. Engineers and researchers who once bought a personal license outright no longer can. The migration from MATLAB to Python is accelerating, and the first thing most people search for is a converter.
 
 The search results are not encouraging. Most of the tools that come up were built between 2008 and 2016, abandoned by their developers, and have not been updated for modern MATLAB. Here is an honest assessment of every converter available today, what each one actually does, and which ones are worth your time.`,
     },

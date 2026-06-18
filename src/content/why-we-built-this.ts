@@ -1,13 +1,13 @@
 export const article = {
   slug: 'why-we-built-this',
   title: 'Why We Built a Deterministic MATLAB-to-Python Converter (And Why It Doesn\'t Promise 100%)',
-  description: 'MathWorks killed perpetual licenses. Every existing converter is dead or AI-based. We built the tool we wished existed — one that tells you what it can\'t do instead of guessing wrong.',
+  description: 'MathWorks discontinued perpetual Home and Student licenses and pushes new buyers toward subscriptions. Every existing converter is dead or AI-based. We built the tool we wished existed — one that tells you what it can\'t do instead of guessing wrong.',
   publishedAt: '2026-04-13',
   keyword: 'why switch from matlab to python 2026',
   sections: [
     {
       heading: 'The license change that started a migration wave',
-      body: `In January 2026, MathWorks ended perpetual MATLAB licenses. Every seat is now subscription-only at $2,000+ per year. Add Simulink, add a toolbox or two, and a 10-person engineering team is looking at $80,000-$100,000 over three years for software they previously bought once.
+      body: `In January 2026, MathWorks discontinued perpetual Home and Student licenses, moving personal and student use to annual subscriptions. Commercial teams can still buy a perpetual seat (around $2,150 one-time), but most now run annual subscriptions — roughly $860/seat/year for base MATLAB, and far more once you add Simulink and a toolbox or two. With toolboxes stacked on, a 10-person engineering team can easily face $130,000+ over three years in recurring fees.
 
 Python with NumPy, SciPy, and matplotlib does the same computational work for $0. The math has never been clearer: the cost of migrating is a one-time project, the cost of staying is a recurring bill that grows every year.
 
