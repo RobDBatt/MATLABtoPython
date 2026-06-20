@@ -1,7 +1,7 @@
 import numpy as np
 
 # Find indices
-x = [1, -2, 3, -4, 5, -6, 7]
+x = np.array([1, -2, 3, -4, 5, -6, 7])
 positive_idx = np.flatnonzero(x > 0)
 first_neg = np.flatnonzero(x < 0)[0]
 last_neg = np.flatnonzero(x < 0)[-1]

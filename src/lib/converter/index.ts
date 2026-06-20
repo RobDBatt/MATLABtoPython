@@ -5,12 +5,14 @@ import { detectStructure } from './stages/02_structure'
 import { transform } from './stages/03_transform'
 import { shiftIndices } from './stages/04_index'
 import { cleanup } from './stages/05_cleanup'
-import { detectPreFlags } from './flags/detector'
+import { detectPreFlags, detectResidualFlags } from './flags/detector'
 import { generateReport } from './report/generator'
 import { buildSymbolTable } from './analysis/scope'
 import { buildRenameMap, applyRenames, renameReservedFields } from './analysis/rename-reserved'
 import { importedAliasesForSource } from './registry/imports'
 import { buildShapeTable } from './analysis/shape-table'
+import { FUNCTION_MAP } from './registry/functions'
+import { TOOLBOX_MAP } from './registry/toolboxes'
 
 /**
  * Convert MATLAB code to Python.
@@ -58,17 +60,30 @@ export function convert(matlabCode: string): ConversionResult {
   // Stage 2: Detect block structure and indentation
   const structured = detectStructure(logicalLines)
 
+  // Names a user assigned as variables that collide with a registry function
+  // (e.g. `sum`, `length`, `filter`). MATLAB lets a variable shadow the
+  // builtin; Stage 3 must NOT rewrite these to `np.sum(...)`, or Stage 4 would
+  // produce nonsense like `np.sum[1]`. Let them flow through as plain names so
+  // Stage 4 bracket-indexes them as the arrays they are.
+  const shadowed = new Set(
+    [...symbols.variables].filter((v) => FUNCTION_MAP[v] || TOOLBOX_MAP[v]),
+  )
+
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)
-  const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable)
+  const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable, shadowed, symbols.variables)
 
   // Stage 4: Index shifting (1-based → 0-based) — dedicated separate pass
-  const { shifted, flags: indexFlags } = shiftIndices(transformed, symbols)
+  const { shifted, flags: indexFlags } = shiftIndices(transformed, symbols, imports)
 
   // Stage 5: Cleanup (inject imports, apply indentation, remove `end` lines)
   const { python, flags: cleanupFlags } = cleanup(shifted, imports)
 
+  // Post-conversion safety net: scan the final output for residual invalid
+  // constructs so a broken line never ships without an explanation.
+  const residualFlags = detectResidualFlags(python)
+
   // Collect all flags from all stages
-  const allFlags = [...preFlags, ...transformFlags, ...indexFlags, ...cleanupFlags]
+  const allFlags = [...preFlags, ...transformFlags, ...indexFlags, ...cleanupFlags, ...residualFlags]
 
   // Generate compatibility report
   const report = generateReport(matlabCode, python, allFlags, imports)

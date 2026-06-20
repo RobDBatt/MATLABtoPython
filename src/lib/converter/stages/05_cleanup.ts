@@ -385,26 +385,18 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     },
   )
 
-  // 3C. String concatenation in brackets — MATLAB [str1 str2] or ['prefix' var 'suffix']
-  // Handles: all string literals, or mixed string-literal + expression.
-  // All-string form: ['hello' ' world'] → 'hello' + ' world'
-  result = result.replace(/\[\s*('(?:[^']|'')*'(?:\s+'(?:[^']|'')*')+)\s*\]/g, (_, inner) => {
-    const parts = inner.match(/'(?:[^']|'')*'/g)
-    if (parts && parts.length > 1) {
-      return parts.join(' + ')
-    }
-    return `[${inner}]`
-  })
-  // Mixed form: [' ' expr] or [expr ' suffix'] → str concat with +.
-  // Conservative: only match when the non-string part has NO commas, spaces,
-  // or brackets — this avoids treating multi-element arrays as string concat.
-  // Commas excluded to prevent ['id', 'msg'] → 'id', + 'msg' corruption.
-  result = result.replace(/\[\s*('(?:[^']|'')*')\s+([^,\s[\]']+)\s*\]/g, (match, str, expr) => {
-    return `${str} + ${expr}`
-  })
-  result = result.replace(/\[\s*([^,\s[\]']+)\s+('(?:[^']|'')*')\s*\]/g, (match, expr, str) => {
-    return `${expr} + ${str}`
-  })
+  // 3C. String concatenation in brackets — MATLAB `[str1 str2]`, `['a' var 'b']`,
+  // `['<a>', label, '</a>']`. A single-row `[...]` with ≥1 top-level string
+  // literal is char-array concatenation → join the elements with ` + `.
+  result = convertBracketStringConcat(result)
+
+  // MATLAB cell-content `name{:}` converts to `*name` (unpacking), which is
+  // valid ONLY as a call argument. When it lands in an `in` test or as an array
+  // subscript — from `isfield(s, f{:})` / `s.(f{:})` over a scalar cell — that
+  // `*name` is a syntax error. Rewrite those positions to scalar access
+  // `name[0]`; `func(*c)` (genuine unpacking) has `(` before `*` and is left.
+  result = result.replace(/\*(\w+)(\s+in\b)/g, '$1[0]$2')           // `*f in X`  → `f[0] in X`
+  result = result.replace(/([\w)\]])\[\s*\*(\w+)\s*\]/g, '$1[$2[0]]') // `s[*f]`   → `s[f[0]]`
 
   // Convert MATLAB string delimiters: 'text' is already valid Python
   // But MATLAB uses '' for escaping inside strings → keep as-is (Python uses \')
@@ -763,6 +755,94 @@ function splitAllElements(inner: string): string[] {
  * simple `[^\[\]]*;[^\[\]]*` regex, this walks with balanced brackets so
  * inner slices like `data[:-1]` don't confuse the matcher.
  */
+/**
+ * Convert MATLAB char-array concatenation `[...]` into Python `+` joins.
+ *
+ * Detection is reliable (a single-row bracket literal with ≥1 top-level string
+ * literal is concatenation). The risk is in SPLITTING — MATLAB spaces are
+ * ambiguous. So this is operator-aware (never splits at a space when the next
+ * token begins with a binary operator, e.g. `'%5.2f' % (v,)`) and all-or-
+ * nothing: if any element wouldn't be a clean Python expression, the bracket is
+ * left untouched rather than emitting a partially-joined, broken result.
+ */
+function convertBracketStringConcat(source: string): string {
+  let out = ''
+  let i = 0
+  while (i < source.length) {
+    const ch = source[i]
+    if (ch !== '[') { out += ch; i++; continue }
+    // Python indexing `name[...]` / `)[...]` / `][...]` — not a matrix literal.
+    if (i > 0 && /[\w.)\]]/.test(source[i - 1])) { out += ch; i++; continue }
+    let depth = 1, j = i + 1, inStr = false, sc = '', hasSemi = false
+    while (j < source.length && depth > 0) {
+      const c = source[j]
+      if (inStr) {
+        if (c === sc) { if (source[j + 1] === sc) { j += 2; continue } inStr = false }
+        j++; continue
+      }
+      if (c === "'" || c === '"') { inStr = true; sc = c; j++; continue }
+      if (c === '[') depth++
+      else if (c === ']') { depth--; if (depth === 0) break }
+      else if (c === ';' && depth === 1) hasSemi = true
+      j++
+    }
+    if (depth !== 0 || hasSemi) { out += ch; i++; continue }
+    const inner = source.slice(i + 1, j)
+    const els = splitConcatElements(inner)
+    const ok = els.length > 1 &&
+      els.some(e => /^['"]/.test(e)) &&        // at least one string literal
+      els.every(isCleanConcatElement)          // every element is a clean expr
+    if (ok) { out += els.join(' + '); i = j + 1; continue }
+    out += ch; i++ // bail: leave for numeric-array handling (never partial)
+  }
+  return out
+}
+
+const BINARY_OP_START = /^[-+*/%<>=&|^@]/
+function isCleanConcatElement(el: string): boolean {
+  const t = el.trim()
+  if (t === '' || t === ',') return false
+  if (BINARY_OP_START.test(t)) return false                 // dangling left operand
+  if (/[-+*/%<>=&|^,@]$/.test(t)) return false              // dangling right operand
+  let depth = 0
+  for (const c of t) { if ('([{'.includes(c)) depth++; else if (')]}'.includes(c)) depth--; if (depth < 0) return false }
+  return depth === 0
+}
+
+/**
+ * Split a bracket's inner text into top-level elements: on every top-level
+ * comma, and on a top-level space ONLY when it cleanly separates two values —
+ * the previous token ends a value and the next token starts one and is NOT a
+ * binary operator. This keeps `'%5.2f' % (v,)` and `a - b` as single elements
+ * while still splitting `func(x) '.m'` and `conf.dir name '_x'`.
+ */
+function splitConcatElements(inner: string): string[] {
+  const els: string[] = []
+  let cur = '', depth = 0, inStr = false, sc = ''
+  for (let i = 0; i < inner.length; i++) {
+    const c = inner[i]
+    if (inStr) {
+      cur += c
+      if (c === sc) { if (inner[i + 1] === sc) { cur += inner[++i]; continue } inStr = false }
+      continue
+    }
+    if (c === "'" || c === '"') { inStr = true; sc = c; cur += c; continue }
+    if (c === '(' || c === '[' || c === '{') { depth++; cur += c; continue }
+    if (c === ')' || c === ']' || c === '}') { depth--; cur += c; continue }
+    if (c === ',' && depth === 0) { if (cur.trim()) els.push(cur.trim()); cur = ''; continue }
+    if (c === ' ' && depth === 0) {
+      const next = inner.slice(i + 1).trim()
+      const prevEndsValue = /[\w)\]'"}]$/.test(cur)
+      if (cur.trim() && prevEndsValue && next && !BINARY_OP_START.test(next) && next[0] !== ')') {
+        els.push(cur.trim()); cur = ''; continue
+      }
+    }
+    cur += c
+  }
+  if (cur.trim()) els.push(cur.trim())
+  return els
+}
+
 function rewriteVerticalConcat(source: string): string {
   const out: string[] = []
   let i = 0

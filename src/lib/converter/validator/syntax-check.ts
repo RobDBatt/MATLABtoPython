@@ -125,9 +125,9 @@ function fixBareEndInSlice(line: string): string {
       // Find the segment of the slice this `end` belongs to: scan backward
       // for the enclosing `[`, `,`, or `:` to find the segment start; forward
       // for the matching `]`, `,`, or `:` for segment end.
-      const replacement = endReplacementInSlice(line, i)
-      result += replacement
-      i += 3
+      const { text, consumed } = endReplacementInSlice(line, i)
+      result += text
+      i += 3 + consumed
       continue
     }
 
@@ -139,26 +139,26 @@ function fixBareEndInSlice(line: string): string {
 }
 
 /**
- * Given that line[pos..pos+3] is a bare `end` token inside a slice,
- * return the correct Python replacement based on the segment it's in.
+ * Given that line[pos..pos+3] is a bare `end` token inside a slice, return the
+ * correct Python replacement plus how many chars AFTER `end` to also consume.
+ *
+ * MATLAB `end` is the last index (length). In 0-based Python the last element
+ * is `-1`, and `end-N` is `-(N+1)` — e.g. `end-1` is the second-to-last, `-2`.
+ * The previous version emitted the literal `-N` (so `end-1` became `-1`),
+ * an off-by-one that silently read the wrong element in multidim subscripts.
  */
-function endReplacementInSlice(line: string, pos: number): string {
-  // Look at what immediately surrounds the `end`.
-  // Case: `end-N` → `-N`
-  //   segment looks like "end-7" or "end - 7" → replace end+minus+num with -num
-  //   We only handle the `end` itself here; the caller has already consumed `-`? No.
-  //   Simpler approach: look at char after `end`.
-  const afterEnd = line.slice(pos + 3).match(/^\s*-\s*(\d+|\w+)/)
-  if (afterEnd) {
-    // We'll emit `-N` to replace `end-N`. But our caller will advance only by 3,
-    // leaving the `-N` to be emitted again. Handle that by encoding a marker
-    // — actually simpler: just replace `end` with empty string here and let
-    // the `-N` naturally become `-N` (correct slice index).
-    return ''
+function endReplacementInSlice(line: string, pos: number): { text: string; consumed: number } {
+  // Only fold a *numeric* offset: `end-1` → `-2`, `end-2` → `-3`. For anything
+  // else (a variable, or a complex expression like `end-np.ceil(x)+1`) replace
+  // just `end` with `-1` and leave the `- <expr>` in place, which yields the
+  // correct `-1 - <expr>`. Consuming a partial token here (e.g. only `-np` of
+  // `-np.ceil(x)`) would leave a dangling `.ceil(x)` → a syntax error.
+  const numeric = line.slice(pos + 3).match(/^\s*-\s*(\d+)(?![\w.])/)
+  if (numeric) {
+    return { text: `-${parseInt(numeric[1], 10) + 1}`, consumed: numeric[0].length }
   }
-
-  // Case: `end` alone → `-1`
-  return '-1'
+  // Bare `end`, or `end - <expr>` (leave the `- <expr>`) → `-1`.
+  return { text: '-1', consumed: 0 }
 }
 
 /** raise X[...] → raise X(...) */

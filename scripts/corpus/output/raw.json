@@ -114,16 +114,26 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      }
+    ]
   },
   {
     "rel": "autofft\\+validation\\testKaiserWindow.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      }
+    ]
   },
   {
     "rel": "autofft\\+validation\\timeit_stft.m",
@@ -138,11 +148,19 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 13,
     "flags": [
       {
         "type": "WARNING",
         "message": "varargout found — Python returns tuples, not output-arg variants. Always return all outputs and let callers ignore extras with `_`."
+      },
+      {
+        "type": "TODO",
+        "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      },
+      {
+        "type": "TODO",
+        "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
       },
       {
         "type": "WARNING",
@@ -162,7 +180,7 @@
       },
       {
         "type": "TOOLBOX",
-        "message": "spline → scipy.interpolate.CubicSpline (Curve Fitting Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "message": "spline → interpolate.CubicSpline (Curve Fitting Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "TOOLBOX",
@@ -179,6 +197,10 @@
       {
         "type": "TODO",
         "message": "MException.identifier — no direct Python equivalent"
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -227,16 +249,30 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "ff is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate ff (e.g. np.zeros(n)) or build it with np.append / list.append."
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\CAE\\caenumgradcheck.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\CAE\\caesdlm.m",
@@ -278,8 +314,8 @@
     "flagCount": 1,
     "flags": [
       {
-        "type": "TOOLBOX",
-        "message": "ss → control.ss (Control Systems Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -349,8 +385,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\DBN\\dbnsetup.m",
@@ -389,8 +434,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\DBN\\rbmup.m",
@@ -469,8 +519,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\NN\\nnupdatefigures.m",
@@ -482,8 +541,8 @@
   },
   {
     "rel": "DeepLearnToolbox\\SAE\\saesetup.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid decimal literal",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -511,11 +570,16 @@
   },
   {
     "rel": "DeepLearnToolbox\\util\\expand.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "DeepLearnToolbox\\util\\flicker.m",
@@ -578,7 +642,7 @@
     "rel": "DeepLearnToolbox\\util\\makeLMfilters.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
-    "snippet": "",
+    "snippet": "== 1, g=-g*(x/variance)",
     "flagCount": 0,
     "flags": []
   },
@@ -674,8 +738,8 @@
   },
   {
     "rel": "DeepLearnToolbox\\util\\visualize.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: unmatched ')'",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -706,7 +770,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 6,
     "flags": [
       {
         "type": "WARNING",
@@ -718,15 +782,19 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 139: unterminated string literal — converter output may be corrupted"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 158: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 140: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 159: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 160: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -748,8 +816,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "export_fig\\eps2pdf.m",
@@ -764,11 +841,87 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: expression cannot contain assignment, perhaps you meant \"==\"?",
     "snippet": "",
-    "flagCount": 16,
+    "flagCount": 44,
     "flags": [
       {
         "type": "WARNING",
         "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "struct → dict — field access changes from s.field to s[\"field\"]"
       },
       {
         "type": "WARNING",
@@ -780,55 +933,91 @@
       },
       {
         "type": "TOOLBOX",
-        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "message": "conv2 → signal.convolve2d (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
-        "type": "TOOLBOX",
-        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 660: unterminated string literal — converter output may be corrupted"
+        "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "hBlackAxles(end+1) grows the array; converted to np.append(hBlackAxles, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 661: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2232: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
       }
     ]
   },
@@ -837,8 +1026,12 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 67: bare `end` keyword remained after conversion — not a Python identifier"
@@ -928,8 +1121,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "A MATLAB range `a:b` remained inside a call/subscript — replace with a Python slice or np.arange."
+      }
+    ]
   },
   {
     "rel": "export_fig\\pdftops.m",
@@ -953,19 +1151,23 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
       },
       {
-        "type": "TOOLBOX",
-        "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 242: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
       }
     ]
   },
@@ -974,8 +1176,12 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "hTitles(end+1) grows the array; converted to np.append(hTitles, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 507: bare `end` keyword remained after conversion — not a Python identifier"
@@ -983,6 +1189,10 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 624: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -1003,7 +1213,7 @@
     "flags": [
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 104: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 105: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -1023,13 +1233,29 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 296 (_check_r2v4nzhkc6e.py, line 29",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_5sldakiwoi.py, line 300",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 5,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filtfilt → signal.filtfilt — Same interface. Make sure b,a coefficients are from scipy.signal.butter(), not MATLAB-saved values."
+      },
+      {
+        "type": "WARNING",
+        "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 365: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
@@ -1211,8 +1437,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\finddiag.m",
@@ -1437,15 +1668,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 3,
     "flags": [
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 57: unterminated string literal — converter output may be corrupted"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 82: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "isdirs(end+1) grows the array; converted to np.append(isdirs, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 57: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -1467,8 +1702,8 @@
   },
   {
     "rel": "lightspeed\\graphics\\axis_pct.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: unmatched ')'",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -1547,8 +1782,8 @@
   },
   {
     "rel": "lightspeed\\graphics\\draw_loess.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -1763,13 +1998,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 25: bare `end` keyword remained after conversion — not a Python identifier"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\ind2subv.m",
@@ -2100,16 +2330,16 @@
     "flagCount": 3,
     "flags": [
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 33: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 38: unterminated string literal — converter output may be corrupted"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 65: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 37: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -2169,8 +2399,8 @@
     "flagCount": 1,
     "flags": [
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 15: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -2290,8 +2520,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\sample_hist.m",
@@ -2431,16 +2666,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\union_sorted_rows.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "sortrows → np.lexsort sorts ascending by all columns (single numeric column → argsort). For descending order, a column vector, or the index output [B, idx] = sortrows(A), compute idx = np.lexsort(A[:, ::-1].T) then B = A[idx] and adjust manually."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\vec.m",
@@ -2471,16 +2716,46 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 5,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
+        "type": "TODO",
+        "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "WARNING",
+        "message": "sortrows → np.lexsort sorts ascending by all columns (single numeric column → argsort). For descending order, a column vector, or the index output [B, idx] = sortrows(A), compute idx = np.lexsort(A[:, ::-1].T) then B = A[idx] and adjust manually."
+      }
+    ]
   },
   {
     "rel": "matlab2tikz\\src\\dev\\formatWhitespace.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB package import (import matlab.*) — references the MATLAB runtime; no Python equivalent."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB package import (import matlab.*) — references the MATLAB runtime; no Python equivalent."
+      }
+    ]
   },
   {
     "rel": "matlab2tikz\\src\\figure2dot.m",
@@ -3558,13 +3833,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 19: bare `end` keyword remained after conversion — not a Python identifier"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\mixLogitBin.m",
@@ -3619,11 +3889,15 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
       {
-        "type": "TOOLBOX",
-        "message": "step → control.step_response — MATLAB [y,t] = step(sys). control.step_response(sys) returns (t, y) — note the ORDER IS SWAPPED."
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
       }
     ]
   },
@@ -3999,11 +4273,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 15: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -4012,8 +4290,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch09\\kmeans_demo.m",
@@ -4060,16 +4343,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch10\\mixGaussVb_demo.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch10\\rvmRegVb_demo.m",
@@ -4145,8 +4438,8 @@
   },
   {
     "rel": "PRMLT\\demo\\ch13\\lds_demo.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -4188,15 +4481,23 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 5,
     "flags": [
       {
         "type": "INDEX",
         "message": "ind2sub indices shifted to 0-based — verify"
       },
       {
+        "type": "WARNING",
+        "message": "sortrows → np.lexsort sorts ascending by all columns (single numeric column → argsort). For descending order, a column vector, or the index output [B, idx] = sortrows(A), compute idx = np.lexsort(A[:, ::-1].T) then B = A[idx] and adjust manually."
+      },
+      {
         "type": "INDEX",
         "message": "ind2sub indices shifted to 0-based — verify"
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "INDEX",
@@ -4355,13 +4656,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 64: bare `end` keyword remained after conversion — not a Python identifier"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "probabilistic_matlab\\@stack_object\\log_marginal.m",
@@ -4495,7 +4791,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -4504,19 +4800,35 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "np.inf / np.nan are scalars, not callable — MATLAB inf(M, N) creates an array. Replace with `np.full((M, N), np.inf)` (or `np.nan`)."
       }
     ]
   },
   {
     "rel": "probabilistic_matlab\\example_models\\gaussian_model.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: '[' was never closed",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
       }
     ]
   },
@@ -4539,8 +4851,8 @@
   },
   {
     "rel": "probabilistic_matlab\\example_models\\kalman.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
@@ -4618,24 +4930,43 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      }
+    ]
   },
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\compose_two_sample_objects.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "other_output is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate other_output (e.g. np.zeros(n)) or build it with np.append / list.append."
+      }
+    ]
   },
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\convert_to_full_array.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\enumerate_cells.m",
@@ -4701,10 +5032,14 @@
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\process_final_samples.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
-    "snippet": "",
-    "flagCount": 2,
+    "error": "SyntaxError: starred assignment target must be in a list or tuple",
+    "snippet": "*rw_cell = deal(samples_array.flatten(order=\"F\").relative_particle_weights)",
+    "flagCount": 3,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
       {
         "type": "WARNING",
         "message": "[r, c, v] = find(M) → np.where returns only (rows, cols). After this line, set weight_vals = M[i, j] to recover the values array."
@@ -4720,13 +5055,22 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      }
+    ]
   },
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\summary_squared_diffs.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -4944,10 +5288,10 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@beta_class\\beta_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -4964,6 +5308,14 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.a → def set_a. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.b → def set_b. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
@@ -4990,10 +5342,10 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@dirichlet_class\\dirichlet_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
@@ -5010,15 +5362,19 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.alphas → def set_alphas. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@discrete_class\\discrete_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 7,
     "flags": [
       {
         "type": "TODO",
@@ -5035,6 +5391,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.p → def set_p. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "INDEX",
@@ -5069,37 +5429,8 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@gaussian_1d_class\\gaussian_1d_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
-    "snippet": "",
-    "flagCount": 5,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods."
-      },
-      {
-        "type": "TODO",
-        "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
-      },
-      {
-        "type": "TODO",
-        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "norminv → stats.norm.ppf (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "TOOLBOX",
-        "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
-      }
-    ]
-  },
-  {
-    "rel": "probabilistic_matlab\\primitive_classes\\@mv_gaussian_class\\mv_gaussian_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 6,
     "flags": [
@@ -5113,11 +5444,52 @@
       },
       {
         "type": "TODO",
+        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.Z → def set_Z. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "norminv → stats.norm.ppf (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
+      }
+    ]
+  },
+  {
+    "rel": "probabilistic_matlab\\primitive_classes\\@mv_gaussian_class\\mv_gaussian_class.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 8,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods."
+      },
+      {
+        "type": "TODO",
+        "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
+      },
+      {
+        "type": "TODO",
         "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
       },
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.sigma → def set_sigma. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.Z → def set_Z. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "TOOLBOX",
@@ -5156,8 +5528,8 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@student_t_class\\student_t_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -5177,10 +5549,10 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@uniform_continuous_class\\uniform_continuous_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -5193,6 +5565,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.Z → def set_Z. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
@@ -5277,8 +5653,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -5290,8 +5670,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -5311,8 +5695,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -5337,8 +5725,8 @@
   },
   {
     "rel": "rcnn\\experiments\\rcnn_exp_cache_features.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -5533,8 +5921,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
       {
         "type": "TOOLBOX",
         "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -5632,11 +6024,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
       {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 10: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 11: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -5661,8 +6057,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\fc8_model.m",
@@ -5720,7 +6121,7 @@
   {
     "rel": "rcnn\\utils\\receptive_field_sizes.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: '(' was never closed",
+    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -5775,11 +6176,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 5,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "TOOLBOX",
@@ -5812,24 +6221,38 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\xVOChash_lookup.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\vis\\fig_training_samples.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -5839,8 +6262,16 @@
         "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
         "type": "TOOLBOX",
         "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -5849,11 +6280,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -5896,11 +6331,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -6023,10 +6466,14 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_88kfht52u4v.py, line 366)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_v7t4ofkdco.py, line 365)",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 13,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
       {
         "type": "WARNING",
         "message": "global variable — Python global scoping differs from MATLAB"
@@ -6042,6 +6489,38 @@
       {
         "type": "WARNING",
         "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 824: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 828: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 831: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 842: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -6202,8 +6681,8 @@
   },
   {
     "rel": "spatialmath-matlab\\lift23.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -6226,16 +6705,16 @@
   },
   {
     "rel": "spatialmath-matlab\\oa2r.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: unmatched ')'",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
   },
   {
     "rel": "spatialmath-matlab\\oa2tr.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -6245,7 +6724,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 18,
+    "flagCount": 19,
     "flags": [
       {
         "type": "TODO",
@@ -6264,12 +6743,20 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
-        "type": "TOOLBOX",
-        "message": "edge → feature.canny (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "type": "TODO",
+        "message": "MATLAB property accessor get.n → def get_n. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
-        "type": "TOOLBOX",
-        "message": "edge → feature.canny (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "type": "TODO",
+        "message": "MATLAB property accessor get.ne → def get_ne. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.nc → def get_nc. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 260: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -6277,7 +6764,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 262: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 661: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -6285,7 +6772,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 663: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 664: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -6301,7 +6788,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 668: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 670: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -6314,10 +6801,6 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 673: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 674: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -6363,8 +6846,8 @@
   },
   {
     "rel": "spatialmath-matlab\\plot_ellipse.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -6442,10 +6925,10 @@
   },
   {
     "rel": "spatialmath-matlab\\Plucker.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 10,
     "flags": [
       {
         "type": "TODO",
@@ -6478,15 +6961,23 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.uw → def get_uw. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor or → def or_. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "spatialmath-matlab\\Quaternion.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 7,
     "flags": [
       {
         "type": "TODO",
@@ -6507,13 +6998,21 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.s → def set_s. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.v → def set_v. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "spatialmath-matlab\\r2t.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -6594,8 +7093,8 @@
   },
   {
     "rel": "spatialmath-matlab\\rt2tr.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -6603,8 +7102,8 @@
   {
     "rel": "spatialmath-matlab\\RTBPose.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
-    "snippet": "",
+    "error": "SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?",
+    "snippet": "print[obj - 1, *args - 1]",
     "flagCount": 20,
     "flags": [
       {
@@ -6691,10 +7190,10 @@
   },
   {
     "rel": "spatialmath-matlab\\SE2.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 12,
     "flags": [
       {
         "type": "TODO",
@@ -6715,6 +7214,14 @@
       {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.t → def get_t. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.t → def set_t. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "TOOLBOX",
@@ -6740,10 +7247,10 @@
   },
   {
     "rel": "spatialmath-matlab\\SE3.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 11,
     "flags": [
       {
         "type": "TODO",
@@ -6764,6 +7271,14 @@
       {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.t → def get_t. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.t → def set_t. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "TODO",
@@ -6850,10 +7365,10 @@
   },
   {
     "rel": "spatialmath-matlab\\SO3.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: unmatched ')'",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -6892,6 +7407,18 @@
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
       },
       {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.n → def get_n. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.o → def get_o. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.a → def get_a. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
         "type": "WARNING",
         "message": "eig → np.linalg.eig — MATLAB eig returns eigenvalues in ascending order for symmetric matrices; NumPy does not sort. If your code depends on eigenvalue order, add: idx = np.argsort(eigenvalues); V = V[:, idx]."
       }
@@ -6916,8 +7443,8 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialF6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -6975,8 +7502,8 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialM6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
@@ -7009,8 +7536,8 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialVec6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -7050,8 +7577,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\t2r.m",
@@ -7066,8 +7598,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
+        "type": "TODO",
+        "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
+      {
+        "type": "TODO",
+        "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
       {
         "type": "TODO",
         "message": "MException.identifier — no direct Python equivalent"
@@ -7100,8 +7644,8 @@
   },
   {
     "rel": "spatialmath-matlab\\tr2jac.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -7124,16 +7668,16 @@
   },
   {
     "rel": "spatialmath-matlab\\tranimate.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
   },
   {
     "rel": "spatialmath-matlab\\tranimate2.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -7159,8 +7703,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
       {
         "type": "TOOLBOX",
         "message": "subs → {}.subs (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -7180,8 +7728,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
       {
         "type": "TOOLBOX",
         "message": "subs → {}.subs (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -7343,8 +7895,8 @@
   },
   {
     "rel": "spatialmath-matlab\\Twist.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -7413,8 +7965,8 @@
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\DifferentialMotionTest.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -7428,7 +7980,7 @@
     "flags": [
       {
         "type": "TODO",
-        "message": "MATLAB table → replace with pd.DataFrame(). Use pd.read_csv() for readtable and df.to_csv() for writetable. Access columns with df[\"col\"] instead of T.col."
+        "message": "MATLAB table → replace with pd.DataFrame(). Use df.to_csv() for writetable. Access columns with df[\"col\"] instead of T.col."
       }
     ]
   },
@@ -7493,8 +8045,29 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 5,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\old\\dynamics.m",
@@ -7541,8 +8114,21 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\old\\loc_map.m",
@@ -7565,8 +8151,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\old\\loc_slam.m",
@@ -7642,8 +8233,21 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\old\\quaternion.m",
@@ -7658,8 +8262,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\old\\trajectory.m",
@@ -7711,16 +8320,16 @@
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\QuaternionTest.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\RTBPoseTest.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
@@ -7739,8 +8348,25 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 4,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB package import (import matlab.*) — references the MATLAB runtime; no Python equivalent."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB package import (import matlab.*) — references the MATLAB runtime; no Python equivalent."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB package import (import matlab.*) — references the MATLAB runtime; no Python equivalent."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB `cd` command syntax — use os.chdir('path') in Python."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\SE2Test.m",
@@ -7769,8 +8395,8 @@
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\SE3Test.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -7798,8 +8424,8 @@
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\SO3Test.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -8012,8 +8638,8 @@
   },
   {
     "rel": "vbmc\\gplite\\gplite_clean.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -8181,6 +8807,10 @@
     "flagCount": 4,
     "flags": [
       {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
         "type": "WARNING",
         "message": "optimoptions → dict — convert to scipy minimize options"
       },
@@ -8191,10 +8821,6 @@
       {
         "type": "TOOLBOX",
         "message": "fmincon constraints require manual mapping to scipy.optimize format"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 272: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -8243,9 +8869,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 12,
     "flags": [
       {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
@@ -8280,6 +8910,10 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "fval is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate fval (e.g. np.zeros(n)) or build it with np.append / list.append."
       },
       {
         "type": "WARNING",
@@ -8367,7 +9001,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_nlxdnvowtsl.py, line 299)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_kwit6ss805.py, line 299)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -8664,10 +9298,23 @@
   {
     "rel": "vbmc\\misc\\setupoptions_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: '{' was never closed",
+    "error": "SyntaxError: can't use starred expression here",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "updated is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate updated (e.g. np.zeros(n)) or build it with np.append / list.append."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
+      }
+    ]
   },
   {
     "rel": "vbmc\\misc\\setupvars_vbmc.m",
@@ -8722,8 +9369,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 3,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "WARNING",
         "message": "optimoptions → dict — convert to scipy minimize options"
@@ -8739,8 +9390,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "WARNING",
         "message": "optimoptions → dict — convert to scipy minimize options"
@@ -8833,6 +9488,10 @@
     "flagCount": 9,
     "flags": [
       {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
         "type": "TOOLBOX",
         "message": "polyfit → np.polyfit — Same interface: np.polyfit(x, y, deg). Returns coefficients highest-degree first, same as MATLAB."
       },
@@ -8863,10 +9522,6 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 187: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 188: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -8949,15 +9604,23 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 39: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 40: bare `end` keyword remained after conversion — not a Python identifier"
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       }
     ]
   },
@@ -9195,19 +9858,19 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 475: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 476: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 510: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 511: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 563: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 564: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 667: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 668: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -9222,10 +9885,211 @@
   {
     "rel": "vbmc\\utils\\cmaes_modded.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: '[' was never closed",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 50,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "assignin/evalin — workspace manipulation has no Python equivalent"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "assignin/evalin — workspace manipulation has no Python equivalent"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "assignin/evalin — workspace manipulation has no Python equivalent"
+      },
+      {
+        "type": "INDEX",
+        "message": "for loop with variable step — sign of step affects whether the end value is included. Verify range bounds."
+      },
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "WARNING",
+        "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "WARNING",
+        "message": "filenames(end+1) grows the array; converted to np.append(filenames, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "filenames(end+1) grows the array; converted to np.append(filenames, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "filenames(end+1) grows the array; converted to np.append(filenames, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "filenames(end+1) grows the array; converted to np.append(filenames, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "filenames(end+1) grows the array; converted to np.append(filenames, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "stopflag(end+1) grows the array; converted to np.append(stopflag, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "res(end+1) grows the array; converted to np.append(res, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "res(end+1) grows the array; converted to np.append(res, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "res(end+1) grows the array; converted to np.append(res, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2112: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2113: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2181: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2182: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 2194: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
+      },
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
+      }
+    ]
   },
   {
     "rel": "vbmc\\utils\\cornerplot.m",
@@ -9265,8 +10129,12 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 12,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
@@ -9305,6 +10173,10 @@
       },
       {
         "type": "WARNING",
+        "message": "fval is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate fval (e.g. np.zeros(n)) or build it with np.append / list.append."
+      },
+      {
+        "type": "WARNING",
         "message": "Output may contain syntax errors on line 550: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
@@ -9312,7 +10184,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_ayoj4gmrm5e.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_b79hklhjhvg.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -9327,8 +10199,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "MATLAB inline if/while body — in Python the statement must be on its own indented line after the `:`."
+      }
+    ]
   },
   {
     "rel": "vbmc\\utils\\fminadam.m",
@@ -9409,7 +10286,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '['",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "WARNING",
@@ -9422,6 +10299,10 @@
       {
         "type": "WARNING",
         "message": "histc → np.histogram — return format differs"
+      },
+      {
+        "type": "WARNING",
+        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
@@ -9535,7 +10416,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_qij7yb87k4.py, line 287)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_36lvs78zf4y.py, line 287)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -9572,7 +10453,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_df06aftee1j.py, line 307)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_vo8hazi3jgj.py, line 307)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -9682,8 +10563,112 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 36,
     "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
       {
         "type": "TOOLBOX",
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
@@ -9715,6 +10700,14 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 490: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
+      },
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
       }
     ]
   },
@@ -9998,8 +10991,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\doc\\publish_all.m",
@@ -10012,9 +11010,9 @@
   {
     "rel": "ypea\\src\\ypea\\ypea_abc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -10031,38 +11029,21 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.onlooker_count → def set_onlooker_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_acceleration → def set_max_acceleration. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_acor.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
-    "snippet": "",
-    "flagCount": 4,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods."
-      },
-      {
-        "type": "TODO",
-        "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
-      },
-      {
-        "type": "TODO",
-        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "TODO",
-        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      }
-    ]
-  },
-  {
-    "rel": "ypea\\src\\ypea\\ypea_algorithm.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -10076,6 +11057,39 @@
       },
       {
         "type": "TODO",
+        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.sample_count → def set_sample_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.q → def set_q. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.zeta → def set_zeta. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      }
+    ]
+  },
+  {
+    "rel": "ypea\\src\\ypea\\ypea_algorithm.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 13,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods."
+      },
+      {
+        "type": "TODO",
         "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
       },
       {
@@ -10084,7 +11098,7 @@
       },
       {
         "type": "TODO",
-        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+        "message": "properties block — move these into def __init__(self): as self.property_name = default_value."
       },
       {
         "type": "TODO",
@@ -10093,15 +11107,43 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.full_name → def get_full_name. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_iter → def set_max_iter. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.pop_size → def set_pop_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.display → def set_display. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.best_obj_value → def get_best_obj_value. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.eff_problem → def get_eff_problem. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_ba.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 20,
     "flags": [
       {
         "type": "TODO",
@@ -10122,15 +11164,75 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.type → def set_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.scout_bee_count → def get_scout_bee_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.scout_bee_count → def set_scout_bee_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.selected_site_ratio → def set_selected_site_ratio. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.selected_site_bee_ratio → def set_selected_site_bee_ratio. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.elite_site_ratio → def set_elite_site_ratio. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.elite_site_bee_ratio → def set_elite_site_bee_ratio. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.recruited_bee_ratio → def set_recruited_bee_ratio. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.selected_site_count → def get_selected_site_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.selected_site_bee_count → def get_selected_site_bee_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.elite_site_count → def get_elite_site_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.elite_site_bee_count → def get_elite_site_bee_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.recruited_bee_count → def get_recruited_bee_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.dance_radius → def set_dance_radius. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.dance_radius_damp → def set_dance_radius_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_bbo.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 9,
     "flags": [
       {
         "type": "TODO",
@@ -10147,15 +11249,35 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.keep_rate → def set_keep_rate. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.alpha → def set_alpha. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_prob → def set_mutation_prob. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size → def set_mutation_step_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size_damp → def set_mutation_step_size_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_ca.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 12,
     "flags": [
       {
         "type": "TODO",
@@ -10172,6 +11294,22 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.influence_type → def set_influence_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.accept_rate → def set_accept_rate. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.alpha → def set_alpha. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.beta → def set_beta. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10204,7 +11342,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 10,
     "flags": [
       {
         "type": "TODO",
@@ -10225,6 +11363,18 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mu → def set_mu. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.lambda_ → def get_lambda_. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.lambda_ → def set_lambda_. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10238,10 +11388,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_de.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 14,
     "flags": [
       {
         "type": "TODO",
@@ -10264,8 +11414,40 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.base_vector → def set_base_vector. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.diff_vectors_count → def set_diff_vectors_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.crossover_method → def set_crossover_method. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.type → def get_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.type → def set_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.beta_min → def set_beta_min. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.beta_max → def set_beta_max. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.crossover_prob → def set_crossover_prob. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 99: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 100: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -10279,8 +11461,8 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_define_var_type_binary.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -10290,8 +11472,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_define_var_type_binary_selection.m",
@@ -10330,26 +11517,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "struct → dict — field access changes from s.field to s[\"field\"]"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_define_var_type_partition.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_define_var_type_permutation.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -10359,13 +11546,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "struct → dict — field access changes from s.field to s[\"field\"]"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_define_var_type_selection.m",
@@ -10377,10 +11559,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_fa.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 10,
     "flags": [
       {
         "type": "TODO",
@@ -10397,15 +11579,39 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.gamma → def set_gamma. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.beta_base → def set_beta_base. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.alpha → def set_alpha. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.alpha_damp → def set_alpha_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.delta → def set_delta. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.m → def set_m. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_ga.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 12,
     "flags": [
       {
         "type": "TODO",
@@ -10422,6 +11628,38 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.crossover_prob → def set_crossover_prob. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_prob → def set_mutation_prob. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.crossover_inflation → def set_crossover_inflation. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_rate → def set_mutation_rate. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size → def set_mutation_step_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size_damp → def set_mutation_step_size_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.selection → def set_selection. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.selection_pressure → def set_selection_pressure. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
@@ -10446,8 +11684,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
@@ -10480,10 +11722,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_hs.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -10504,6 +11746,34 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.hms → def get_hms. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.hms → def set_hms. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.new_count → def set_new_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.hmcr → def set_hmcr. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.par → def set_par. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.fret_width → def set_fret_width. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.fret_width_damp → def set_fret_width_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10513,10 +11783,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_ica.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 20,
     "flags": [
       {
         "type": "TODO",
@@ -10541,6 +11811,50 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.empire_count → def set_empire_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.colony_count → def get_colony_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.emp → def get_emp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.emp → def set_emp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.selection_pressure → def set_selection_pressure. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.assimilation_coeff → def set_assimilation_coeff. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.revolution_prob → def set_revolution_prob. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.revolution_rate → def set_revolution_rate. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.revolution_step_size → def set_revolution_step_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.revolution_step_size_damp → def set_revolution_step_size_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.zeta → def set_zeta. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10566,10 +11880,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_iwo.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 11,
     "flags": [
       {
         "type": "TODO",
@@ -10590,6 +11904,30 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.max_pop_size → def get_max_pop_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_pop_size → def set_max_pop_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.min_seed_count → def set_min_seed_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_seed_count → def set_max_seed_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.step_size → def set_step_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.step_size_damp → def set_step_size_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
@@ -10611,10 +11949,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_problem.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -10631,6 +11969,38 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.obj_func → def set_obj_func. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.type → def set_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.vars → def set_vars. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.goal → def set_goal. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_nfe → def set_max_nfe. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.worst_value → def get_worst_value. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.var_count → def get_var_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor get.var_size → def get_var_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10640,10 +12010,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_pso.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 9,
     "flags": [
       {
         "type": "TODO",
@@ -10660,6 +12030,22 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.w → def set_w. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.wdamp → def set_wdamp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.c1 → def set_c1. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.c2 → def set_c2. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
         "type": "UNSUPPORTED",
@@ -10685,10 +12071,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_sa.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 11,
     "flags": [
       {
         "type": "TODO",
@@ -10705,6 +12091,34 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.max_sub_iter → def set_max_sub_iter. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.initial_temp → def set_initial_temp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.final_temp → def set_final_temp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.move_count → def set_move_count. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_rate → def set_mutation_rate. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size → def set_mutation_step_size. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor set.mutation_step_size_damp → def set_mutation_step_size_damp. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },

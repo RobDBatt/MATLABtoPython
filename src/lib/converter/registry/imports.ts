@@ -39,6 +39,8 @@ export const IMPORT_STATEMENTS: Record<string, string> = {
   'scipy.sparse': 'import scipy.sparse',
   'scipy.integrate': 'from scipy import integrate',
   'scipy.interpolate': 'from scipy import interpolate',
+  'scipy.linalg': 'from scipy import linalg',
+  'scipy.special': 'from scipy import special',
   sympy: 'import sympy as sp',
   pywt: 'import pywt',
 }
@@ -98,6 +100,8 @@ export const IMPORT_ORDER: string[] = [
   'scipy.sparse',
   'scipy.integrate',
   'scipy.interpolate',
+  'scipy.linalg',
+  'scipy.special',
   'sympy',
   'pywt',
 ]

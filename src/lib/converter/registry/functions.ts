@@ -31,7 +31,21 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   flipud:    { python: 'np.flipud',         args: 'passthrough', imports: ['numpy'] },
   rot90:     { python: 'np.rot90',          args: 'passthrough', imports: ['numpy'] },
   sort:      { python: 'np.sort',           args: 'passthrough', imports: ['numpy'] },
-  sortrows:  { python: '{a}[{a}[:,0].argsort()]', args: 'custom', imports: ['numpy'] },
+  sortrows: {
+    python: 'np.lexsort',  // actual rewrite done by rewriteSortrows (custom)
+    args: 'custom',
+    imports: ['numpy'],
+    flag: {
+      type: 'WARNING',
+      message: 'sortrows → np.lexsort sorts ascending by all columns (single numeric column → argsort). For descending order, a column vector, or the index output [B, idx] = sortrows(A), compute idx = np.lexsort(A[:, ::-1].T) then B = A[idx] and adjust manually.',
+    },
+    // Only warn on the forms the rewriter can't fully express: the [B, idx]
+    // index output (already rewritten to `B, idx =` by the multi-return
+    // pre-pass), or a non-plain-positive-integer column argument.
+    flagWhen: (content) =>
+      /\w+\s*,\s*\w+\s*=\s*sortrows\s*\(/.test(content) ||
+      /\bsortrows\s*\([^,()]+,\s*(?!\d+\s*\))/.test(content),
+  },
   cat:       { python: 'np.concatenate',    args: 'custom',      imports: ['numpy'] },
   horzcat:   { python: 'np.hstack',         args: 'reshape',     imports: ['numpy'] },
   vertcat:   { python: 'np.vstack',         args: 'reshape',     imports: ['numpy'] },
@@ -59,6 +73,17 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   abs:     { python: 'np.abs',            args: 'passthrough', imports: ['numpy'] },
   sqrt:    { python: 'np.sqrt',           args: 'passthrough', imports: ['numpy'] },
   exp:     { python: 'np.exp',            args: 'passthrough', imports: ['numpy'] },
+  // Special functions (scipy.special). Names rarely collide with variables;
+  // a variable shadowing one is protected by the Stage-3 shadow check.
+  gammaln:   { python: 'special.gammaln',   args: 'passthrough', imports: ['scipy.special'] },
+  betaln:    { python: 'special.betaln',    args: 'passthrough', imports: ['scipy.special'] },
+  logsumexp: { python: 'special.logsumexp', args: 'passthrough', imports: ['scipy.special'] },
+  erf:       { python: 'special.erf',       args: 'passthrough', imports: ['scipy.special'] },
+  erfc:      { python: 'special.erfc',      args: 'passthrough', imports: ['scipy.special'] },
+  erfinv:    { python: 'special.erfinv',    args: 'passthrough', imports: ['scipy.special'] },
+  factorial: { python: 'special.factorial', args: 'passthrough', imports: ['scipy.special'] },
+  nchoosek:  { python: 'special.comb',      args: 'passthrough', imports: ['scipy.special'] },
+  psi:       { python: 'special.psi',       args: 'passthrough', imports: ['scipy.special'] },
   log:     { python: 'np.log',            args: 'passthrough', imports: ['numpy'] },
   log2:    { python: 'np.log2',           args: 'passthrough', imports: ['numpy'] },
   log10:   { python: 'np.log10',          args: 'passthrough', imports: ['numpy'] },
@@ -162,6 +187,19 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   csvread:  { python: 'np.loadtxt',        args: 'custom', imports: ['numpy'] },
   csvwrite: { python: 'np.savetxt',        args: 'custom', imports: ['numpy'] },
   xlsread:  { python: 'pd.read_excel',     args: 'passthrough', imports: ['pandas'] },
+  // readtable reads csv/txt/xlsx/etc. Pick the pandas reader by file extension;
+  // default to read_csv and flag only when the extension is unknown (e.g. a
+  // variable filename) so we don't silently guess the wrong reader.
+  readtable: {
+    python: 'pd.read_csv',
+    args: 'custom',
+    imports: ['pandas'],
+    flag: {
+      type: 'WARNING',
+      message: 'readtable → pd.read_csv assumed. For Excel files use pd.read_excel; verify the delimiter/header for .txt/.dat files. Access columns with df["col"].',
+    },
+    flagWhen: (content) => !/readtable\s*\(\s*['"][^'"]*\.(csv|xls|xlsx|xlsm)['"]/i.test(content),
+  },
 
   // ── Plotting ───────────────────────────────────────────
   figure:   { python: 'plt.figure()',       args: 'passthrough', imports: ['matplotlib.pyplot'] },
@@ -239,6 +277,9 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   islogical:  { python: '{}.dtype == np.bool_', args: 'template', imports: ['numpy'] },
   isstruct:   { python: 'isinstance({}, dict)', args: 'template', imports: [] },
   iscell:     { python: 'isinstance({}, list)', args: 'template', imports: [] },
+  isscalar:   { python: 'np.isscalar',         args: 'passthrough', imports: ['numpy'] },
+  isreal:     { python: 'np.isrealobj',        args: 'passthrough', imports: ['numpy'] },
+  isequal:    { python: 'np.array_equal',      args: 'passthrough', imports: ['numpy'] },
   isnan:      { python: 'np.isnan',            args: 'passthrough', imports: ['numpy'] },
   isinf:      { python: 'np.isinf',            args: 'passthrough', imports: ['numpy'] },
   isfinite:   { python: 'np.isfinite',         args: 'passthrough', imports: ['numpy'] },
@@ -279,9 +320,9 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   randperm: { python: 'np.random.permutation', args: 'passthrough', imports: ['numpy'] },
   randi:    { python: 'np.random.randint',    args: 'custom',      imports: ['numpy'] },
   rng:      { python: 'np.random.seed',       args: 'passthrough', imports: ['numpy'] },
-  sqrtm:    { python: 'scipy.linalg.sqrtm', args: 'passthrough', imports: ['scipy.linalg'] },
-  expm:     { python: 'scipy.linalg.expm',  args: 'passthrough', imports: ['scipy.linalg'] },
-  logm:     { python: 'scipy.linalg.logm',  args: 'passthrough', imports: ['scipy.linalg'] },
+  sqrtm:    { python: 'linalg.sqrtm', args: 'passthrough', imports: ['scipy.linalg'] },
+  expm:     { python: 'linalg.expm',  args: 'passthrough', imports: ['scipy.linalg'] },
+  logm:     { python: 'linalg.logm',  args: 'passthrough', imports: ['scipy.linalg'] },
   cond:     { python: 'np.linalg.cond',     args: 'passthrough', imports: ['numpy'] },
   chol: {
     python: 'np.linalg.cholesky',
@@ -296,8 +337,17 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     flagWhen: (content) => /\[\s*\w+\s*,\s*\w+\s*\]\s*=\s*chol\s*\(/.test(content),
   },
   qr:       { python: 'np.linalg.qr',       args: 'passthrough', imports: ['numpy'] },
-  lu:       { python: 'scipy.linalg.lu',     args: 'passthrough', imports: ['scipy.linalg'] },
-  schur:    { python: 'scipy.linalg.schur',  args: 'passthrough', imports: ['scipy.linalg'] },
+  lu: {
+    python: 'linalg.lu',
+    args: 'passthrough',
+    imports: ['scipy.linalg'],
+    flag: {
+      type: 'WARNING',
+      message: 'lu → scipy.linalg.lu returns THREE values (P, L, U), not two. MATLAB [L, U] = lu(A) folds the permutation into L. Use P, L, U = linalg.lu(A) and apply P, or pass permute_l=True to get [L, U].',
+    },
+    flagWhen: (content) => /\[\s*\w+\s*,\s*\w+\s*\]\s*=\s*lu\s*\(/.test(content),
+  },
+  schur:    { python: 'linalg.schur',  args: 'passthrough', imports: ['scipy.linalg'] },
 
   // ── Miscellaneous ──────────────────────────────────────
   tic:      { python: '_tic = time.time()',   args: 'custom', imports: ['time'] },
@@ -401,37 +451,37 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
 
   // ── ODE Solvers ────────────────────────────────────────
   ode45: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode45 → solve_ivp — return format differs: MATLAB returns [t,y], scipy returns object with .t and .y attributes. Use method="RK45".' },
   },
   ode23: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode23 → solve_ivp(method="RK23") — return format differs: use result.t, result.y' },
   },
   ode15s: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode15s → solve_ivp(method="BDF") — return format differs: use result.t, result.y' },
   },
   ode113: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode113 → solve_ivp(method="LSODA") — return format differs: use result.t, result.y' },
   },
   ode23s: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode23s → solve_ivp(method="Radau") — return format differs: use result.t, result.y' },
   },
   ode23t: {
-    python: 'solve_ivp',
+    python: 'integrate.solve_ivp',
     args: 'custom',
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode23t → solve_ivp(method="Radau") — return format differs: use result.t, result.y' },
@@ -481,10 +531,10 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
 
   // ── Root Finding / Boundary Value ──────────────────────
   bvp4c: {
-    python: 'solve_bvp',
+    python: 'integrate.solve_bvp',
     args: 'custom',
     imports: ['scipy.integrate'],
-    flag: { type: 'WARNING', message: 'bvp4c → solve_bvp — interface differs significantly, manual conversion needed' },
+    flag: { type: 'WARNING', message: 'bvp4c → integrate.solve_bvp — interface differs significantly, manual conversion needed' },
   },
   deval: {
     python: '',

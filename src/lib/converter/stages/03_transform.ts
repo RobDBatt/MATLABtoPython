@@ -26,6 +26,8 @@ import { extractVarargoutReturns } from '../analysis/varargout-returns'
 export function transform(
   lines: StructuredLine[],
   shapeTable?: Map<string, ShapeClass>,
+  shadowed?: Set<string>,
+  arrayNames?: Set<string>,
 ): TransformResult {
   const imports = new Set<string>()
   const flags: Flag[] = []
@@ -125,10 +127,10 @@ export function transform(
     content = transformOperators(content, lineFlags, line)
 
     // 3. Known functions
-    content = transformFunctions(content, imports, lineFlags, line)
+    content = transformFunctions(content, imports, lineFlags, line, shadowed)
 
     // 4. Toolbox functions
-    content = transformToolboxFunctions(content, imports, lineFlags, line)
+    content = transformToolboxFunctions(content, imports, lineFlags, line, shadowed)
 
     // 5. Constants (only standalone words, not parts of identifiers)
     content = transformConstants(content, imports, lineFlags, line)
@@ -137,7 +139,7 @@ export function transform(
     content = transformSpecialConstructs(content, imports, lineFlags, line, currentFuncParams)
 
     // 7. Post-transform: convert remaining MATLAB indexing syntax
-    content = postTransform(content, imports, lineFlags, line)
+    content = postTransform(content, imports, lineFlags, line, arrayNames)
 
     // 8. MATLAB array-creation constants used as calls. After step 5 turned
     // `inf` and `nan` into `np.inf` / `np.nan`, any remaining `np.inf(args)`
@@ -344,12 +346,24 @@ function preTransform(
     return `sys.stderr.write(${msg})`
   })
 
+  // `out = error('msg')` — MATLAB error() never returns, so the assignment is
+  // dead. Drop the LHS (otherwise `out = raise ValueError(...)` is a syntax error).
+  result = result.replace(/^(\s*)\w+\s*=\s*(error\s*\()/, '$1$2')
+
   // classdef Name → class Name: (with optional < Parent → (Parent))
   // Emits valid Python class syntax so files parse even before full OOP conversion.
   if (/^\s*classdef\b/.test(result)) {
-    result = result
-      .replace(/^(\s*)classdef\s+(\w+)\s*<\s*([\w.]+(?:\s*&\s*[\w.]+)*)\s*$/, '$1class $2($3):')
-      .replace(/^(\s*)classdef\s+(\w+)\s*$/, '$1class $2:')
+    // Strip the attribute block: `classdef (Abstract, Sealed) Name` → `classdef Name`.
+    result = result.replace(/^(\s*classdef)\s*\([^)]*\)/, '$1')
+    const sup = result.match(/^(\s*)classdef\s+(\w+)\s*<\s*([\w.\s&]+?)\s*$/)
+    if (sup) {
+      // Drop MATLAB's `handle` base (Python is reference-by-default); `A & B`
+      // multiple inheritance → `A, B`.
+      const parents = sup[3].split('&').map(s => s.trim()).filter(p => p && p !== 'handle')
+      result = parents.length ? `${sup[1]}class ${sup[2]}(${parents.join(', ')}):` : `${sup[1]}class ${sup[2]}:`
+    } else {
+      result = result.replace(/^(\s*)classdef\s+(\w+)\s*$/, '$1class $2:')
+    }
   }
 
   // properties/methods block headers inside classdef — convert to comments so
@@ -723,6 +737,7 @@ function postTransform(
   imports: Set<string>,
   flags: Flag[],
   line: StructuredLine,
+  arrayNames?: Set<string>,
 ): string {
   let result = content
 
@@ -749,7 +764,7 @@ function postTransform(
   result = convertMatlabIndexing(result, content)
 
   // Convert complex standalone range expressions: -(N/2):(N/2)-1 → np.arange(...)
-  result = convertComplexRanges(result, imports, flags, line)
+  result = convertComplexRanges(result, imports, flags, line, arrayNames)
 
   // ── find → numpy translation ──────────────────────────────
   // Context-aware (registry-bypass; see registry/functions.ts):
@@ -933,11 +948,46 @@ function convertMatlabNamedArgs(content: string): string {
  *   (-(N/2):(N/2)-1)  →  np.arange(-(N/2), (N/2)-1 + 1)
  *   Fs*(0:(L/2))/L    →  Fs*np.arange(0, (L/2) + 1)/L
  */
+/**
+ * True if the text ending at `before` sits inside the argument list of a
+ * `name(` where `name` is a known array variable — i.e. the range under
+ * consideration is a subscript dim (`A(2:end-1, ...`), not a function-call
+ * argument (`plot(0:N`). Used to keep array slices out of the np.arange pass
+ * so Stage 4 can turn them into Python slices.
+ */
+function isInArraySubscript(before: string, arrayNames?: Set<string>): boolean {
+  if (!arrayNames || arrayNames.size === 0) return false
+  let paren = 0
+  let bracket = 0
+  for (let i = before.length - 1; i >= 0; i--) {
+    const c = before[i]
+    if (c === ')') paren++
+    else if (c === '(') {
+      if (paren === 0) {
+        if (bracket > 0) return false // already inside a [...] slice
+        const name = before.slice(0, i).match(/([A-Za-z_]\w*)\s*$/)
+        // Must be a known array AND not also a hardcoded Python builtin like
+        // `str`/`max` — those are treated as function calls downstream, so the
+        // range still needs np.arange conversion here (skipping leaves an
+        // invalid `str(1:end-1)`).
+        return !!name && arrayNames.has(name[1]) && !isKnownPythonFunc(name[1])
+      }
+      paren--
+    } else if (c === ']') bracket++
+    else if (c === '[') {
+      if (bracket === 0) return false // directly inside an open [...]
+      bracket--
+    }
+  }
+  return false
+}
+
 function convertComplexRanges(
   content: string,
   imports: Set<string>,
   flags: Flag[],
   line: StructuredLine,
+  arrayNames?: Set<string>,
 ): string {
   // Earlier transforms (try/otherwise with inline bodies, single-line
   // if/else) may have injected `\n`. Those newlines leave a `try:` or
@@ -948,7 +998,7 @@ function convertComplexRanges(
   if (content.includes('\n')) {
     return content
       .split('\n')
-      .map(seg => convertComplexRanges(seg, imports, flags, line))
+      .map(seg => convertComplexRanges(seg, imports, flags, line, arrayNames))
       .join('\n')
   }
   if (!/^\s*(for|parfor|def|if|elif|while)\b/.test(content) && !content.includes('#') && !content.includes('lambda')) {
@@ -986,6 +1036,10 @@ function convertComplexRanges(
         const openB = (beforeMatch.match(/\[/g) || []).length
         const closeB = (beforeMatch.match(/\]/g) || []).length
         if (openB > closeB) return match
+        // Skip ranges that are a dim of a known-array subscript like
+        // `A(2:2:end, :)` — those are slices, handled by Stage 4. A range
+        // inside a FUNCTION call (`plot(0:N)`) still becomes np.arange.
+        if (isInArraySubscript(beforeMatch + prefix, arrayNames)) return match
         imports.add('numpy')
         return `${prefix}np.arange(${start.trim()}, ${stop.trim()} + ${step.trim()}, ${step.trim()})`
       })
@@ -1003,6 +1057,11 @@ function convertComplexRanges(
 
           // Skip if left or right look like Python syntax (dict literal, slice)
           if (left === '' || right === '') return match
+
+          // Skip a range that is a dim of a known-array subscript (e.g.
+          // `A(2:end-1, :)`) — Stage 4 turns it into a proper slice. A range
+          // inside a function call (`plot(0:N)`) is still converted.
+          if (isInArraySubscript(beforeMatch, arrayNames)) return match
 
           imports.add('numpy')
           return `np.arange(${left}, ${right} + 1)`
@@ -1204,6 +1263,21 @@ function convertEndIdioms(line: string): string {
 
   // Forward slice patterns anchored to `end`.
 
+  // Stepped slices to `end` — must run before the 2-part patterns below so the
+  // middle step isn't mistaken for the stop. v(m:s:end) → v[m-1::s].
+  result = result.replace(
+    /\b(\w+)\(\s*(\d+)\s*:\s*(\d+)\s*:\s*end\s*\)/g,
+    (m, name, start, step) =>
+      safe(name) ? `${name}[${Number(start) - 1}::${step}]` : m,
+  )
+
+  // v(m:s:end-k) → v[m-1:-k:s]
+  result = result.replace(
+    /\b(\w+)\(\s*(\d+)\s*:\s*(\d+)\s*:\s*end\s*-\s*(\d+)\s*\)/g,
+    (m, name, start, step, k) =>
+      safe(name) ? `${name}[${Number(start) - 1}:-${k}:${step}]` : m,
+  )
+
   // v(1:end) → v[:]
   result = result.replace(/\b(\w+)\(\s*1\s*:\s*end\s*\)/g, (m, name) =>
     safe(name) ? `${name}[:]` : m,
@@ -1262,6 +1336,25 @@ function convertMatlabIndexing(line: string, originalContent: string): string {
     changed = false
     iterations++
 
+    // Bounded stepped slice: varName(start:step:stop) → varName[start-1:stop:step].
+    // Must run before the single-colon patterns (which would mis-split it) and
+    // before convertComplexRanges (which would mangle it into a v(np.arange(...))
+    // call on an ndarray). Numeric start is shifted; variable start gets ` - 1`.
+    //
+    // The term classes exclude brackets and comparison operators so the regex
+    // can't span already-converted subscripts: e.g. `find(mrec[1:]!=mrec[:-1])`
+    // must NOT be read as a 3-part range (start=`mrec[1`, step=`]!=mrec[`, …).
+    result = result.replace(
+      /\b(\w+)\(([^(),:'"\[\]<>=!~]+):([^(),:'"\[\]<>=!~]+):([^(),:'"\[\]<>=!~]+)\)/g,
+      (match, varName, start, step, stop) => {
+        if (isKnownPythonFunc(varName)) return match
+        changed = true
+        const s = start.trim()
+        const shifted = /^\d+$/.test(s) ? String(Number(s) - 1) : `${s} - 1`
+        return `${varName}[${shifted}:${stop.trim()}:${step.trim()}]`
+      },
+    )
+
     // Match varName(simple_expr:end) — no parens inside
     result = result.replace(
       /\b(\w+)\(([^()]*):end\)/g,
@@ -1300,12 +1393,38 @@ function isKnownPythonFunc(name: string): boolean {
     'isinstance', 'max', 'min', 'abs', 'sum', 'round',
     'where', 'array', 'arange', 'linspace', 'zeros', 'ones', 'empty',
     'concatenate', 'stack', 'hstack', 'vstack', 'reshape',
-    'solve_ivp', 'quad', 'find_peaks',
+    'solve_ivp', 'quad', 'find_peaks', 'lexsort',
   ])
   return KNOWN.has(name)
 }
 
 // ── Control Flow ──────────────────────────────────────────
+
+/**
+ * MATLAB uses `~` for an ignored input parameter (`function f(~, x)`). Python
+ * has no `~`; replace each with a unique throwaway name (`_`, `_2`, `_3`) — a
+ * single `_` works but duplicate `_` params are a Python syntax error.
+ */
+function sanitizeIgnoredParams(inputs: string): string {
+  let n = 0
+  return inputs
+    .split(',')
+    .map((s) => {
+      const t = s.trim()
+      if (t === '~') { n++; return n === 1 ? '_' : `_${n}` }
+      return t
+    })
+    .filter(Boolean)
+    .join(', ')
+}
+
+/** Python reserved words a MATLAB function/method name could collide with. */
+const PYTHON_KEYWORDS = new Set([
+  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break',
+  'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally',
+  'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal',
+  'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield',
+])
 
 // Module-level switch expression tracker
 let _currentSwitchExpr = ''
@@ -1319,16 +1438,32 @@ function transformControlFlow(
 ): string {
   const trimmed = content.trim()
 
-  // function [out1, out2] = name(in1, in2)
+  // function [out1, out2] = name(in1, in2). The name can be dotted for class
+  // property accessors (`set.Z`, `get.n`) — those become `set_Z`/`get_n` so the
+  // method body stays structurally valid Python instead of leaving the raw
+  // `function` keyword (a syntax error).
   const funcMatch = trimmed.match(
-    /^function\s+(?:\[([^\]]*)\]\s*=\s*|(\w+)\s*=\s*)?(\w+)\s*\(([^)]*)\)/,
+    /^function\s+(?:\[([^\]]*)\]\s*=\s*|(\w+)\s*=\s*)?([\w.]+)\s*\(([^)]*)\)/,
   )
   if (funcMatch) {
     const outputs = funcMatch[1] || funcMatch[2] || ''
-    const name = funcMatch[3]
+    const rawName = funcMatch[3]
+    // Dots in property accessors (set.Z) → underscores; a name that collides
+    // with a Python keyword (MATLAB operator methods `or`/`and`/`not`) gets a
+    // trailing underscore so `def or(...)` isn't a syntax error.
+    const name = PYTHON_KEYWORDS.has(rawName) ? `${rawName}_` : rawName.replace(/\./g, '_')
+    if (rawName !== name) {
+      flags.push({
+        type: 'TODO',
+        message: `MATLAB property accessor ${rawName} → def ${name}. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method.`,
+        originalLine: line.originalLineStart,
+        outputLine: 0,
+        originalCode: content,
+      })
+    }
     // If the nargin/arguments pre-pass extracted Python defaults, use them.
     const overrideInputs = paramsWithDefaultsByLine?.get(line.originalLineStart)
-    const inputs = overrideInputs ?? (funcMatch[4] || '')
+    const inputs = sanitizeIgnoredParams(overrideInputs ?? (funcMatch[4] || ''))
     if (outputs) {
       // If varargout pre-pass rewrote the returns, use the new names.
       const overrideReturns = varargoutReturnsByLine?.get(line.originalLineStart)
@@ -1644,10 +1779,15 @@ function transformFunctions(
   imports: Set<string>,
   flags: Flag[],
   line: StructuredLine,
+  shadowed?: Set<string>,
 ): string {
   let result = content
 
   for (const [matlabName, mapping] of Object.entries(FUNCTION_MAP)) {
+    // A locally-assigned variable shadows the builtin of the same name
+    // (MATLAB: `sum = [...]; sum(2)` indexes the array). Leave the name
+    // alone so Stage 4 can bracket-index it instead of emitting `np.sum[1]`.
+    if (shadowed?.has(matlabName)) continue
     // Match function call pattern: funcName(
     const pattern = new RegExp(`\\b${escapeRegex(matlabName)}\\s*\\(`, 'g')
     if (!pattern.test(result)) continue
@@ -1791,6 +1931,14 @@ function transformFunctions(
           result = replaceFunctionCalls(result, matlabName, (_, args) =>
             rewriteRandi(args, imports),
           )
+        } else if (matlabName === 'readtable') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteReadtable(args),
+          )
+        } else if (matlabName === 'sortrows') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteSortrows(args),
+          )
         } else {
           result = result.replace(pattern, `${mapping.python}(`)
         }
@@ -1813,6 +1961,30 @@ function transformFunctions(
   }
 
   return result
+}
+
+// ── sortrows rewriter ─────────────────────────────────────
+
+/**
+ * Rewrite MATLAB sortrows to a NumPy expression. The registry's old `{a}`
+ * template was never substituted (no custom handler), so `{a}` leaked into the
+ * output and was mangled into invalid Python.
+ *
+ *   sortrows(A)      → A[np.lexsort(A[:, ::-1].T)]   (lexicographic, all cols)
+ *   sortrows(A, c)   → A[A[:, c-1].argsort(kind='stable')]   (single column)
+ *
+ * np.lexsort keys are applied last-to-first, so the columns are reversed to get
+ * MATLAB's left-to-right ascending order. Descending columns, a column vector,
+ * and the `[B, idx] = sortrows(...)` index output are flagged (see registry).
+ */
+function rewriteSortrows(rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  const a = args[0] ?? ''
+  if (args.length >= 2 && /^\d+$/.test(args[1])) {
+    const col = parseInt(args[1], 10) - 1
+    return `${a}[${a}[:, ${col}].argsort(kind='stable')]`
+  }
+  return `${a}[np.lexsort(${a}[:, ::-1].T)]`
 }
 
 // ── std / var ddof rewriter ───────────────────────────────
@@ -1849,6 +2021,30 @@ function rewriteStdVar(pyName: string, rawArgs: string): string {
   const dim = args[2].trim()
   const axisExpr = /^\d+$/.test(dim) ? String(parseInt(dim, 10) - 1) : `${dim} - 1`
   return `${pyName}(${data}, ddof=${ddof}, axis=${axisExpr})`
+}
+
+// ── readtable reader selection ────────────────────────────
+
+/**
+ * Rewrite MATLAB readtable(file, ...) to the matching pandas reader.
+ *
+ *   readtable('d.csv')   → pd.read_csv('d.csv')
+ *   readtable('d.txt')   → pd.read_csv('d.txt')
+ *   readtable('b.xlsx')  → pd.read_excel('b.xlsx')
+ *   readtable(fname)     → pd.read_csv(fname)      (+ WARNING flag, extension unknown)
+ *
+ * Excel extensions get read_excel; everything else defaults to read_csv. The
+ * registry's flagWhen warns whenever the extension can't be read as a string
+ * literal, so a variable filename is converted but flagged for review.
+ */
+function rewriteReadtable(rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  const file = args[0] ?? ''
+  const ext = file.match(/\.([A-Za-z0-9]+)['"]\s*$/)?.[1]?.toLowerCase() ?? ''
+  const reader = ext === 'xls' || ext === 'xlsx' || ext === 'xlsm'
+    ? 'pd.read_excel'
+    : 'pd.read_csv'
+  return `${reader}(${args.join(', ')})`
 }
 
 // ── randi bounds rewriter ─────────────────────────────────
@@ -2197,6 +2393,7 @@ function transformToolboxFunctions(
   imports: Set<string>,
   flags: Flag[],
   line: StructuredLine,
+  shadowed?: Set<string>,
 ): string {
   let result = content
 
@@ -2205,6 +2402,8 @@ function transformToolboxFunctions(
   result = convertFindpeaks(result, imports, flags, line)
 
   for (const [matlabName, mapping] of Object.entries(TOOLBOX_MAP)) {
+    // A locally-assigned variable shadows the toolbox function of the same name.
+    if (shadowed?.has(matlabName)) continue
     // Use negative lookbehind to avoid matching inside already-converted dotted names (np.interp etc.)
     const pattern = new RegExp(`(?<!\\.)\\b${escapeRegex(matlabName)}\\s*\\(`, 'g')
     if (!pattern.test(result)) continue
@@ -2300,6 +2499,40 @@ function transformSpecialConstructs(
   funcParams: string[] = [],
 ): string {
   let result = content
+
+  // syms x y z [assumptions] — Symbolic Math command-syntax declaration.
+  // `syms theta real` → `theta = sp.symbols('theta', real=True)`.
+  const symsMatch = result.match(/^\s*syms\s+([A-Za-z].*?)\s*;?\s*$/)
+  if (symsMatch && !symsMatch[1].includes('=') && !symsMatch[1].includes('(')) {
+    const ASSUMPTIONS = new Set([
+      'real', 'positive', 'negative', 'integer', 'rational', 'complex',
+      'nonnegative', 'nonpositive', 'nonzero', 'finite',
+    ])
+    const names: string[] = []
+    const assumptions: string[] = []
+    for (const tok of symsMatch[1].split(/\s+/).filter(Boolean)) {
+      if (ASSUMPTIONS.has(tok)) assumptions.push(`${tok}=True`)
+      else names.push(tok)
+    }
+    if (names.length > 0) {
+      imports.add('sympy')
+      const kw = assumptions.length ? `, ${assumptions.join(', ')}` : ''
+      result = `${names.join(', ')} = sp.symbols('${names.join(' ')}'${kw})`
+    }
+  }
+
+  // assert(cond[, msg[, fmtargs...]]) → Python assert STATEMENT. As a call,
+  // `assert(cond, msg)` asserts the tuple `(cond, msg)` — always true — silently
+  // disabling the check. Strip the parens; map MATLAB's printf-style message.
+  {
+    const am = result.match(/^(\s*)assert\s*\((.*)\)\s*;?\s*$/)
+    if (am) {
+      const args = splitArgsRespectingStrings(am[2]).map(s => s.trim())
+      if (args.length === 1) result = `${am[1]}assert ${args[0]}`
+      else if (args.length === 2) result = `${am[1]}assert ${args[0]}, ${args[1]}`
+      else if (args.length >= 3) result = `${am[1]}assert ${args[0]}, ${args[1]} % (${args.slice(2).join(', ')},)`
+    }
+  }
 
   // clearvars / clear / clc — no Python equivalent, remove or comment
   if (/^\s*clearvars\b/.test(result)) {
@@ -2819,8 +3052,9 @@ function rewriteDynamicFieldAccess(source: string): string {
   const out: string[] = []
   let i = 0
   while (i < source.length) {
-    // Look for `.(` preceded by a word char
-    if (i + 1 < source.length && source[i] === '.' && source[i + 1] === '(' && i > 0 && /\w/.test(source[i - 1])) {
+    // Look for `.(` preceded by an indexable expression end: a word char, or a
+    // closing `]`/`)` (so `s_array[n].(f)` and `obj.method().(f)` convert too).
+    if (i + 1 < source.length && source[i] === '.' && source[i + 1] === '(' && i > 0 && /[\w\])]/.test(source[i - 1])) {
       // Find matching `)` with balanced depth
       let depth = 1
       let j = i + 2

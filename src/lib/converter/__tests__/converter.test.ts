@@ -854,8 +854,22 @@ describe('Phase 5: Toolbox Expansion', () => {
     expect(flagTypes("net = trainNetwork(X, Y, layers, options);")).toContain('TODO')
   })
 
-  it('5D: table flagged', () => {
-    expect(flagTypes("T = readtable('data.csv');")).toContain('TODO')
+  it('5D: table() constructor flagged', () => {
+    expect(flagTypes("T = table(a, b);")).toContain('TODO')
+  })
+
+  it('5D: readtable(.csv) converts to pd.read_csv without a flag', () => {
+    expect(py("T = readtable('data.csv');")).toContain("pd.read_csv('data.csv')")
+    expect(flagTypes("T = readtable('data.csv');")).not.toContain('TODO')
+  })
+
+  it('5D: readtable(.xlsx) converts to pd.read_excel', () => {
+    expect(py("T = readtable('book.xlsx');")).toContain("pd.read_excel('book.xlsx')")
+  })
+
+  it('5D: readtable(variable) converts to pd.read_csv and warns', () => {
+    expect(py('T = readtable(fname);')).toContain('pd.read_csv(fname)')
+    expect(flagTypes('T = readtable(fname);')).toContain('WARNING')
   })
 
   it('5E: interp1 → np.interp', () => {

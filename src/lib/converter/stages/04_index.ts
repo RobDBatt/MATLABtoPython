@@ -23,6 +23,7 @@ import type { SymbolTable } from '../analysis/scope'
 export function shiftIndices(
   lines: StructuredLine[],
   symbols?: SymbolTable,
+  imports?: Set<string>,
 ): IndexShiftResult {
   const flags: Flag[] = []
   const shifted: StructuredLine[] = []
@@ -41,19 +42,34 @@ export function shiftIndices(
     // callable list) don't get misclassified as arrays when their
     // arguments happen to contain colons.
     for (const f of symbols.functions) knownFunctions.add(f)
+    // Some names are *proven* arrays by an unambiguous indexing use — most
+    // notably `end` inside a subscript, which is meaningless in a function
+    // call. The symbol table may still classify such a name as a function
+    // (e.g. it is never assigned `v = ...`, only ever subscripted), so we
+    // protect proven arrays from the deletion below. Without this, a file
+    // with `v(2:end)` (converted to `v[1:]`) would inconsistently leave a
+    // sibling `v(1)` as a call instead of shifting it to `v[0]`.
+    const provenArrays = buildProvenArrays(lines)
+    for (const p of provenArrays) knownArrays.add(p)
+
     // `buildKnownArrays` uses slice-heuristic pattern matching that can
     // wrongly add built-in functions like `all(x, 2)` (args happen to
     // contain colons or commas) to knownArrays. Remove any name that
     // the symbol table definitively classifies as a function and that
-    // was NOT also assigned as a variable. Functions win in that case.
+    // was NOT also assigned as a variable. Functions win in that case —
+    // unless the name was proven to be an array above.
     for (const f of symbols.functions) {
-      if (!symbols.variables.has(f)) knownArrays.delete(f)
+      if (!symbols.variables.has(f) && !provenArrays.has(f)) knownArrays.delete(f)
     }
   }
 
   // Track variables that hold 0-based indices (from np.where, np.argmax, etc.)
   // These should NOT be shifted when used as array subscripts
   const zeroBased = buildZeroBasedVars(lines)
+
+  // Variables that are ONLY ever scalar/empty-initialized. Writing past their
+  // bounds is MATLAB array-growth, which NumPy/lists can't do silently.
+  const growthVars = buildGrowthVars(lines)
 
   for (const line of lines) {
     if (line.isComment || line.content.trim() === '' || line.isBlockClose) {
@@ -72,6 +88,11 @@ export function shiftIndices(
       shifted.push(line)
       continue
     }
+
+    // Intercept the append idiom `VAR(end+1) = RHS` BEFORE index math turns
+    // `end+1` into `-1+1` (= overwrite element 0). RHS still flows through the
+    // transforms below.
+    content = rewriteEndAppend(content, line, lineFlags, imports)
 
     // 1E. Cell array {} indexing (unambiguous)
     content = transformCellIndexing(content)
@@ -93,6 +114,11 @@ export function shiftIndices(
     // ALWAYS array indexing (MATLAB has no first-class function results),
     // so the rewrite is unambiguous.
     content = rewriteChainedSubscript(content, zeroBased)
+
+    // After index transforms, a write to a scalar/empty-only variable looks
+    // like `VAR[idx] = ...` — which raises in Python. Flag it inline rather
+    // than ship silently-broken code.
+    content = flagGrowthAssignment(content, growthVars, line, lineFlags)
 
     flags.push(...lineFlags)
     shifted.push({ ...line, content })
@@ -220,6 +246,32 @@ function buildKnownArrays(lines: StructuredLine[]): Set<string> {
   return arrays
 }
 
+/**
+ * Names that are *unambiguously* arrays, regardless of what the symbol table
+ * thinks. By the time Stage 4 runs, Stage 3 has already rewritten proven
+ * indexing forms into Python bracket subscripts — `v(2:end)` becomes `v[1:]`.
+ * A name that is bracket-subscripted anywhere (`name[...]`) is therefore an
+ * array, never a function call (MATLAB names don't switch between array and
+ * function within a scope). Promoting these keeps sibling scalar subscripts
+ * consistent: without it, `v(2:end)` → `v[1:]` but `v(1)` would stay `v(1)`.
+ *
+ * Deliberately narrower than `buildKnownArrays`: only an existing bracket
+ * subscript counts as proof. A `[` opening a list literal is never preceded
+ * by an identifier char (`= [1, 2]`, `array([...])`), so the `\b(\w+)\[`
+ * shape can't misfire on those.
+ */
+function buildProvenArrays(lines: StructuredLine[]): Set<string> {
+  const proven = new Set<string>()
+  const subscriptPattern = /\b(\w+)\[/g
+  for (const line of lines) {
+    if (line.isComment || line.content.trim() === '') continue
+    for (const m of line.content.matchAll(subscriptPattern)) {
+      if (!isKnownFunction(m[1])) proven.add(m[1])
+    }
+  }
+  return proven
+}
+
 // ── Known Function Checks ─────────────────────────────────
 
 /** Python function prefixes that should NOT be treated as array indexing */
@@ -241,7 +293,7 @@ const KNOWN_CALLABLES = new Set([
   // Post-conversion Python names that should NOT be treated as array indexing
   'where', 'flatnonzero', 'arange', 'linspace', 'array', 'zeros', 'ones', 'empty',
   'full', 'concatenate', 'stack', 'hstack', 'vstack', 'reshape',
-  'solve_ivp', 'quad', 'find_peaks', 'axhline', 'axvline',
+  'solve_ivp', 'quad', 'find_peaks', 'axhline', 'axvline', 'lexsort',
   'ceil', 'floor', 'log2', 'log10', 'log',
   // MATLAB GUI/runtime functions that become Python calls
   'close', 'figure', 'warnings', 'rng',
@@ -443,8 +495,11 @@ function transformGeneralIndexing(
   result = result.replace(
     /\b(\w+)\(([^()]+)\)/g,
     (match, varName, argsStr) => {
-      // Skip if already converted (contains [)
-      if (match.includes('[')) return match
+      // A `[` in the args is a nested subscript that was already converted
+      // (e.g. `a(b(end))` → `a(b[-1])`). Only bail when `varName` is NOT a
+      // known array; for a known array we still need to bracket-index it, or
+      // the outer `a(...)` is left as a call on an ndarray (TypeError).
+      if (match.includes('[') && !knownArrays.has(varName)) return match
       // Skip known functions — but variables always shadow functions
       if (isKnownFunction(varName, knownArrays, knownFunctions)) return match
       // Skip if args contain colon (handled by unambiguous patterns)
@@ -630,7 +685,7 @@ function rewriteMultiDimIndexing(
     const pyArgs = args.map(a => {
       const trimmed = a.trim()
       if (trimmed === ':') return ':'
-      if (trimmed.includes(':')) return trimmed
+      if (trimmed.includes(':')) return sliceifyDim(trimmed)
       return shiftSingleIndex(trimmed)
     })
     result = result.slice(0, mm.start) + `${mm.name}[${pyArgs.join(', ')}]` + result.slice(mm.end + 1)
@@ -662,6 +717,93 @@ function buildZeroBasedVars(lines: StructuredLine[]): Set<string> {
     if (multiMatch) vars.add(multiMatch[1])
   }
   return vars
+}
+
+// ── Array-growth-by-assignment ────────────────────────────
+
+/**
+ * Identify variables that are ONLY ever scalar- or empty-initialized and
+ * never assigned an array/array-producing RHS. Writing to an out-of-bounds
+ * index of such a variable is MATLAB array-growth — which raises in NumPy /
+ * on a Python list — so those assignments must be flagged, not silently
+ * "converted" into code that crashes at runtime.
+ */
+function buildGrowthVars(lines: StructuredLine[]): Set<string> {
+  const scalarOrEmpty = new Set<string>()
+  const everArray = new Set<string>()
+  for (const line of lines) {
+    if (line.isComment || line.content.trim() === '') continue
+    // Plain `name = rhs` only (indexed/multi-LHS assignments don't match
+    // because `name` must be immediately followed by `=`).
+    const m = line.content.match(/^\s*([A-Za-z_]\w*)\s*=\s*(.+?)\s*;?\s*$/)
+    if (!m) continue
+    const [, name, rhs] = m
+    if (/^\[\s*\]$/.test(rhs)) { scalarOrEmpty.add(name); continue }   // x = []
+    if (/^-?\d+(\.\d+)?$/.test(rhs)) { scalarOrEmpty.add(name); continue } // x = 0
+    everArray.add(name) // any other RHS — treat as possibly an array
+  }
+  // A var assigned an array anywhere is not a growth candidate.
+  for (const n of everArray) scalarOrEmpty.delete(n)
+  return scalarOrEmpty
+}
+
+/**
+ * `VAR(end+1) = RHS` is MATLAB's append idiom. NumPy arrays are fixed-size, so
+ * rewrite to `VAR = np.append(VAR, RHS)` (correct for both ndarrays and lists
+ * built from `[]`) and flag it. Without this, `end+1` is index-shifted to
+ * `[-1+1]` (= overwrite element 0) — silently wrong output.
+ */
+function rewriteEndAppend(
+  content: string,
+  line: StructuredLine,
+  flags: Flag[],
+  imports?: Set<string>,
+): string {
+  const eq = findTopLevelAssign(content)
+  if (eq < 0) return content
+  const lhs = content.slice(0, eq)
+  const rhs = content.slice(eq + 1).replace(/;\s*$/, '').trim()
+  const m = lhs.match(/^(\s*)([A-Za-z_]\w*)\s*\(\s*end\s*\+\s*1\s*\)\s*$/)
+  if (!m) return content
+  const [, indent, name] = m
+  imports?.add('numpy')
+  flags.push({
+    type: 'WARNING',
+    message: `${name}(end+1) grows the array; converted to np.append(${name}, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end.`,
+    originalLine: line.originalLineStart,
+    outputLine: 0,
+    originalCode: line.content,
+  })
+  return `${indent}${name} = np.append(${name}, ${rhs})`
+}
+
+/**
+ * After index transforms, a write to a scalar/empty-only variable looks like
+ * `VAR[idx] = ...`. That raises in Python (can't index an int; can't grow a
+ * list by out-of-bounds assignment), so flag it inline rather than emit
+ * silently-broken code.
+ */
+function flagGrowthAssignment(
+  content: string,
+  growthVars: Set<string>,
+  line: StructuredLine,
+  flags: Flag[],
+): string {
+  if (growthVars.size === 0 || content.includes('# ⚠')) return content
+  const eq = findTopLevelAssign(content)
+  if (eq < 0) return content
+  const lhs = content.slice(0, eq)
+  const m = lhs.match(/^\s*([A-Za-z_]\w*)\s*\[[^\]]+\]\s*$/)
+  if (!m || !growthVars.has(m[1])) return content
+  const name = m[1]
+  flags.push({
+    type: 'WARNING',
+    message: `${name} is only ever scalar/empty-initialized, so this indexed assignment relies on MATLAB array-growth. NumPy and Python lists do not grow on out-of-bounds assignment — preallocate ${name} (e.g. np.zeros(n)) or build it with np.append / list.append.`,
+    originalLine: line.originalLineStart,
+    outputLine: 0,
+    originalCode: line.content,
+  })
+  return `${content}  # ⚠ WARNING: relies on MATLAB array-growth — preallocate ${name} or use np.append`
 }
 
 // ── Helpers ───────────────────────────────────────────────
@@ -701,10 +843,61 @@ function splitArgs(argsStr: string): string[] {
  *   2*i     → 2*i          (has arithmetic — don't shift)
  *   end     → handled separately, not here
  */
+/**
+ * Convert a MATLAB range used as ONE dim of a multidim subscript into a Python
+ * slice. MATLAB `a:b` → Python `a-1:b` (the start shifts; the stop is kept
+ * because MATLAB's inclusive upper bound cancels Python's exclusive one).
+ * `end` → omit, `end-k` → `-k`; stepped `a:s:b` → `a-1:b:s`.
+ *
+ *   A(2:end-1, :)   dim "2:end-1"   → "1:-1"
+ *   A(end-1:end, :) dim "end-1:end" → "-2:"
+ *   A(1:2:end, :)   dim "1:2:end"   → "0::2"
+ */
+function sliceifyDim(dim: string): string {
+  // Only act on genuine simple ranges. `rewriteMultiDimIndexing` also matches
+  // function calls whose args merely contain a colon (a lambda body, a
+  // `'str:str'` literal, a nested subscript) — slicing those produces syntax
+  // errors. If any part isn't a plain range term, leave the dim untouched
+  // (the conservative, pre-existing behavior).
+  if (/['"@[\]().]|lambda/.test(dim)) return dim
+  const parts = dim.split(':').map((s) => s.trim())
+  if (parts.length < 2 || parts.length > 3) return dim
+  const SIMPLE = /^(|end|end\s*-\s*\w+|-?\d+|\w+)$/
+  if (!parts.every((p) => SIMPLE.test(p))) return dim
+  const start = (s: string): string => {
+    if (s === '' || s === 'end') return ''
+    if (/^\d+$/.test(s)) return String(Number(s) - 1)
+    const em = s.match(/^end\s*-\s*(.+)$/)
+    if (em) { const n = em[1].trim(); return /^\d+$/.test(n) ? `-${Number(n) + 1}` : `-${n} - 1` }
+    return `${s} - 1`
+  }
+  const stop = (s: string): string => {
+    if (s === '' || s === 'end') return ''
+    const em = s.match(/^end\s*-\s*(.+)$/)
+    if (em) return `-${em[1].trim()}`
+    return s
+  }
+  if (parts.length === 2) return `${start(parts[0])}:${stop(parts[1])}`
+  if (parts.length === 3) return `${start(parts[0])}:${stop(parts[2])}:${parts[1]}`
+  return dim
+}
+
 function shiftSingleIndex(idx: string): string {
   const trimmed = idx.trim()
   if (trimmed === ':') return ':'
   if (trimmed === '') return ''
+
+  // MATLAB `end` as an index: the last element is `-1`, and `end-N` is
+  // `-(N+1)` (e.g. `end-1` is second-to-last → `-2`). Handle it here so a
+  // standalone `end` dim isn't shifted to `end - 1` (which a downstream pass
+  // would then mis-fold). Single-dim `A(end)` is handled earlier; this covers
+  // multidim dims like `A(end, end)` and `A(end-1, 3)`.
+  if (trimmed === 'end') return '-1'
+  const endMinus = trimmed.match(/^end\s*-\s*(.+)$/)
+  if (endMinus) {
+    const n = endMinus[1].trim()
+    return /^\d+$/.test(n) ? `-${parseInt(n, 10) + 1}` : `-${n} - 1`
+  }
 
   // Numeric literal — shift directly
   const num = parseInt(trimmed, 10)
@@ -712,10 +905,12 @@ function shiftSingleIndex(idx: string): string {
     return String(num - 1)
   }
 
-  // If expression contains arithmetic operators, don't shift —
-  // the user is already computing an offset
-  // Allow leading negative sign (e.g. -1) but catch internal operators
-  if (/[+\-*/]/.test(trimmed.slice(1))) {
+  // If expression contains TOP-LEVEL arithmetic operators, don't shift —
+  // the user is already computing an offset (e.g. `i-1`). Operators inside a
+  // nested subscript (`b[-1]`) are not top-level: that whole expression is a
+  // 1-based index value and still needs the `- 1` shift.
+  const topLevel = trimmed.replace(/\[[^\][]*\]/g, '')
+  if (/[+\-*/]/.test(topLevel.slice(1))) {
     return trimmed
   }
 

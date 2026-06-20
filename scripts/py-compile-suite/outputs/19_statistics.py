@@ -1,7 +1,7 @@
 import numpy as np
 
 # Descriptive statistics
-x = np.random.randn(1000, 1)
+x = np.random.randn(1000)
 mu = np.mean(x)
 sigma = np.std(x, ddof=1)
 med = np.median(x)
