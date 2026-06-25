@@ -1,0 +1,28 @@
+{
+  "id": "03_sum_max",
+  "lang": "matlab",
+  "features": [
+    "sum",
+    "max"
+  ],
+  "probe": [
+    "s",
+    "m",
+    "mx",
+    "ix"
+  ],
+  "expected": {
+    "s": {
+      "value": 31
+    },
+    "m": {
+      "value": 9
+    },
+    "mx": {
+      "value": 9
+    },
+    "ix": {
+      "value": 6
+    }
+  }
+}

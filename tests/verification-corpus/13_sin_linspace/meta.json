@@ -1,0 +1,24 @@
+{
+  "id": "13_sin_linspace",
+  "lang": "matlab",
+  "features": [
+    "sin",
+    "linspace"
+  ],
+  "probe": [
+    "t",
+    "y"
+  ],
+  "expected": {
+    "y": {
+      "value": [
+        0,
+        1,
+        0,
+        -1,
+        0
+      ],
+      "tol": 1e-9
+    }
+  }
+}

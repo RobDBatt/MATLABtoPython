@@ -1,0 +1,19 @@
+{
+  "id": "18_nargin_default",
+  "lang": "matlab",
+  "features": [
+    "nargin"
+  ],
+  "probe": [
+    "r1",
+    "r2"
+  ],
+  "expected": {
+    "r1": {
+      "value": 15
+    },
+    "r2": {
+      "value": 25
+    }
+  }
+}

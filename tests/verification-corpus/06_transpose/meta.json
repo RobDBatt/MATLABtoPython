@@ -1,0 +1,28 @@
+{
+  "id": "06_transpose",
+  "lang": "matlab",
+  "features": [
+    "transpose"
+  ],
+  "probe": [
+    "w",
+    "Mt"
+  ],
+  "expected": {
+    "w": {
+      "value": [
+        1,
+        2,
+        3
+      ]
+    },
+    "Mt": {
+      "value": [
+        1,
+        3,
+        2,
+        4
+      ]
+    }
+  }
+}

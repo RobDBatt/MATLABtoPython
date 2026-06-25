@@ -1,0 +1,21 @@
+{
+  "id": "09_length_class",
+  "lang": "matlab",
+  "features": [
+    "length",
+    "class",
+    "colon-range"
+  ],
+  "probe": [
+    "n",
+    "c"
+  ],
+  "expected": {
+    "n": {
+      "value": 7
+    },
+    "c": {
+      "value": "double"
+    }
+  }
+}

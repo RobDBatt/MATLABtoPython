@@ -1,0 +1,2 @@
+# command syntax
+disp Hello

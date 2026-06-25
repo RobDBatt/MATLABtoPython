@@ -1,0 +1,11 @@
+{
+  "id": "12_fullfile",
+  "lang": "matlab",
+  "features": [
+    "fullfile"
+  ],
+  "probe": [
+    "p"
+  ],
+  "expected": {}
+}

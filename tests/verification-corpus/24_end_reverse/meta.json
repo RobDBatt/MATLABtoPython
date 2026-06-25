@@ -1,0 +1,33 @@
+{
+  "id": "24_end_reverse",
+  "lang": "matlab",
+  "features": [
+    "colon-range",
+    "end-keyword"
+  ],
+  "probe": [
+    "w",
+    "r"
+  ],
+  "expected": {
+    "w": {
+      "value": [
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    "r": {
+      "value": [
+        10,
+        8,
+        6,
+        4,
+        2,
+        0
+      ]
+    }
+  }
+}

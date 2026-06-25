@@ -1,0 +1,10 @@
+{
+  "id": "15_command_syntax",
+  "lang": "matlab",
+  "features": [
+    "command-syntax",
+    "disp"
+  ],
+  "probe": [],
+  "expected": {}
+}

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run src/lib/converter/__tests__/converter.test.ts",
+    "test:verify": "vitest run src/lib/converter/__tests__/verification.test.ts",
     "corpus": "node scripts/run_corpus.mjs",
     "corpus:diff": "npx tsx scripts/corpus_diff.ts",
     "drill": "npx tsx scripts/drill_bucket.ts",

@@ -1,0 +1,27 @@
+{
+  "id": "20_findpeaks_values",
+  "lang": "matlab",
+  "features": [
+    "findpeaks"
+  ],
+  "probe": [
+    "pks",
+    "locs"
+  ],
+  "expected": {
+    "pks": {
+      "value": [
+        2,
+        4,
+        6
+      ]
+    },
+    "locs": {
+      "value": [
+        2,
+        4,
+        6
+      ]
+    }
+  }
+}

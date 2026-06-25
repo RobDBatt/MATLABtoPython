@@ -1,0 +1,29 @@
+{
+  "id": "08_any_all_isfinite",
+  "lang": "matlab",
+  "features": [
+    "any",
+    "all",
+    "isfinite"
+  ],
+  "probe": [
+    "f",
+    "a",
+    "b"
+  ],
+  "expected": {
+    "f": {
+      "value": [
+        1,
+        1,
+        0
+      ]
+    },
+    "a": {
+      "value": 1
+    },
+    "b": {
+      "value": 1
+    }
+  }
+}
