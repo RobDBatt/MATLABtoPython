@@ -239,6 +239,13 @@ export function cleanup(
   // has its `pass`.
   injectMissingExcept(fixedLines)
 
+  // Hoist trailing local-function defs above the script body. MATLAB script
+  // files may define local functions AFTER the script code; Python executes
+  // top-to-bottom, so a module-level call to a function defined lower down is a
+  // NameError. No-op unless a top-level def/class actually follows an executable
+  // statement — normal function files and already-ordered output are untouched.
+  fixedLines.splice(0, fixedLines.length, ...hoistTopLevelFunctions(fixedLines))
+
   // Build the import block now that the body — and the import set — is final.
   // Cleanup-stage rewrites (e.g. literal → np.array) may have added imports
   // after the body loop started, so building it earlier would miss them.
@@ -281,6 +288,55 @@ export function cleanup(
   }
 
   return { python, flags }
+}
+
+/**
+ * Move trailing top-level `def`/`class` blocks above the first executable
+ * top-level statement, so module-level calls to MATLAB local functions (which
+ * MATLAB allows to be defined after the script body) resolve in Python.
+ *
+ * A "top-level block" starts at a non-blank, indent-0 line; following blank or
+ * indented lines belong to it. Only defs that appear AFTER the first executable
+ * statement are moved (preserving their relative order); everything else — and
+ * any leading comments — stays put. Returns the reordered lines.
+ */
+function hoistTopLevelFunctions(lines: string[]): string[] {
+  type Block = { isDef: boolean; lines: string[] }
+  const blocks: Block[] = []
+  let cur: Block | null = null
+  for (const l of lines) {
+    const startsBlock = l.trim() !== '' && !/^[ \t]/.test(l)
+    if (startsBlock) {
+      cur = { isDef: /^(async\s+)?(def|class)\b/.test(l), lines: [l] }
+      blocks.push(cur)
+    } else {
+      if (!cur) { cur = { isDef: false, lines: [] }; blocks.push(cur) }
+      cur.lines.push(l)
+    }
+  }
+
+  const isExec = (b: Block) =>
+    !b.isDef && b.lines.some(l => { const t = l.trim(); return t !== '' && !t.startsWith('#') })
+
+  let firstExec = -1
+  for (let i = 0; i < blocks.length; i++) { if (isExec(blocks[i])) { firstExec = i; break } }
+  if (firstExec < 0) return lines
+
+  const trailing = new Set(
+    blocks.map((b, i) => (b.isDef && i > firstExec ? i : -1)).filter(i => i >= 0),
+  )
+  if (trailing.size === 0) return lines // already correctly ordered
+
+  const movedDefs = blocks.filter((_, i) => trailing.has(i))
+  const rest = blocks.filter((_, i) => !trailing.has(i))
+  const out: Block[] = []
+  let inserted = false
+  for (const b of rest) {
+    if (!inserted && isExec(b)) { out.push(...movedDefs); inserted = true }
+    out.push(b)
+  }
+  if (!inserted) out.push(...movedDefs)
+  return out.flatMap(b => b.lines)
 }
 
 /**

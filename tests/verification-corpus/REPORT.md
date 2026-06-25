@@ -12,7 +12,7 @@ Tier A = golden/snapshot (regression) · Tier B = executes under numpy/scipy · 
 | 04_abs_sign_ceil | abs, sign, ceil | ✅ | ✅ | ✅ |  |
 | 05_log2_nextpow2 | log2, nextpow2 | ✅ | ✅ | ✅ |  |
 | 06_transpose | transpose | ✅ | ✅ | ✅ |  |
-| 07_struct_fields | struct-field | ✅ | ❌ | ❌ | exec failed: NameError: name 's' is not defined. Did you mean: 'os'? |
+| 07_struct_fields | struct-field | ✅ | ✅ | ✅ |  |
 | 08_any_all_isfinite | any, all, isfinite | ✅ | ✅ | ✅ |  |
 | 09_length_class | length, class, colon-range | ✅ | ✅ | ✅ |  |
 | 10_fprintf_format | fprintf | ✅ | ✅ | ✅ |  |
@@ -20,10 +20,10 @@ Tier A = golden/snapshot (regression) · Tier B = executes under numpy/scipy · 
 | 12_fullfile | fullfile | ✅ | ✅ | — |  |
 | 13_sin_linspace | sin, linspace | ✅ | ✅ | ✅ |  |
 | 14_randn_shape | randn | ✅ | ✅ | — |  |
-| 15_command_syntax | command-syntax, disp | ✅ | ❌ | — | exec failed: SyntaxError: invalid syntax |
+| 15_command_syntax | command-syntax, disp | ✅ | ✅ | — |  |
 | 16_fft_mag | fft, abs, linspace, sin | ✅ | ✅ | — |  |
 | 17_signal_processing | butter, filter, fft, findpeaks, linspace, sin | ✅ | ✅ | — |  |
-| 18_nargin_default | nargin | ✅ | ❌ | ❌ | exec failed: NameError: name 'addopt' is not defined |
+| 18_nargin_default | nargin | ✅ | ✅ | ✅ |  |
 | 19_filter_moving_average | filter | ✅ | ✅ | ✅ |  |
 | 20_findpeaks_values | findpeaks | ✅ | ✅ | ✅ |  |
 | 21_matrix_mult | matrix-mult | ✅ | ✅ | ✅ |  |
@@ -31,10 +31,8 @@ Tier A = golden/snapshot (regression) · Tier B = executes under numpy/scipy · 
 | 23_logical_index | logical-index | ✅ | ✅ | ✅ |  |
 | 24_end_reverse | colon-range, end-keyword | ✅ | ✅ | ✅ |  |
 
-## Real failures (3)
+## Real failures (0)
 
-- **07_struct_fields** — exec failed: NameError: name 's' is not defined. Did you mean: 'os'?
-- **15_command_syntax** — exec failed: SyntaxError: invalid syntax
-- **18_nargin_default** — exec failed: NameError: name 'addopt' is not defined
+_None._
 
 Legend: ✅ pass · ❌ fail · 🌱 golden bootstrapped (first run) · ⏭️ skipped (no Python) · — n/a

@@ -1,2 +1,2 @@
 # command syntax
-disp Hello
+print('Hello')

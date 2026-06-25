@@ -409,12 +409,17 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
       if (name === 'mex' || name === 'make') {
         result = `${indent}# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+      } else if (name === 'disp') {
+        // Command syntax: `disp Hello` — the bareword arg is a string literal
+        // (MATLAB command form), so quote it. `disp('x')` (function form) is
+        // handled by FUNCTION_MAP and never reaches here (no space before `(`).
+        result = `${indent}print('${trimmedArgs}')`
       } else if (name === 'xlabel' || name === 'ylabel' || name === 'zlabel' || name === 'title' || name === 'legend' || name === 'colorbar') {
         imports.add('matplotlib.pyplot')
         result = `${indent}plt.${name}(${trimmedArgs})`
