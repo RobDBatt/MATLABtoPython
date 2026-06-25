@@ -1818,7 +1818,15 @@ function transformFunctions(
             return `${mapping.python}((${argList.join(', ')}))`
           }
           if (argList.length === 1) {
-            return `${mapping.python}(${argList[0]})`
+            const a = argList[0]
+            // MATLAB zeros(n)/ones(n) with a single SCALAR LITERAL is an n×n matrix
+            // (NOT a length-n vector): zeros(3) === zeros(3,3). Square it. Bare
+            // identifiers stay 1-arg — without shape info we can't distinguish a
+            // scalar n from a size-vector variable, and zeros(sz) must pass through.
+            if ((matlabName === 'zeros' || matlabName === 'ones') && /^\d+$/.test(a)) {
+              return `${mapping.python}((${a}, ${a}))`
+            }
+            return `${mapping.python}(${a})`
           }
           return `${mapping.python}(${args})`
         })

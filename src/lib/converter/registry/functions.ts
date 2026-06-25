@@ -354,7 +354,11 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   toc:      { python: 'print(f"Elapsed: {time.time() - _tic:.3f}s")', args: 'custom', imports: ['time'] },
   pause:    { python: 'time.sleep',           args: 'passthrough', imports: ['time'] },
   input:    { python: 'input',                args: 'passthrough', imports: [] },
-  class:    { python: 'type',                 args: 'passthrough', imports: [] },
+  // MATLAB class(x) returns a class-name STRING ('double', 'char', ...). Plain
+  // `type(x)` returned a type OBJECT (breaks any string use). Emit a string via
+  // `type(x).__name__` — runnable; the exact name still differs from MATLAB's
+  // (e.g. 'ndarray'/'float64' vs 'double'), a documented limitation.
+  class:    { python: 'type({}).__name__',    args: 'template', imports: [] },
   fieldnames: { python: 'list({}.keys())',    args: 'template', imports: [] },
   struct:   {
     python: 'dict',

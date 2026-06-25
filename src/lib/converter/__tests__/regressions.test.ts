@@ -514,3 +514,31 @@ describe('Tier-1 classdef breadth', () => {
     expect(convert('function r = or(a, b)\nr = a | b;\nend').python).toContain('def or_(a, b):')
   })
 })
+
+// ── 2026-06-25: verification-harness batch 1 ─────────────────────────────────
+// Surfaced by tests/verification-corpus (3-tier harness).
+
+// zeros(n)/ones(n) single SCALAR LITERAL is an n×n matrix in MATLAB, not a
+// length-n vector. Was emitting np.ones(3) (length-3); now np.ones((3, 3)).
+describe('zeros/ones single scalar-literal arg → n×n', () => {
+  it('ones(3) → np.ones((3, 3))', () => {
+    expect(py('B = ones(3);')).toBe('B = np.ones((3, 3))')
+  })
+  it('zeros(4) → np.zeros((4, 4))', () => {
+    expect(py('A = zeros(4);')).toBe('A = np.zeros((4, 4))')
+  })
+  it('two-arg form unchanged: zeros(2, 3) → np.zeros((2, 3))', () => {
+    expect(py('A = zeros(2, 3);')).toBe('A = np.zeros((2, 3))')
+  })
+  it('identifier arg stays 1-arg (size-vector vs scalar is ambiguous): zeros(sz)', () => {
+    expect(py('A = zeros(sz);')).toBe('A = np.zeros(sz)')
+  })
+})
+
+// class(x) returned a type OBJECT (`type(x)`) which breaks any string use; now
+// emits a runnable string via type(x).__name__.
+describe('class(x) emits a string, not a type object', () => {
+  it('class(v) → type(v).__name__', () => {
+    expect(py('c = class(v);')).toBe('c = type(v).__name__')
+  })
+})
