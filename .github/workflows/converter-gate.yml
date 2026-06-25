@@ -57,12 +57,9 @@ jobs:
         run: npx tsx scripts/oracle/run-oracle.ts --set curated --gate
 
       # 3-tier verification harness (golden / executes / numeric-vs-oracle). Python
-      # is provisioned above, so Tiers B/C RUN here rather than skip. Non-blocking
-      # for now: it has open, triaged findings (see tests/verification-corpus/REPORT.md).
-      # Once those converter bugs are fixed and it's green, drop `continue-on-error`
-      # to make it a hard gate.
-      - name: Verification harness (measurement — non-blocking)
-        continue-on-error: true
+      # is provisioned above, so Tiers B/C RUN here. Hard gate: the corpus is fully
+      # green (all initial findings fixed), so any A/B/C failure is a real regression.
+      - name: Verification harness
         run: npm run test:verify
 
       - name: Upload verification matrix
