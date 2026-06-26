@@ -223,6 +223,44 @@ Treat "add a flag" as a valid fix when a correct mapping isn't feasible.
 
 ---
 
+## Root Cause F — found via the SEO content build (function-by-function)
+
+Researching real functions against the live converter (the \`/learn\` pilot)
+surfaced five more, reproduced by running \`convert()\`. Two are new *silent-wrong*
+/ string-handling bugs; three are unmapped-function crashes.
+
+**F1. \`interp1\` — wrong argument order (SILENT-WRONG) + method dropped.**
+\`\`\`matlab
+yi = interp1(x, y, xi);            % query points LAST
+yc = interp1(x, y, xi, 'spline');
+\`\`\`
+- current: \`yi = np.interp(x, y, xi)\` → wrong, \`np.interp\` wants \`(xi, x, y)\` (query **first**); runs, returns garbage. And \`np.interp(x, y, xi, 'spline')\` — \`np.interp\` is linear-only, the 4th positional is \`left\`, so \`'spline'\` is silently mishandled.
+- correct: \`np.interp(xi, x, y)\` for linear; \`scipy.interpolate.interp1d(x, y, kind='cubic')(xi)\` for methods. Needs a function-specific **arg-reorder** rule + method routing.
+
+**F2. \`regexprep\` — arg order + string-context tokenizer bugs (P0).**
+\`\`\`matlab
+out = regexprep(s, '\\s+', '_');
+t   = regexprep('a@b', '(\\w+)@(\\w+)', '$2.$1');
+\`\`\`
+- current: \`re.sub(s, 's+', '_')\` and \`re.sub('a@b', '(w+)lambda w+: ', '$2.$1')\` — **four** problems:
+  1. arg order — string must be **last**: \`re.sub(pat, rep, s)\`.
+  2. backslash dropped: \`'\\s+'\` → \`'s+'\` (regex escapes mangled in string literals).
+  3. \`@\` **inside a string literal** misread as an anonymous-function handle → \`lambda\` injected. The \`@\`-handle detector is firing inside string contexts — a tokenizer/string-boundary bug, and the most concerning of the set.
+  4. \`$1\` backreference not converted to \`\\1\`.
+- correct: \`re.sub(r'\\s+', '_', s)\` and \`re.sub(r'(\\w+)@(\\w+)', r'\\2.\\1', 'a@b')\`.
+
+**F3–F5. Unmapped functions → crash (and not flagged).**
+- \`arrayfun(@(x) x^2, v)\` → left as \`arrayfun(...)\` (NameError). Anon fn converts; the call doesn't.
+- \`cellfun(@length, C)\` → left as \`cellfun(...)\`; also re-triggers C1 (cell literal → addition).
+- \`accumarray(subs, vals)\` → left as \`accumarray(...)\`.
+- All three should at minimum emit a \`# TODO:\` per flag-don't-guess (another instance of Root Cause E) — silently shipping an undefined call is the worst outcome.
+
+**Pattern worth noting:** F1 and F2 are both *function-specific argument reordering* (the Python equivalent takes args in a different order than MATLAB). A registry field for arg-reorder would cover \`interp1\`, \`regexprep\`, and any others like them. **Confirmed correct in the same sweep:** \`fft\`, \`repmat\`→\`np.tile\`, \`sortrows\`→\`np.lexsort\`, \`bsxfun\`→broadcasting.
+
+**Priority:** F1 → Tier 1 (silent-wrong). F2 → P0 (the string-context tokenizer bug especially). F3–F5 → P1 crashes, but cheap (add mapping or flag).
+
+---
+
 ## Priority order to fix (re-ranked by RISK = impact × invisibility)
 
 Corpus data flips the ranking. Severity ≠ priority: a 0.4% crash that announces
