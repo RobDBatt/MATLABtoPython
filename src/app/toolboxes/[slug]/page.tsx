@@ -10,11 +10,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const tb = getToolbox(slug)
   if (!tb) return { title: 'Toolbox Not Found' }
+  const url = `https://mtopython.com/toolboxes/${slug}`
   return {
     title: `${tb.matlabName} to ${tb.pythonLib}`,
     description: tb.autoConverted
       ? `Function mapping from MATLAB ${tb.matlabName} to Python ${tb.pythonLib}. ${tb.mappings.length} of the most-used functions, auto-converted with the correct imports.`
       : `Migration guide from MATLAB ${tb.matlabName} to Python ${tb.pythonLib}. ${tb.mappings.length} hand-mapped equivalents — flagged by the converter, not auto-converted.`,
+    alternates: { canonical: url },
+    openGraph: { type: 'article', title: `${tb.matlabName} to ${tb.pythonLib}`, url },
   }
 }
 
