@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { track } from '@vercel/analytics'
 import type { ConversionResult } from '@/lib/converter'
 import { BatchWidget } from './batch-widget'
 import { ConsentToggle } from '@/components/ConsentToggle'
+import { EmailCapture } from '@/components/email-capture'
 import { telemetryFields } from '@/lib/telemetry/client'
 
 const FREE_LINE_LIMIT = 50
@@ -293,6 +295,31 @@ export function ConverterWidget({ exampleCode }: Props) {
 
           {/* Conversion Stats */}
           {result && <ConversionStats result={result} inputLines={lineCount} />}
+
+          {/* Post-conversion capture — fires at peak intent (just got a working
+              conversion + saw "hours saved"). Anonymous users only; signed-in
+              users already have an account. This is the high-intent moment the
+              funnel was leaking 100% of. */}
+          {result && !isSignedIn && (
+            <div className="mt-4">
+              <EmailCapture
+                source="convert_success"
+                headline={`Nice — that's ~${Math.round((lineCount * 2) / 6) / 10}h of manual rewriting saved.`}
+                sub="Get the changelog the moment conversion history, batch mode, and 500-line files ship — plus a weekly MATLAB→Python migration tip. No spam, unsubscribe any time."
+                cta="Keep me posted"
+              />
+              <p className="mt-2 text-center text-xs text-[#4d5580]">
+                or{' '}
+                <Link
+                  href="/sign-up?redirect_url=/convert"
+                  className="text-[#7c3aed] hover:text-[#a78bfa] transition-colors"
+                >
+                  create a free account
+                </Link>{' '}
+                to save your history and convert bigger files.
+              </p>
+            </div>
+          )}
 
           {/* Compatibility Report */}
           {result && <CompatibilityReport report={result.report} />}
