@@ -14,6 +14,18 @@ import { article as imageProcessing } from './matlab-image-processing-to-scikit-
 import { article as ode45ToScipy } from './matlab-ode45-to-scipy'
 import { article as cellArrays } from './matlab-cell-arrays-to-python'
 import { article as structToDict } from './matlab-struct-to-python-dict'
+import { article as findpeaksToScipy } from './matlab-findpeaks-python'
+import { article as fftToNumpy } from './matlab-fft-python'
+import { article as reshapeToNumpy } from './matlab-reshape-python'
+import { article as interp1ToScipy } from './matlab-interp1-python'
+import { article as arrayfunToPython } from './matlab-arrayfun-python'
+import { article as cellfunToPython } from './matlab-cellfun-python'
+import { article as repmatToNumpy } from './matlab-repmat-python'
+import { article as sortrowsToNumpy } from './matlab-sortrows-python'
+import { article as sprintfNum2str } from './matlab-sprintf-num2str-python'
+import { article as bsxfunToNumpy } from './matlab-bsxfun-python'
+import { article as regexprepToRe } from './matlab-regexprep-python'
+import { article as accumarrayToNumpy } from './matlab-accumarray-python'
 import { article as migrationGuide } from './matlab-to-python-migration-guide'
 
 export const articles = [
@@ -24,6 +36,18 @@ export const articles = [
   forLoops,
   plotToMatplotlib,
   signalToScipy,
+  findpeaksToScipy,
+  fftToNumpy,
+  reshapeToNumpy,
+  interp1ToScipy,
+  arrayfunToPython,
+  cellfunToPython,
+  repmatToNumpy,
+  sortrowsToNumpy,
+  sprintfNum2str,
+  bsxfunToNumpy,
+  regexprepToRe,
+  accumarrayToNumpy,
   imageProcessing,
   ode45ToScipy,
   cellArrays,
