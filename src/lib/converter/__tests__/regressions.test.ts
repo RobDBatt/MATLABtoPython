@@ -514,3 +514,69 @@ describe('Tier-1 classdef breadth', () => {
     expect(convert('function r = or(a, b)\nr = a | b;\nend').python).toContain('def or_(a, b):')
   })
 })
+
+// ── 2026-06-25: verification-harness batch 1 ─────────────────────────────────
+// Surfaced by tests/verification-corpus (3-tier harness).
+
+// zeros(n)/ones(n) single SCALAR LITERAL is an n×n matrix in MATLAB, not a
+// length-n vector. Was emitting np.ones(3) (length-3); now np.ones((3, 3)).
+describe('zeros/ones single scalar-literal arg → n×n', () => {
+  it('ones(3) → np.ones((3, 3))', () => {
+    expect(py('B = ones(3);')).toBe('B = np.ones((3, 3))')
+  })
+  it('zeros(4) → np.zeros((4, 4))', () => {
+    expect(py('A = zeros(4);')).toBe('A = np.zeros((4, 4))')
+  })
+  it('two-arg form unchanged: zeros(2, 3) → np.zeros((2, 3))', () => {
+    expect(py('A = zeros(2, 3);')).toBe('A = np.zeros((2, 3))')
+  })
+  it('identifier arg stays 1-arg (size-vector vs scalar is ambiguous): zeros(sz)', () => {
+    expect(py('A = zeros(sz);')).toBe('A = np.zeros(sz)')
+  })
+})
+
+// class(x) returned a type OBJECT (`type(x)`) which breaks any string use; now
+// emits a runnable string via type(x).__name__.
+describe('class(x) emits a string, not a type object', () => {
+  it('class(v) → type(v).__name__', () => {
+    expect(py('c = class(v);')).toBe('c = type(v).__name__')
+  })
+})
+
+// ── 2026-06-25: verification-harness batch 2 (structural) ────────────────────
+
+// MATLAB allows local functions AFTER the script body; Python executes top-down,
+// so a module-level call to a function defined lower was a NameError. Trailing
+// defs are now hoisted above the first executable statement.
+describe('trailing local function hoisted above its call site', () => {
+  it('def precedes the module-level call', () => {
+    const out = py('r = helper();\nfunction y = helper()\ny = 42;\nend')
+    expect(out).toContain('def helper(')
+    expect(out.indexOf('def helper')).toBeLessThan(out.indexOf('r = helper()'))
+  })
+})
+
+// Command syntax `disp Hello` passed through verbatim → SyntaxError. The bareword
+// arg is a MATLAB string literal, so it's quoted.
+describe('disp command syntax → print', () => {
+  it("disp Hello → print('Hello')", () => {
+    expect(py('disp Hello')).toBe("print('Hello')")
+  })
+})
+
+// Struct field assignment emitted attribute-set on an undefined name (NameError).
+// Struct vars are now desugared to dicts: initialized + subscript access.
+describe('struct field assignment → dict (init + subscript)', () => {
+  it('initializes s = {} and uses subscript access', () => {
+    const out = py("s.x = 1;\ns.y = 2;\nv = s.x;")
+    expect(out).toContain('s = {}')
+    expect(out).toContain("s['x'] = 1")
+    expect(out).toContain("v = s['x']")
+  })
+  it('does not dict-ify a non-struct var inside a string literal', () => {
+    // `a` is a struct var; the literal 'a.b' must stay intact.
+    const out = py("a.x = 1;\ndisp('a.b');")
+    expect(out).toContain("a['x'] = 1")
+    expect(out).toContain("print('a.b')")
+  })
+})

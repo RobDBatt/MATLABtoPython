@@ -1,0 +1,19 @@
+{
+  "id": "17_signal_processing",
+  "lang": "matlab",
+  "features": [
+    "butter",
+    "filter",
+    "fft",
+    "findpeaks",
+    "linspace",
+    "sin"
+  ],
+  "probe": [
+    "y",
+    "Y",
+    "pks",
+    "locs"
+  ],
+  "expected": {}
+}

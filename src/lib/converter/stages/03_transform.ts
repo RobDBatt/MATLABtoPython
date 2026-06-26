@@ -409,12 +409,17 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
       if (name === 'mex' || name === 'make') {
         result = `${indent}# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+      } else if (name === 'disp') {
+        // Command syntax: `disp Hello` — the bareword arg is a string literal
+        // (MATLAB command form), so quote it. `disp('x')` (function form) is
+        // handled by FUNCTION_MAP and never reaches here (no space before `(`).
+        result = `${indent}print('${trimmedArgs}')`
       } else if (name === 'xlabel' || name === 'ylabel' || name === 'zlabel' || name === 'title' || name === 'legend' || name === 'colorbar') {
         imports.add('matplotlib.pyplot')
         result = `${indent}plt.${name}(${trimmedArgs})`
@@ -1818,7 +1823,15 @@ function transformFunctions(
             return `${mapping.python}((${argList.join(', ')}))`
           }
           if (argList.length === 1) {
-            return `${mapping.python}(${argList[0]})`
+            const a = argList[0]
+            // MATLAB zeros(n)/ones(n) with a single SCALAR LITERAL is an n×n matrix
+            // (NOT a length-n vector): zeros(3) === zeros(3,3). Square it. Bare
+            // identifiers stay 1-arg — without shape info we can't distinguish a
+            // scalar n from a size-vector variable, and zeros(sz) must pass through.
+            if ((matlabName === 'zeros' || matlabName === 'ones') && /^\d+$/.test(a)) {
+              return `${mapping.python}((${a}, ${a}))`
+            }
+            return `${mapping.python}(${a})`
           }
           return `${mapping.python}(${args})`
         })

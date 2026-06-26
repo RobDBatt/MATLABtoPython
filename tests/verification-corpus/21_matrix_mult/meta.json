@@ -1,0 +1,20 @@
+{
+  "id": "21_matrix_mult",
+  "lang": "matlab",
+  "features": [
+    "matrix-mult"
+  ],
+  "probe": [
+    "C"
+  ],
+  "expected": {
+    "C": {
+      "value": [
+        19,
+        22,
+        43,
+        50
+      ]
+    }
+  }
+}

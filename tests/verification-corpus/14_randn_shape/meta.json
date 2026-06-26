@@ -1,0 +1,11 @@
+{
+  "id": "14_randn_shape",
+  "lang": "matlab",
+  "features": [
+    "randn"
+  ],
+  "probe": [
+    "R"
+  ],
+  "expected": {}
+}

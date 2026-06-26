@@ -1,0 +1,28 @@
+{
+  "id": "20_findpeaks_values",
+  "lang": "matlab",
+  "features": [
+    "findpeaks"
+  ],
+  "probe": [
+    "pks",
+    "locs"
+  ],
+  "expected": {
+    "pks": {
+      "value": [
+        2,
+        4,
+        6
+      ]
+    },
+    "locs": {
+      "value": [
+        1,
+        3,
+        5
+      ]
+    }
+  },
+  "notes": "locs are 0-based by deliberate converter design (signal.find_peaks indices stay 0-based; self-consistent for x(locs) indexing). MATLAB's raw 1-based positions are [2,4,6]; the oracle encodes the converter's intentional 0-based contract."
+}

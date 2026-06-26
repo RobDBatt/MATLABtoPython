@@ -1,0 +1,15 @@
+{
+  "id": "07_struct_fields",
+  "lang": "matlab",
+  "features": [
+    "struct-field"
+  ],
+  "probe": [
+    "x"
+  ],
+  "expected": {
+    "x": {
+      "value": 42
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "09_length_class",
+  "lang": "matlab",
+  "features": [
+    "length",
+    "class",
+    "colon-range"
+  ],
+  "probe": [
+    "n",
+    "c"
+  ],
+  "expected": {
+    "n": {
+      "value": 7
+    }
+  },
+  "notes": "class(v) now emits type(v).__name__ (a runnable string) instead of a type object. The exact name still differs from MATLAB's 'double' (faithful class names need a runtime helper — a separate, larger change), so c is exercised for Tier B presence but not Tier-C-asserted."
+}

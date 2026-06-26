@@ -1,0 +1,21 @@
+{
+  "id": "19_filter_moving_average",
+  "lang": "matlab",
+  "features": [
+    "filter"
+  ],
+  "probe": [
+    "y"
+  ],
+  "expected": {
+    "y": {
+      "value": [
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "tol": 1e-9
+    }
+  }
+}

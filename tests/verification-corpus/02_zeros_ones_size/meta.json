@@ -1,0 +1,46 @@
+{
+  "id": "02_zeros_ones_size",
+  "lang": "matlab",
+  "features": [
+    "zeros",
+    "ones",
+    "size",
+    "fprintf"
+  ],
+  "probe": [
+    "A",
+    "B",
+    "s"
+  ],
+  "expected": {
+    "A": {
+      "value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "B": {
+      "value": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "s": {
+      "value": [
+        2,
+        3
+      ]
+    }
+  }
+}

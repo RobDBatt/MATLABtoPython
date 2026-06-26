@@ -53,3 +53,7 @@ __pycache__/
 scripts/corpus/output/__pycache__/
 scripts/corpus/repos/
 scripts/oracle/output/
+
+# Verification harness scratch (executed Python temp files). Goldens (expected.py)
+# and REPORT.md ARE committed; only the temp exec dir is ignored.
+tests/verification-corpus/.tmp/

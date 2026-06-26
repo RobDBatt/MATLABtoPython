@@ -1,0 +1,15 @@
+{
+  "id": "11_startswith",
+  "lang": "matlab",
+  "features": [
+    "startsWith"
+  ],
+  "probe": [
+    "b"
+  ],
+  "expected": {
+    "b": {
+      "value": 1
+    }
+  }
+}

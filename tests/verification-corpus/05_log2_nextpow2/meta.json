@@ -1,0 +1,20 @@
+{
+  "id": "05_log2_nextpow2",
+  "lang": "matlab",
+  "features": [
+    "log2",
+    "nextpow2"
+  ],
+  "probe": [
+    "a",
+    "b"
+  ],
+  "expected": {
+    "a": {
+      "value": 3
+    },
+    "b": {
+      "value": 10
+    }
+  }
+}

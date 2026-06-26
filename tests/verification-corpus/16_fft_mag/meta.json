@@ -1,0 +1,15 @@
+{
+  "id": "16_fft_mag",
+  "lang": "matlab",
+  "features": [
+    "fft",
+    "abs",
+    "linspace",
+    "sin"
+  ],
+  "probe": [
+    "Y",
+    "P"
+  ],
+  "expected": {}
+}

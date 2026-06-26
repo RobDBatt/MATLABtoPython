@@ -1,0 +1,29 @@
+{
+  "id": "03_sum_max",
+  "lang": "matlab",
+  "features": [
+    "sum",
+    "max"
+  ],
+  "probe": [
+    "s",
+    "m",
+    "mx",
+    "ix"
+  ],
+  "expected": {
+    "s": {
+      "value": 31
+    },
+    "m": {
+      "value": 9
+    },
+    "mx": {
+      "value": 9
+    },
+    "ix": {
+      "value": 5
+    }
+  },
+  "notes": "ix is 0-based by deliberate converter design (argmax stays 0-based; index-tracking in stage 04 keeps v(ix) consistent). MATLAB's raw 1-based value is 6; the oracle encodes the converter's intentional 0-based contract."
+}

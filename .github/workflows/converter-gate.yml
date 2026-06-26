@@ -55,3 +55,17 @@ jobs:
       # (curated all-environmental / nothing executed). Both are gate failures.
       - name: Curated oracle gate
         run: npx tsx scripts/oracle/run-oracle.ts --set curated --gate
+
+      # 3-tier verification harness (golden / executes / numeric-vs-oracle). Python
+      # is provisioned above, so Tiers B/C RUN here. Hard gate: the corpus is fully
+      # green (all initial findings fixed), so any A/B/C failure is a real regression.
+      - name: Verification harness
+        run: npm run test:verify
+
+      - name: Upload verification matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-matrix
+          path: tests/verification-corpus/REPORT.md
+          if-no-files-found: warn

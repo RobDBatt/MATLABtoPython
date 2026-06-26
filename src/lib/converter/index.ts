@@ -57,8 +57,16 @@ export function convert(matlabCode: string): ConversionResult {
     symbols.variables.add(newName)
   }
 
+  // Desugar struct variables to dicts: a var that gets a field assignment
+  // (`s.f = ...`) or is built with `struct(...)` is a MATLAB struct, which the
+  // engine models as a Python dict. Initialize it (`s = {}`) before its first
+  // field write — MATLAB auto-vivifies, Python doesn't — and rewrite that var's
+  // `s.f` accesses to `s['f']`. Scoped to detected struct names, so real object
+  // attributes (`A.shape`, module access) are untouched.
+  const desugared = desugarStructs(logicalLines)
+
   // Stage 2: Detect block structure and indentation
-  const structured = detectStructure(logicalLines)
+  const structured = detectStructure(desugared)
 
   // Names a user assigned as variables that collide with a registry function
   // (e.g. `sum`, `length`, `filter`). MATLAB lets a variable shadow the
@@ -93,6 +101,85 @@ export function convert(matlabCode: string): ConversionResult {
     report,
     processingMs: Math.round((performance.now() - start) * 100) / 100,
   }
+}
+
+/**
+ * Detect MATLAB struct variables and desugar them to Python dicts.
+ *
+ * A struct var is one that gets a field assignment (`s.f = ...`) or is built
+ * with `struct(...)`. For those names: emit `s = {}` before the first field
+ * write (MATLAB auto-vivifies; Python would NameError), and rewrite `s.f` →
+ * `s['f']`. Scoped to detected names, and the field rewrite is string- and
+ * identifier-boundary-aware, so real attribute access (`A.shape`, module calls)
+ * and struct names appearing inside string literals are left untouched.
+ */
+function desugarStructs<T extends { content: string; isComment?: boolean }>(lines: T[]): T[] {
+  const fieldAssign = /^\s*([A-Za-z_]\w*)\.[A-Za-z_]\w*\s*=(?!=)/
+  const structCtor = /^\s*([A-Za-z_]\w*)\s*=\s*struct\s*\(/
+
+  const structVars = new Set<string>()
+  for (const l of lines) {
+    if (l.isComment) continue
+    const a = l.content.match(fieldAssign); if (a) structVars.add(a[1])
+    const c = l.content.match(structCtor); if (c) structVars.add(c[1])
+  }
+  if (structVars.size === 0) return lines
+
+  const inited = new Set<string>()
+  const out: T[] = []
+  for (const l of lines) {
+    if (l.isComment) { out.push(l); continue }
+    const content = l.content
+    // `s = struct(...)` whole-assigns the var → already initialized.
+    const ctor = content.match(structCtor)
+    if (ctor && structVars.has(ctor[1])) inited.add(ctor[1])
+    // First field write on a not-yet-initialized struct var → `s = {}` first.
+    const fw = content.match(fieldAssign)
+    if (fw && structVars.has(fw[1]) && !inited.has(fw[1])) {
+      inited.add(fw[1])
+      const indent = content.match(/^\s*/)![0]
+      out.push({ ...l, content: `${indent}${fw[1]} = {}` })
+    }
+    out.push({ ...l, content: rewriteStructFields(content, structVars) })
+  }
+  return out
+}
+
+/** Rewrite `<structvar>.<field>` → `<structvar>['<field>']` outside string
+ *  literals, only at identifier boundaries (so `a.b.c` and mid-tokens are safe). */
+function rewriteStructFields(content: string, structVars: Set<string>): string {
+  let out = ''
+  let i = 0
+  let inStr = false
+  let q = ''
+  while (i < content.length) {
+    const ch = content[i]
+    if (inStr) {
+      out += ch
+      if (ch === q) inStr = false
+      i++
+      continue
+    }
+    if (ch === "'" || ch === '"') { inStr = true; q = ch; out += ch; i++; continue }
+    const prev = out.length ? out[out.length - 1] : ''
+    // Only start matching at a fresh identifier (not after a word char or a dot —
+    // the latter keeps `a.b` from treating `b` as its own struct variable).
+    if (/[A-Za-z_]/.test(ch) && !/[\w.]/.test(prev)) {
+      const m = /^([A-Za-z_]\w*)(\.[A-Za-z_]\w*)?/.exec(content.slice(i))!
+      const name = m[1]
+      if (m[2] && structVars.has(name)) {
+        out += `${name}['${m[2].slice(1)}']`
+        i += m[0].length
+        continue
+      }
+      out += name
+      i += name.length
+      continue
+    }
+    out += ch
+    i++
+  }
+  return out
 }
 
 // Re-export types for consumers

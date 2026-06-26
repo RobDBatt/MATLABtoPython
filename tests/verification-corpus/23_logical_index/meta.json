@@ -1,0 +1,19 @@
+{
+  "id": "23_logical_index",
+  "lang": "matlab",
+  "features": [
+    "logical-index"
+  ],
+  "probe": [
+    "p"
+  ],
+  "expected": {
+    "p": {
+      "value": [
+        5,
+        8,
+        2
+      ]
+    }
+  }
+}
