@@ -105,7 +105,7 @@ export function tokenize(matlabCode: string): LogicalLine[] {
 
     // Split multi-statement lines on `;`
     // But NOT inside strings or if `;` is just a statement terminator
-    const statements = splitStatements(code)
+    const statements = splitStatements(code).flatMap(splitForHeaderBody)
 
     for (const stmt of statements) {
       const cleaned = stmt.trim()
@@ -276,6 +276,65 @@ function splitInlineComment(line: string): { code: string; comment: string | nul
  * Split a code string on `;` to separate multiple statements.
  * Respects strings and parentheses.
  */
+/** Index of the first top-level (depth-0) comma in `s`, or -1. Respects parens,
+ *  brackets, braces, and strings — so `f(a,b)` / `[a,b]` commas don't count. */
+function topLevelComma(s: string): number {
+  let p = 0, b = 0, c = 0, inStr = false, sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inStr) { if (ch === sc) inStr = false; continue }
+    if (ch === "'" || ch === '"') { inStr = true; sc = ch }
+    else if (ch === '(') p++
+    else if (ch === ')') p--
+    else if (ch === '[') b++
+    else if (ch === ']') b--
+    else if (ch === '{') c++
+    else if (ch === '}') c--
+    else if (ch === ',' && p === 0 && b === 0 && c === 0) return i
+  }
+  return -1
+}
+
+/** Split top-level commas into parts (respecting nesting/strings). */
+function splitTopLevelCommas(s: string): string[] {
+  const out: string[] = []
+  let rest = s, ci: number
+  while ((ci = topLevelComma(rest)) >= 0) { out.push(rest.slice(0, ci)); rest = rest.slice(ci + 1) }
+  out.push(rest)
+  return out
+}
+
+/**
+ * Split a one-line `for`/`parfor` whose body sits on the header line into the
+ * header plus its body statement(s), so the structure stage can build the block.
+ *   `for i=1:n, disp(i)`      → ['for i=1:n', 'disp(i)']       (comma form)
+ *   `for i=1:niter max(x)`    → ['for i=1:niter', 'max(x)']    (space form)
+ * A normal multi-line header (`for k=1:10`) is returned unchanged.
+ */
+function splitForHeaderBody(stmt: string): string[] {
+  const m = stmt.match(/^(\s*)(for|parfor)\s+(\w+)\s*=\s*(.+)$/)
+  if (!m) return [stmt]
+  const [, indent, kw, v, rest] = m
+  let range: string
+  let body: string[]
+  const ci = topLevelComma(rest)
+  if (ci >= 0) {
+    // comma form: `<range>, <body>[, <body>...]`
+    range = rest.slice(0, ci)
+    body = splitTopLevelCommas(rest.slice(ci + 1))
+  } else {
+    // space form: range is the first whitespace-delimited token containing `:`,
+    // the body is the rest. No match (e.g. `for k = 1:10`) → no inline body.
+    const sm = rest.match(/^(\S*:\S*)\s+(\S.*)$/)
+    if (!sm) return [stmt]
+    range = sm[1]
+    body = [sm[2]]
+  }
+  body = body.map(s => s.trim()).filter(Boolean)
+  if (!body.length) return [stmt]
+  return [`${indent}${kw} ${v} = ${range.trim()}`, ...body]
+}
+
 function splitStatements(code: string): string[] {
   const statements: string[] = []
   let current = ''
