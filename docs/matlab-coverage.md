@@ -61,7 +61,7 @@ dpwiese/eae-126 44, + corpus) run through the converter and `ast.parse`-checked.
 | `*` matmul vs elementwise — **PARTIAL** | `A*B` (matmul) vs `A.*B` | 🟥 | 🔴→flag | both-known-matrix → rewritten to `@`; **`matrix * unknown` now flags** (shape-aware, ~6% of files); `unknown*unknown` left quiet (noise). Remaining: deeper shape inference so fewer operands are unknown |
 | `rem` vs `mod` | `rem(-7,3)` | 🟥 | 🟢 | map `rem`→`np.fmod` (currently `np.remainder`, wrong sign) |
 | `reshape` order | `reshape(v,2,3)` | 🟥 | 🟢 | MATLAB is column-major → add `order='F'` |
-| Column iteration | `for c = M` | 🟥 | 🔴→flag | iterates **columns** in MATLAB, rows in numpy; needs to know `M` is 2D |
+| Column iteration — **FIXED (known matrix)** | `for c = M` | 🟥 | 🔴→flag | known-matrix iterable → emits `for c in M.T:` (correct columns; no-op for 1-D) + an INDEX note. Unknown iterables left quiet (most are 1-D — avoids noise) |
 | Function arg-reorder | `interp1(x,y,xi)`→`np.interp(xi,x,y)` | 🟥 | 🟡 | registry `argReorder` field; covers `interp1`, `regexprep`, … |
 | `regexprep` escapes / `@`-in-string | `regexprep(s,'\s+','_')` | 🟥 | 🟡 | backslash mangling + `@`-handle detector firing inside string literals (tokenizer bug) |
 
