@@ -409,7 +409,7 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot|axis)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
@@ -429,6 +429,14 @@ function preTransform(
       } else if (name === 'subplot') {
         imports.add('matplotlib.pyplot')
         result = `${indent}plt.subplot(${trimmedArgs})`
+      } else if (name === 'axis') {
+        // `axis ij` flips the y-axis; `axis xy` is the default; the rest
+        // (equal/off/tight/square/image/...) map straight onto plt.axis(mode).
+        imports.add('matplotlib.pyplot')
+        const mode = trimmedArgs.toLowerCase()
+        if (mode === 'ij') result = `${indent}plt.gca().invert_yaxis()`
+        else if (mode === 'xy') result = `${indent}# axis xy — default y-axis direction`
+        else result = `${indent}plt.axis('${trimmedArgs}')`
       } else if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
         result = `${indent}# ${result.trim()} — MATLAB command; no direct Python equivalent`
       } else if (name === 'load') {
@@ -1913,7 +1921,10 @@ function transformFunctions(
           // there are remaining args, append them as a function call.
           const endsWithCallable = /[A-Za-z_]$/.test(substituted)
           if (endsWithCallable && restArgs.length > 0) {
-            return `${substituted}(${restArgs.join(', ')})`
+            // MATLAB reshape is column-major; numpy defaults to C order, so the
+            // values come out transposed without order='F'.
+            const extra = matlabName === 'reshape' ? [...restArgs, "order='F'"] : restArgs
+            return `${substituted}(${extra.join(', ')})`
           }
           return substituted
         })
