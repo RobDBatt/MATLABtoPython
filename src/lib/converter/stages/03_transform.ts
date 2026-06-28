@@ -108,7 +108,7 @@ export function transform(
     // 2-D matrices per the shape table.  Must run BEFORE transformOperators
     // converts `.*` → `*`, or the two would become indistinguishable.
     if (shapeTable) {
-      content = rewriteMatrixMultiply(content, shapeTable, imports)
+      content = rewriteMatrixMultiply(content, shapeTable, imports, lineFlags, line)
     }
 
     // 1. Control flow transformations
@@ -2159,8 +2159,11 @@ function rewriteMatrixMultiply(
   code: string,
   shapes: Map<string, ShapeClass>,
   imports: Set<string>,
+  flags?: Flag[],
+  line?: StructuredLine,
 ): string {
   if (!code.includes('*')) return code
+  let ambiguousFlagged = false
 
   const out: string[] = []
   let i = 0
@@ -2220,6 +2223,28 @@ function rewriteMatrixMultiply(
         imports.add('numpy')
         out.push('@'); lastNonSpace = '@'; lastAtom = ''
       } else {
+        // Ambiguous: exactly one operand is a KNOWN matrix and the other is
+        // unknown. Could be matmul (`@`) but we can't prove it, so keep the
+        // elementwise `*` and flag — silently shipping the wrong one is the
+        // Root-Cause-B silent-wrong risk. (scalar/unknown pairs without a known
+        // matrix are left unflagged to avoid noise.)
+        // A numeric-literal operand is a scalar (so `A * 2` stays a quiet `*`);
+        // a name absent from the table is genuinely unknown.
+        const classOf = (atom: string): ShapeClass =>
+          /^\d/.test(atom) ? 'scalar' : (shapes.get(atom) ?? 'unknown')
+        const ls = classOf(lhsBase), rs = classOf(rhsBase)
+        const oneMatrixOneUnknown =
+          (ls === 'matrix' && rs === 'unknown') || (ls === 'unknown' && rs === 'matrix')
+        if (oneMatrixOneUnknown && flags && !ambiguousFlagged) {
+          ambiguousFlagged = true
+          flags.push({
+            type: 'WARNING',
+            message: `Ambiguous \`*\`: \`${lhsBase}\` or \`${rhsBase}\` is a matrix and the other's shape is unknown. MATLAB \`*\` is matrix-multiply but this emitted numpy elementwise \`*\` — if both are matrices use \`@\` (np.matmul); if elementwise was intended, it's correct.`,
+            originalLine: line?.originalLineStart ?? 0,
+            outputLine: 0,
+            originalCode: code.trim(),
+          })
+        }
         out.push('*'); lastNonSpace = '*'; lastAtom = ''
       }
       i++
