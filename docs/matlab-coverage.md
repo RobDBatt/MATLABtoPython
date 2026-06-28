@@ -58,7 +58,7 @@ dpwiese/eae-126 44, + corpus) run through the converter and `ast.parse`-checked.
 ### B. Semantic gaps (🟥 silent-wrong — the dangerous half)
 | Construct | Example | Behavior | Fixability | Notes |
 |---|---|---|---|---|
-| `*` matmul vs elementwise | `A*B` (matmul) vs `A.*B` | 🟥 | 🔴→flag | numpy `*` always elementwise; needs operand-shape → flag when unknown |
+| `*` matmul vs elementwise — **PARTIAL** | `A*B` (matmul) vs `A.*B` | 🟥 | 🔴→flag | both-known-matrix → rewritten to `@`; **`matrix * unknown` now flags** (shape-aware, ~6% of files); `unknown*unknown` left quiet (noise). Remaining: deeper shape inference so fewer operands are unknown |
 | `rem` vs `mod` | `rem(-7,3)` | 🟥 | 🟢 | map `rem`→`np.fmod` (currently `np.remainder`, wrong sign) |
 | `reshape` order | `reshape(v,2,3)` | 🟥 | 🟢 | MATLAB is column-major → add `order='F'` |
 | Column iteration | `for c = M` | 🟥 | 🔴→flag | iterates **columns** in MATLAB, rows in numpy; needs to know `M` is 2D |
