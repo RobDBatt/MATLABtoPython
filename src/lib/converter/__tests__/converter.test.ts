@@ -872,8 +872,10 @@ describe('Phase 5: Toolbox Expansion', () => {
     expect(flagTypes('T = readtable(fname);')).toContain('WARNING')
   })
 
-  it('5E: interp1 → np.interp', () => {
-    expect(py('yi = interp1(x, y, xi);')).toContain('np.interp(x, y, xi)')
+  it('5E: interp1 → np.interp (query points reorder to front)', () => {
+    // MATLAB interp1(x, y, xi) → np.interp(xi, x, y): np.interp takes the query
+    // points first. The old assertion locked the wrong (silent-wrong) order.
+    expect(py('yi = interp1(x, y, xi);')).toContain('np.interp(xi, x, y)')
   })
 })
 

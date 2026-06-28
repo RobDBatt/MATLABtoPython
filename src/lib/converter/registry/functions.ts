@@ -557,5 +557,11 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     imports: ['numpy'],
     flag: { type: 'WARNING', message: 'deconv → np.polydiv — returns (quotient, remainder) tuple' },
   },
-  interp1:   { python: 'np.interp',             args: 'passthrough', imports: ['numpy'] },
+  // MATLAB interp1(x, y, xi) → np.interp(xi, x, y): the query points move to
+  // the front. Reorder applies to the clean 3-arg form; a 4th 'method' arg
+  // (spline/pchip/…) can't map to np.interp (linear only) → flagged.
+  interp1:   { python: 'np.interp', args: 'passthrough', imports: ['numpy'],
+               argReorder: [2, 0, 1],
+               flag: { type: 'WARNING', message: "interp1: np.interp does LINEAR interpolation only — a non-linear method arg (spline/pchip/cubic) is ignored; use scipy.interpolate.interp1d for those." },
+               flagWhen: (c) => /interp1\s*\([^)]*,\s*['"](?:spline|pchip|cubic|nearest|makima|v5cubic)['"]/i.test(c) },
 }

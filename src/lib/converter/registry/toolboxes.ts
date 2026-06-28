@@ -146,7 +146,7 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
   fit:       { python: 'optimize.curve_fit',      args: 'custom',      imports: ['scipy.optimize'], toolbox: 'Curve Fitting',
     flag: { type: 'TOOLBOX', message: 'fit → scipy.optimize.curve_fit — argument structure differs significantly' },
   },
-  interp1:   { python: 'np.interp',              args: 'passthrough', imports: ['numpy'], toolbox: 'Curve Fitting' },
+  interp1:   { python: 'np.interp',              args: 'passthrough', imports: ['numpy'], toolbox: 'Curve Fitting', argReorder: [2, 0, 1] },
   interp2:   { python: 'interpolate.interp2d', args: 'passthrough', imports: ['scipy.interpolate'], toolbox: 'Curve Fitting' },
   spline:    { python: 'interpolate.CubicSpline', args: 'passthrough', imports: ['scipy.interpolate'], toolbox: 'Curve Fitting' },
   pchip:     { python: 'interpolate.PchipInterpolator', args: 'passthrough', imports: ['scipy.interpolate'], toolbox: 'Curve Fitting' },
