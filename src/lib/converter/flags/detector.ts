@@ -207,7 +207,15 @@ function bracketsUnbalanced(s: string): boolean {
  * convert. Verified against the whole corpus to produce ZERO false positives on
  * compiling files. Ordered specific → generic; the first match wins per line.
  */
-const RESIDUAL_MARKERS: Array<{ test: (s: string) => boolean; type: FlagType; message: string }> = [
+const RESIDUAL_MARKERS: Array<{ test: (s: string) => boolean; type: FlagType; message: string | ((s: string) => string) }> = [
+  // Flag net (Root Cause E/F): a MATLAB higher-order function that survived into
+  // the output was never mapped — it will NameError at runtime. These names are
+  // never valid Python, so flagging them is false-positive-free.
+  { test: s => /\b(arrayfun|cellfun|accumarray|structfun|splitapply|varfun|rowfun)\s*\(/.test(s), type: 'TODO',
+    message: s => {
+      const fn = s.match(/\b(arrayfun|cellfun|accumarray|structfun|splitapply|varfun|rowfun)\s*\(/)?.[1] ?? 'function'
+      return `Unmapped MATLAB function \`${fn}\` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. \`[f(x) for x in items]\`), or \`np.vectorize(f)(arr)\` for the elementwise case.`
+    } },
   { test: s => /\.\(/.test(s), type: 'TODO',
     message: 'MATLAB dynamic field access `.( )` could not be converted on this line — use dict/getattr access manually.' },
   { test: s => /[\w)\]]\{/.test(s), type: 'TODO',
@@ -240,7 +248,8 @@ export function detectResidualFlags(python: string): Flag[] {
     if (code.trim() === '' || code.trimStart().startsWith('#')) continue
     for (const m of RESIDUAL_MARKERS) {
       if (m.test(code)) {
-        flags.push({ type: m.type, message: m.message, originalLine: 0, outputLine: i + 1, originalCode: lines[i].trim() })
+        const message = typeof m.message === 'function' ? m.message(code) : m.message
+        flags.push({ type: m.type, message, originalLine: 0, outputLine: i + 1, originalCode: lines[i].trim() })
         break
       }
     }
