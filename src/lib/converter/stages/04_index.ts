@@ -63,9 +63,25 @@ export function shiftIndices(
     }
   }
 
+  // Symbol-KIND resolution (Root Cause A). Names the scope pre-pass classified by
+  // kind override the heuristic array/function split:
+  //   lambda → a callable, never an array (A3)
+  //   dict   → subscript on read too, with string/scalar keys (A4)
+  //   index  → already 0-based (argmax/argsort/flatnonzero); skip the `- 1` (A1)
+  const dictNames = new Set<string>()
+  const kindIndexNames = new Set<string>()
+  if (symbols) {
+    for (const [name, kind] of symbols.kinds) {
+      if (kind === 'lambda') { knownFunctions.add(name); knownArrays.delete(name) }
+      else if (kind === 'dict') { dictNames.add(name); knownArrays.delete(name) }
+      else if (kind === 'index') kindIndexNames.add(name)
+    }
+  }
+
   // Track variables that hold 0-based indices (from np.where, np.argmax, etc.)
   // These should NOT be shifted when used as array subscripts
   const zeroBased = buildZeroBasedVars(lines)
+  for (const n of kindIndexNames) zeroBased.add(n) // multi-return max/min/sort index (A1)
 
   // Variables that are ONLY ever scalar/empty-initialized. Writing past their
   // bounds is MATLAB array-growth, which NumPy/lists can't do silently.
@@ -100,11 +116,21 @@ export function shiftIndices(
     // 2C. Logical indexing: A(A > 5) → A[A > 5] (unambiguous)
     content = transformLogicalIndexing(content, knownArrays, knownFunctions)
 
+    // dict read: m('key') → m['key'] for containers.Map vars (keys, no shift) (A4)
+    content = transformDictRead(content, dictNames)
+
     // Specific unambiguous patterns (end, :, slicing)
     content = transformUnambiguousIndexing(content, lineFlags, line, knownArrays, knownFunctions)
 
-    // 2B. General A(i) → A[i-1] using identifier tracker
-    content = transformGeneralIndexing(content, knownArrays, zeroBased, lineFlags, line, knownFunctions)
+    // 2B. General A(i) → A[i-1] using identifier tracker. Iterate to a fixed
+    // point so an expression subscript like `v(idx(1))` resolves both layers:
+    // pass 1 makes the inner `idx(1)` → `idx[0]`, pass 2 makes `v(idx[0])` →
+    // `v[idx[0] - 1]` instead of leaving `v(...)` as a call on an ndarray (A2).
+    for (let pass = 0; pass < 5; pass++) {
+      const next = transformGeneralIndexing(content, knownArrays, zeroBased, lineFlags, line, knownFunctions)
+      if (next === content) break
+      content = next
+    }
 
     // 2E. Chained subscript: ](args) and )(args) → ][shifted_args]
     // Required because cell-array and bracket transforms produce subscript
@@ -480,6 +506,21 @@ function transformUnambiguousIndexing(
  * ONLY when the identifier is in knownArrays.
  * Flag unknown identifiers as TODO.
  */
+/**
+ * containers.Map read access: `m(key)` → `m[key]` for dict-kind vars (A4).
+ * Dict keys are not 1-based subscripts, so there is NO `- 1` shift. The write
+ * side (`m(k) = v` → `m[k] = v`) is already converted upstream; this closes the
+ * read side, which the general-indexing pass skips because the key is a string.
+ */
+function transformDictRead(content: string, dictNames: Set<string>): string {
+  if (dictNames.size === 0) return content
+  return content.replace(/\b(\w+)\(([^()]+)\)/g, (match, name: string, args: string) => {
+    if (!dictNames.has(name)) return match
+    if (args.includes(':')) return match // not a dict key access — leave it
+    return `${name}[${args}]`
+  })
+}
+
 function transformGeneralIndexing(
   content: string,
   knownArrays: Set<string>,
