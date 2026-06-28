@@ -1,9 +1,9 @@
 # Corpus Analysis Report
 
 Total files analyzed: **923**
-- **Clean** (py_compile passes, zero flags): **647** (70.1%)
-- PASS with flags (needs human review): 206 (22.3%)
-- py_compile fail: 70 (7.6%)
+- **Clean** (py_compile passes, zero flags): **568** (61.5%)
+- PASS with flags (needs human review): 273 (29.6%)
+- py_compile fail: 82 (8.9%)
 - converter threw: 0 (0.0%)
 
 ## Top flagged files (highest review effort)
@@ -11,33 +11,33 @@ Total files analyzed: **923**
 - 44 flags — `lightspeed\install_lightspeed.m`
 - 25 flags — `vbmc\shared\warpvars_vbmc.m`
 - 20 flags — `ypea\src\ypea\ypea_ba.m`
-- 20 flags — `ypea\src\ypea\ypea_ica.m`
+- 17 flags — `ypea\src\ypea\ypea_ica.m`
+- 15 flags — `spatialmath-matlab\SE2.m`
+- 14 flags — `spatialmath-matlab\SE3.m`
+- 14 flags — `vbmc\gplite\private\fminfill.m`
+- 14 flags — `vbmc\utils\fminfill.m`
 - 14 flags — `ypea\src\ypea\ypea_de.m`
 - 13 flags — `spatialmath-matlab\SO3.m`
-- 13 flags — `vbmc\gplite\private\fminfill.m`
-- 13 flags — `vbmc\utils\fminfill.m`
-- 13 flags — `ypea\src\ypea\ypea_algorithm.m`
-- 13 flags — `ypea\src\ypea\ypea_hs.m`
 
 ## Failure patterns (grouped by error signature)
 
-### 1. SyntaxError: invalid syntax  —  42 files
+### 1. SyntaxError: invalid syntax  —  52 files
 
 - `autofft\+validation\testCosWindows.m`
 - `autofft\+validation\testKaiserWindow.m`
 - `DeepLearnToolbox\util\makeLMfilters.m`  `== 1, g=-g*(x/variance)`
 - `export_fig\append_pdfs.m`
 - `export_fig\pdf2eps.m`
-- ...and 37 more
+- ...and 47 more
 
-### 2. SyntaxError: invalid syntax. Perhaps you forgot a comma?  —  11 files
+### 2. SyntaxError: invalid syntax. Perhaps you forgot a comma?  —  14 files
 
 - `autofft\autofft.m`
 - `export_fig\eps2pdf.m`
 - `export_fig\fix_lines.m`
 - `export_fig\ghostscript.m`
 - `export_fig\print2eps.m`
-- ...and 6 more
+- ...and 9 more
 
 ### 3. SyntaxError: starred assignment target must be in a list or tuple  —  2 files
 
@@ -49,7 +49,7 @@ Total files analyzed: **923**
 - `spatialmath-matlab\plot_point.m`
 - `vbmc\vbmc_plot.m`
 
-### 5. SyntaxError: expression cannot contain assignment, perhaps you meant "=="?  —  1 files
+### 5. SyntaxError: expected ':'  —  1 files
 
 - `export_fig\export_fig.m`
 
@@ -57,7 +57,7 @@ Total files analyzed: **923**
 
 - `export_fig\hyperlink.m`
 
-### 7. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_5sldakiwoi.py, line N  —  1 files
+### 7. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_7w0gzpf3mnu.py, line N  —  1 files
 
 - `export_fig\xkcdify.m`
 
@@ -65,39 +65,35 @@ Total files analyzed: **923**
 
 - `matlab2tikz\src\m2tInputParser.m`
 
-### 9. Sorry: IndentationError: unexpected indent (_check_v7t4ofkdco.py, line N)  —  1 files
+### 9. Sorry: IndentationError: unexpected indent (_check_skggppe4ueg.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 
-### 10. SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?  —  1 files
-
-- `spatialmath-matlab\RTBPose.m`  `print[obj - 1, *args - 1]`
-
-### 11. Sorry: IndentationError: unexpected indent (_check_kwit6ss805.py, line N)  —  1 files
+### 10. Sorry: IndentationError: unexpected indent (_check_zciyvvmp8m.py, line N)  —  1 files
 
 - `vbmc\gplite\private\slicesamplebnd.m`
 
-### 12. SyntaxError: can't use starred expression here  —  1 files
+### 11. SyntaxError: can't use starred expression here  —  1 files
 
 - `vbmc\misc\setupoptions_vbmc.m`
 
-### 13. Sorry: IndentationError: unindent does not match any outer indentation level (_check_b79hklhjhvg.py, line N)  —  1 files
+### 12. Sorry: IndentationError: unindent does not match any outer indentation level (_check_vbovrk6xoe.py, line N)  —  1 files
 
 - `vbmc\utils\evalbool.m`
 
-### 14. SyntaxError: closing parenthesis ')' does not match opening parenthesis '['  —  1 files
+### 13. SyntaxError: closing parenthesis ')' does not match opening parenthesis '['  —  1 files
 
 - `vbmc\utils\ibslike.m`
 
-### 15. Sorry: IndentationError: unexpected indent (_check_36lvs78zf4y.py, line N)  —  1 files
+### 14. Sorry: IndentationError: unexpected indent (_check_8vrjz880su8.py, line N)  —  1 files
 
 - `vbmc\utils\slicesamplebnd.m`
 
-### 16. Sorry: IndentationError: unexpected indent (_check_vo8hazi3jgj.py, line N)  —  1 files
+### 15. Sorry: IndentationError: unexpected indent (_check_oudvcx8x2ij.py, line N)  —  1 files
 
 - `vbmc\utils\slicesample_vbmc.m`
 
-### 17. SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?  —  1 files
+### 16. SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?  —  1 files
 
 - `vbmc\vbmc_examples.m`
 

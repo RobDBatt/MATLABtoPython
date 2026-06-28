@@ -92,6 +92,16 @@ export interface FunctionMapping {
   python: string
   args: ArgTransform
   imports: string[]
+  /**
+   * Optional positional-argument permutation applied after the name swap.
+   * MATLAB and the NumPy/SciPy/`re` equivalent often order args differently
+   * (`interp1(x,y,xi)` → `np.interp(xi,x,y)`); `argReorder` is the index map of
+   * output position → source index. Only applied when the call's arg count
+   * exactly equals `argReorder.length` (other arities are left untouched, and
+   * may be gated by `flagWhen`), so partial / variadic forms never get a wrong
+   * silent reorder.
+   */
+  argReorder?: number[]
   flag?: {
     type: FlagType
     message: string

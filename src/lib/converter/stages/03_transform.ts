@@ -415,7 +415,7 @@ function preTransform(
   // Note: `hold on/off`, `grid on/off`, `figure` without args are handled
   // later by transformSpecialConstructs — don't steal those here.
   {
-    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot|axis)\s+([^\s=(][^=\n]*?)\s*$/)
+    const cmd = result.match(/^(\s*)(disp|load|warning|clear|clc|format|save|doc|help|type|mex|make|xlabel|ylabel|zlabel|title|legend|colorbar|colormap|subplot|axis|box|shading)\s+([^\s=(][^=\n]*?)\s*$/)
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
@@ -443,6 +443,17 @@ function preTransform(
         if (mode === 'ij') result = `${indent}plt.gca().invert_yaxis()`
         else if (mode === 'xy') result = `${indent}# axis xy — default y-axis direction`
         else result = `${indent}plt.axis('${trimmedArgs}')`
+      } else if (name === 'box') {
+        // `box on` / `box off` toggle the axes frame → plt.box(True/False).
+        imports.add('matplotlib.pyplot')
+        const on = /^on$/i.test(trimmedArgs)
+        const off = /^off$/i.test(trimmedArgs)
+        result = (on || off) ? `${indent}plt.box(${on ? 'True' : 'False'})`
+                             : `${indent}plt.box(${trimmedArgs})`
+      } else if (name === 'shading') {
+        // `shading flat|interp|faceted` is a surface-rendering mode with no
+        // standalone matplotlib equivalent — it's a kwarg on the plot call.
+        result = `${indent}# ${result.trim()} — set shading via the surface call (e.g. plot_surface(..., shade=True)); no standalone Python equivalent`
       } else if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
         result = `${indent}# ${result.trim()} — MATLAB command; no direct Python equivalent`
       } else if (name === 'load') {
@@ -786,6 +797,10 @@ function postTransform(
   // isfield(...)` and becomes `not 'f' in s`.
   result = convertIsfield(result, flags, line)
 
+  // MATLAB set(handle, 'Prop', val, ...) → plt.setp(handle, prop=val, ...).
+  // Runs before the plot-named-args pass so the resulting kwargs are clean.
+  result = rewriteSetProperties(result, imports)
+
   // Convert MATLAB plot named arguments: 'LineWidth', 1.5 → linewidth=1.5
   result = convertMatlabNamedArgs(result)
 
@@ -974,7 +989,61 @@ function convertMatlabNamedArgs(content: string): string {
     )
   }
 
+  // Generic fallback (Rank 2): a MATLAB name-value pair whose property isn't in
+  // the allowlist would be left positional — and once it FOLLOWS a converted
+  // `kwarg=…`, Python raises `positional argument follows keyword argument`.
+  // So any `'Name', value` pair that is anchored to a preceding `kwarg=value`
+  // is itself promoted to a kwarg (matplotlib convention: lowercase, no
+  // underscores). The anchor requirement means a purely positional call (data
+  // strings, no known prop) is never force-converted into invalid kwargs.
+  let chained = true
+  while (chained) {
+    chained = false
+    result = result.replace(
+      /([A-Za-z_]\w*\s*=\s*(?:'[^']*'|"[^"]*"|[^,()]+?))\s*,\s*'([A-Za-z]\w*)'\s*,\s*('[^']*'|"[^"]*"|[\d.]+(?:e[+-]?\d+)?|\w+)(\s*[,)])/,
+      (_m, anchor, propName, value, trailing) => {
+        chained = true
+        const pyProp = PLOT_PROP_MAP[propName.toLowerCase()] ?? propName.toLowerCase()
+        let pyValue = value
+        if (pyValue.startsWith("'") || pyValue.startsWith('"')) {
+          pyValue = `'${pyValue.slice(1, -1).toLowerCase()}'`
+        }
+        return `${anchor}, ${pyProp}=${pyValue}${trailing}`
+      },
+    )
+  }
+
   return result
+}
+
+/**
+ * MATLAB `set(handle, 'Name', value, ...)` sets object properties; the closest
+ * matplotlib idiom is `plt.setp(handle, name=value, ...)`. We only rewrite when
+ * the trailing args are a clean run of `'Name', value` pairs (the property-set
+ * form); anything else (odd arity, non-literal name) is left for the safety net
+ * so we never mistransform a user-defined `set`.
+ */
+function rewriteSetProperties(content: string, imports: Set<string>): string {
+  if (!/\bset\s*\(/.test(content)) return content
+  return replaceFunctionCalls(content, 'set', (full, rawArgs) => {
+    const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+    // Need a handle + at least one name/value pair, and an even tail.
+    if (args.length < 3 || (args.length - 1) % 2 !== 0) return full
+    const handle = args[0]
+    const kwargs: string[] = []
+    for (let i = 1; i < args.length; i += 2) {
+      const nameM = args[i].match(/^'([A-Za-z]\w*)'$/)
+      if (!nameM) return full // not a clean property-set call — leave it
+      const pyProp = PLOT_PROP_MAP[nameM[1].toLowerCase()] ?? nameM[1].toLowerCase()
+      let val = args[i + 1]
+      if (val.startsWith("'") || val.startsWith('"')) {
+        val = `'${val.slice(1, -1).toLowerCase()}'`
+      }
+      kwargs.push(`${pyProp}=${val}`)
+    }
+    imports.add('matplotlib.pyplot')
+    return `plt.setp(${handle}, ${kwargs.join(', ')})`
+  })
 }
 
 // ── Complex Range Expressions ─────────────────────────────
@@ -1838,6 +1907,28 @@ function transformFunctions(
       imports.add(imp)
     }
 
+    // Positional-arg permutation (e.g. interp1(x,y,xi) → np.interp(xi,x,y)).
+    // Applied only when the call's arity matches the permutation length, so
+    // partial/variadic forms are renamed but never silently mis-reordered.
+    if (mapping.argReorder) {
+      const order = mapping.argReorder
+      result = replaceFunctionCalls(result, matlabName, (_, args) => {
+        const list = splitArgsRespectingStrings(args).map(s => s.trim())
+        if (list.length !== order.length) return `${mapping.python}(${args})`
+        return `${mapping.python}(${order.map(i => list[i]).join(', ')})`
+      })
+      if (mapping.flag && (!mapping.flagWhen || mapping.flagWhen(content))) {
+        flags.push({
+          type: mapping.flag.type,
+          message: mapping.flag.message,
+          originalLine: line.originalLineStart,
+          outputLine: 0,
+          originalCode: content,
+        })
+      }
+      continue
+    }
+
     // Apply transformation based on arg type
     switch (mapping.args) {
       case 'passthrough':
@@ -1990,6 +2081,10 @@ function transformFunctions(
           result = replaceFunctionCalls(result, matlabName, (_, args) =>
             rewriteSortrows(args),
           )
+        } else if (matlabName === 'regexprep') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteRegexprep(args),
+          )
         } else {
           result = result.replace(pattern, `${mapping.python}(`)
         }
@@ -2012,6 +2107,36 @@ function transformFunctions(
   }
 
   return result
+}
+
+// ── regexprep rewriter ────────────────────────────────────
+
+/**
+ * Rewrite MATLAB `regexprep(str, pattern, replace)` to Python
+ * `re.sub(pattern, replace, str)` — the argument ORDER differs (MATLAB puts the
+ * subject first; `re.sub` puts it last), so a plain rename is silently wrong.
+ *
+ * The pattern/replacement are also promoted to raw string literals (`r'...'`)
+ * so regex backslash escapes (`\s`, `\d`, `\1`) survive cleanly and don't trip
+ * Python's invalid-escape warning. MATLAB replacement back-refs use `$1`; `re`
+ * uses `\1` — that translation is left to the user (flagged at registry level
+ * is overkill here; the common no-backref case is correct).
+ *
+ *   regexprep(s, '\s+', '_')        → re.sub(r'\s+', '_', s)
+ *   regexprep(s, p, r, 'ignorecase')→ re.sub(p, r, s, flags=re.IGNORECASE)
+ */
+function rewriteRegexprep(rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (args.length < 3) return `re.sub(${rawArgs})` // unusual arity — leave as-is
+  const [subject, pattern, repl, ...rest] = args
+  // Raw-string the PATTERN so regex escapes (\s, \d, \w) survive cleanly; the
+  // replacement is left as-is (a plain literal in the common case).
+  const rawify = (s: string) =>
+    /^'[^']*'$/.test(s) || /^"[^"]*"$/.test(s) ? `r${s}` : s
+  let call = `re.sub(${rawify(pattern)}, ${repl}, ${subject}`
+  // 4th+ args in MATLAB are option flags ('ignorecase', 'once', ...).
+  if (rest.some(o => /ignorecase/i.test(o))) call += `, flags=re.IGNORECASE`
+  return call + ')'
 }
 
 // ── sortrows rewriter ─────────────────────────────────────

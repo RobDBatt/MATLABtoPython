@@ -34,12 +34,17 @@ dpwiese/eae-126 44, + corpus) run through the converter and `ast.parse`-checked.
 
 | Rank | Item | Why | Fixability |
 |------|------|-----|------------|
-| **0** | **Flag net (Root Cause E)** | The systemic gap: *nothing warns* on silent-wrong/crash output. Closing it makes every other gap safe-to-ship (TODO instead of garbage). | 🟡 Stage-5 pass |
-| **1** | **`*` matmul vs elementwise** | Most common silent-wrong in linear-algebra code; needs shape awareness → **flag when ambiguous** | 🔴→flag |
-| **2** | **Name-value pairs** (generic, not allowlist) | Cross-toolbox `SyntaxError`; today an unknown property stays positional and breaks ordering | 🟡 |
-| **3** | **Function arg-reorder** (`interp1`, `regexprep`) | silent-wrong garbage; a registry `argReorder` field covers a whole class | 🟡 |
-| **4** | **Command syntax** (`axis ij`, …) | recurring `SyntaxError`; `hold`/`grid` already handled, extend the set | 🟢 |
-| **5** | **`rem`→`np.fmod`, `reshape order='F'`** | trivial registry fixes, both silent-wrong | 🟢 |
+| **0** | **Flag net (Root Cause E)** — ✅ **DONE** | The systemic gap: *nothing warns* on silent-wrong/crash output. Closing it makes every other gap safe-to-ship (TODO instead of garbage). | 🟡 Stage-5 pass |
+| **1** | **`*` matmul vs elementwise** — ✅ **DONE** | Most common silent-wrong in linear-algebra code; flags ambiguous matrix×unknown; arguments-block params feed shape table | 🔴→flag |
+| **2** | **Name-value pairs** (generic, not allowlist) — ✅ **DONE** | Cross-toolbox `SyntaxError`; unknown prop following a kwarg now promotes to a kwarg (anchored), `set(...)`→`plt.setp(...)` | 🟡 |
+| **3** | **Function arg-reorder** (`interp1`, `regexprep`) — ✅ **DONE** | silent-wrong garbage; registry `argReorder` field + custom `regexprep` rewriter (reorder + raw-string pattern) | 🟡 |
+| **4** | **Command syntax** — ✅ **DONE** | `box on/off`→`plt.box`, `shading`→note; `axis`/`disp`/`close`/`drawnow` already handled | 🟢 |
+| **5** | **`rem`→`np.fmod`, `reshape order='F'`** — ✅ **DONE** | trivial registry fixes, both silent-wrong | 🟢 |
+
+**The ranked queue is cleared.** Remaining work is the lower-priority tail in
+the matrix below (bracket horizontal-concat, cell-content splat, cell-array
+literals, struct-arrays) plus the deeper-inference frontier (inter-procedural
+return-shape propagation).
 
 ---
 
@@ -48,8 +53,8 @@ dpwiese/eae-126 44, + corpus) run through the converter and `ast.parse`-checked.
 ### A. Syntax-level gaps (🟨 invalid Python)
 | Construct | Example | Behavior | Fixability | Notes / approach |
 |---|---|---|---|---|
-| Name-value pairs — **PARTIAL** | `'FontSize',12`→`fontsize=12` ✓ but `'FontUnits','points'` stays positional | 🟨 | 🟡 | **allowlist-based today**: recognized props convert, unknown props stay positional → `positional-after-keyword` when one follows a converted kwarg (the eae-126 bucket). Fix: convert **all** trailing `'Name',value` pairs generically (snake_case the name) instead of by allowlist |
-| Command syntax — **PARTIAL** | `hold on`/`grid on` handled ✓; `axis ij`, `disp hello` not | 🟨 | 🟢 | extend the command-form registry beyond the hold/grid set |
+| Name-value pairs — **FIXED** | `'FontSize',12`→`fontsize=12`; `…,'FontUnits','points'` → `fontunits='points'` | 🟨 | 🟡 | allowlist maps known props; an **unknown** `'Name',value` pair anchored to a preceding `kwarg=` is now promoted to a lowercased kwarg (kills `positional-after-keyword`, the eae-126 bucket). A purely-positional call with no known prop is left alone (no invented kwargs → no new `TypeError`). `set(h,'Prop',v,…)` → `plt.setp(h, prop=v, …)` |
+| Command syntax — **FIXED** | `axis ij`, `disp hello`, `box on`, `close all`, `drawnow`, `shading flat` | 🟨 | 🟢 | command-form registry covers the plot/figure command set; `box on/off`→`plt.box(True/False)`, `shading X`→commented note (it's a surface-call kwarg). `hold`/`grid`/`figure` handled by transformSpecialConstructs |
 | Bracket horizontal concat | `[1:100 1:100]`, `[v1 v2]` | 🟨 | 🟡 | space-separated elements in `[...]` → `np.concatenate`/`column_stack`; distinguish from `[1 2 3]` literal |
 | Bracket colon-range | `[0:(n-1)]` | 🟨 | 🟢 | **fix in flight (PR #18)** — `[a:b]`→`np.arange` |
 | Cell-content splat | `f(c{:})` | 🟨 | 🟡 | `c{:}` in arg position → `*c` |
@@ -62,8 +67,7 @@ dpwiese/eae-126 44, + corpus) run through the converter and `ast.parse`-checked.
 | `rem` vs `mod` | `rem(-7,3)` | 🟥 | 🟢 | map `rem`→`np.fmod` (currently `np.remainder`, wrong sign) |
 | `reshape` order | `reshape(v,2,3)` | 🟥 | 🟢 | MATLAB is column-major → add `order='F'` |
 | Column iteration — **FIXED (known matrix)** | `for c = M` | 🟥 | 🔴→flag | known-matrix iterable → emits `for c in M.T:` (correct columns; no-op for 1-D) + an INDEX note. "Known matrix" now also covers params declared `(m,n) double` in an `arguments` block. Unknown iterables left quiet (most are 1-D — avoids noise) |
-| Function arg-reorder | `interp1(x,y,xi)`→`np.interp(xi,x,y)` | 🟥 | 🟡 | registry `argReorder` field; covers `interp1`, `regexprep`, … |
-| `regexprep` escapes / `@`-in-string | `regexprep(s,'\s+','_')` | 🟥 | 🟡 | backslash mangling + `@`-handle detector firing inside string literals (tokenizer bug) |
+| Function arg-reorder — **FIXED** | `interp1(x,y,xi)`→`np.interp(xi,x,y)` | 🟥 | 🟡 | registry `argReorder: [2,0,1]` field (applied only at matching arity); a non-linear method arg is flagged. `regexprep(s,pat,rep)`→`re.sub(pat,rep,s)` via custom rewriter (reorder + raw-string pattern so `\s`/`\d` survive; `ignorecase`→`flags=re.IGNORECASE`) |
 
 ### C. Container types
 | Construct | Example | Behavior | Fixability | Notes |
@@ -88,6 +92,9 @@ a flag. Then a user never *unknowingly* ships wrong Python. 🟡 (a new Stage-5 
   subscript, A3 lambda call, A4 dict read): **FIXED (PR #17, symbol-kind tracking)**.
 - One-line `for` bodies: **FIXED (PR #19)**.
 - Bracket colon-range `[0:n-1]`: **in flight (PR #18)**.
+- `*` matmul flag + column-iteration + `arguments`-block shape inference (PRs #23–#25).
+- **Priority-queue Ranks 2–4** — name-value pairs (generic), function arg-reorder
+  (`interp1`/`regexprep`), and command syntax (`box`/`shading`): **FIXED**.
 
 ---
 

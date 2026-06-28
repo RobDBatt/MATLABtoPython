@@ -1233,7 +1233,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_noi8q9gb8ri.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_5sldakiwoi.py, line 300",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -4851,8 +4851,8 @@
   },
   {
     "rel": "probabilistic_matlab\\example_models\\kalman.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
@@ -5528,8 +5528,8 @@
   },
   {
     "rel": "probabilistic_matlab\\primitive_classes\\@student_t_class\\student_t_class.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -6466,7 +6466,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_5op47jl9yia.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_v7t4ofkdco.py, line 365)",
     "snippet": "",
     "flagCount": 13,
     "flags": [
@@ -6925,10 +6925,10 @@
   },
   {
     "rel": "spatialmath-matlab\\Plucker.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 10,
     "flags": [
       {
         "type": "TODO",
@@ -6965,6 +6965,10 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor get.uw → def get_uw. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TODO",
+        "message": "MATLAB property accessor or → def or_. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       }
     ]
   },
@@ -7098,9 +7102,9 @@
   {
     "rel": "spatialmath-matlab\\RTBPose.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
-    "snippet": "",
-    "flagCount": 21,
+    "error": "SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?",
+    "snippet": "print[obj - 1, *args - 1]",
+    "flagCount": 20,
     "flags": [
       {
         "type": "TODO",
@@ -7181,10 +7185,6 @@
       {
         "type": "WARNING",
         "message": "Possible Python syntax issue: comma in condition before colon — may be unconverted MATLAB syntax"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "MATLAB function/classdef definition could not be converted here — rewrite as a Python def/class."
       }
     ]
   },
@@ -7443,18 +7443,14 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialF6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "TODO",
         "message": "classdef found — rewrite as a Python class: move properties into __init__(self), add self as first parameter to all methods."
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "MATLAB function/classdef definition could not be converted here — rewrite as a Python def/class."
       }
     ]
   },
@@ -7506,10 +7502,10 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialM6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 2,
     "flags": [
       {
         "type": "TODO",
@@ -7518,10 +7514,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "MATLAB function/classdef definition could not be converted here — rewrite as a Python def/class."
       }
     ]
   },
@@ -7544,10 +7536,10 @@
   },
   {
     "rel": "spatialmath-matlab\\SpatialVec6.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
@@ -7560,10 +7552,6 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "MATLAB function/classdef definition could not be converted here — rewrite as a Python def/class."
       }
     ]
   },
@@ -9013,7 +9001,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_1lpxeqb53ba.py, line 299)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_kwit6ss805.py, line 299)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -10196,7 +10184,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_20dwhmswow4.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_b79hklhjhvg.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -10428,7 +10416,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_nkhv1p5gn2m.py, line 287)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_36lvs78zf4y.py, line 287)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -10465,7 +10453,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_utcc0u0aqfq.py, line 307)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_vo8hazi3jgj.py, line 307)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -11091,10 +11079,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_algorithm.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -11147,10 +11135,6 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor get.eff_problem → def get_eff_problem. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "MATLAB function/classdef definition could not be converted here — rewrite as a Python def/class."
       }
     ]
   },
