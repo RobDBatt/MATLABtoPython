@@ -6,6 +6,7 @@ import { transform } from './stages/03_transform'
 import { shiftIndices } from './stages/04_index'
 import { cleanup } from './stages/05_cleanup'
 import { detectPreFlags, detectResidualFlags } from './flags/detector'
+import { renderFlagsInline } from './flags/render'
 import { generateReport } from './report/generator'
 import { buildSymbolTable } from './analysis/scope'
 import { buildRenameMap, applyRenames, renameReservedFields } from './analysis/rename-reserved'
@@ -96,8 +97,13 @@ export function convert(matlabCode: string): ConversionResult {
   // Generate compatibility report
   const report = generateReport(matlabCode, python, allFlags, imports)
 
+  // Annotated output — flag explanations rendered inline (additive; `python`
+  // stays clean so existing consumers are unaffected).
+  const annotated = renderFlagsInline(python, allFlags)
+
   return {
     python,
+    annotated,
     report,
     processingMs: Math.round((performance.now() - start) * 100) / 100,
   }
