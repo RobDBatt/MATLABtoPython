@@ -1,0 +1,18 @@
+
+=== RUNTIME EXECUTION of 840 py_compile-passing corpus files ===
+ran clean (exit 0): 676 (80.5%)
+failed at runtime:  164 (19.5%)
+
+--- failure buckets (converter:* = our bug, env:* = not) ---
+ 119   14.2%  mixed: NameError (undefined fn — dep or converter)   e.g. lightspeed\graphics\test_hhist.m
+  29    3.5%  env: missing python module   e.g. DeepLearnToolbox\CNN\cnnbp.m
+   5    0.6%  runtime: ValueError (shape/value)   e.g. PRMLT\demo\ch07\rvmRegEm_spSignal_demo.m
+   3    0.4%  env: missing data file   e.g. DeepLearnToolbox\CAE\caeexamples.m
+   2    0.2%  converter: () call-vs-index (not callable)   e.g. rcnn\vis\fig_training_samples.m
+   2    0.2%  other: OSError: [WinError 123] The filename, directory name, or vol   e.g. ypea\src\ypea\doc\doc_publish_all.m
+   1    0.1%  timeout (8s)   e.g. 
+   1    0.1%  converter: subscript on non-array   e.g. lightspeed\graphics\test_draw.m
+   1    0.1%  other: numpy.exceptions.AxisError: axis 2 is out of bounds for arra   e.g. PRMLT\demo\ch11\gauss_demo.m
+   1    0.1%  runtime: TypeError (other)   e.g. vbmc\gplite\gplite_demo.m
+
+CONVERTER-attributable runtime crashes: 3 (0.4%)  [excludes env + mixed]

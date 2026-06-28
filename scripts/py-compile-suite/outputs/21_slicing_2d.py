@@ -1,7 +1,7 @@
 import numpy as np
 
 # 2D slicing and reshaping
-A = np.arange(1, 24 + 1).reshape([4, 6])
+A = np.arange(1, 24 + 1).reshape([4, 6], order='F')
 row1 = A[0, :]
 col2 = A[:, 1]
 submat = A[0:2, 2:5]

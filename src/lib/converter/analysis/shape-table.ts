@@ -17,8 +17,11 @@ import type { LogicalLine } from '../types'
  * by design: 'unknown' always keeps `*`.
  *
  * Limitations (by design):
- *   - No inter-procedural analysis: function parameters are 'unknown' unless
- *     the function has an `arguments` block (integration TODO).
+ *   - No inter-procedural analysis across call sites: a parameter's shape is
+ *     inferred from its `arguments`-block size spec when present (`A (3,3)
+ *     double` → matrix, `x (1,1) double` → scalar; vectors / `:` / symbolic
+ *     dims stay 'unknown'). Without an `arguments` block, parameters are
+ *     'unknown' — caller types are unknowable.
  *   - Multi-return assignments `[A, B] = eig(X)` leave A and B 'unknown'
  *     (too risky to guess which output is which).
  *   - Conflicting shapes (variable assigned both matrix and scalar in the same
@@ -74,6 +77,30 @@ function mergeShape(prev: ShapeClass | undefined, next: ShapeClass): ShapeClass 
   return 'unknown'
 }
 
+/**
+ * Classify a parameter from its `arguments`-block size spec — the text inside
+ * `name (dims) type`.  Conservative: we only commit to 'matrix' / 'scalar' when
+ * the dims are unambiguous integer literals.
+ *
+ *   (1,1)          → scalar   (a single number)
+ *   (3,3), (2,4)   → matrix   (both dims integer literals ≥ 2 ⇒ genuinely 2-D)
+ *   (1,:) (n,1)    → unknown  (a vector — `.T`/`@` rules must not fire)
+ *   (n,n) (:,:)    → unknown  (symbolic / any-size — runtime shape unknowable)
+ *
+ * Returns null when there is no usable size spec (type-only declaration), so the
+ * caller leaves the parameter at its default 'unknown'.
+ */
+function classifyArgumentSpec(dims: string): ShapeClass | null {
+  const parts = dims.split(',').map(s => s.trim()).filter(Boolean)
+  if (parts.length !== 2) return null
+  const isInt = (s: string) => /^\d+$/.test(s)
+  if (!parts.every(isInt)) return null            // any `:` / symbolic ⇒ unknown
+  if (parts.every(p => p === '1')) return 'scalar' // (1,1)
+  // Both dims are concrete; a singleton dim makes it a vector, not a 2-D matrix.
+  if (parts.some(p => p === '1')) return null      // (1,n) / (n,1) row/col vector
+  return 'matrix'                                  // (3,3), (2,4), …
+}
+
 /** Find the index of the bare assignment `=` in a line (not `==`/`~=` etc.). */
 function findAssignEquals(line: string): number {
   let paren = 0, bracket = 0, brace = 0
@@ -115,17 +142,38 @@ export function buildShapeTable(lines: LogicalLine[]): Map<string, ShapeClass> {
     shapes.set(name, mergeShape(shapes.get(name), cls))
   }
 
+  // Tracks whether we're inside a function `arguments` validation block.  Such
+  // blocks contain only parameter declarations (no nested control flow), so the
+  // first `end` after `arguments` closes it.
+  let inArguments = false
+
   for (const line of lines) {
     if (line.isComment) continue
     const content = line.content.trim()
     if (!content) continue
 
+    // ── `arguments` block: read declared parameter shapes ───────────────────
+    // An `arguments` block opens with `arguments` (optionally with attributes
+    // like `arguments (Repeating)`), one declaration per line, closed by `end`.
+    if (/^arguments\b/.test(content)) { inArguments = true; continue }
+    if (inArguments) {
+      if (content === 'end') { inArguments = false; continue }
+      // Declaration form: `name (dims) type {validators} = default`. We only
+      // need the name and the optional `(dims)` size spec.
+      const decl = content.match(/^([A-Za-z_]\w*)\s*\(([^)]*)\)/)
+      if (decl) {
+        const cls = classifyArgumentSpec(decl[2])
+        if (cls) record(decl[1], cls)
+      }
+      continue
+    }
+
     // ── for / parfor loop counters → always scalar ──────
     const forM = content.match(/^(?:for|parfor)\s+(\w+)\s*=/)
     if (forM) { record(forM[1], 'scalar'); continue }
 
-    // Function parameters stay 'unknown' — caller types are unknowable without
-    // inter-procedural analysis. arguments-block integration is a TODO.
+    // Function parameters without an `arguments` declaration stay 'unknown' —
+    // caller types are unknowable without inter-procedural analysis.
 
     // ── Multi-return `[a, b] = func(...)` → unknown for each output ───────
     if (/^\[/.test(content)) {
