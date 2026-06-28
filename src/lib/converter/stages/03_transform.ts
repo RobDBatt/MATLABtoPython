@@ -645,6 +645,27 @@ function preTransform(
   // Match (start:end) but ONLY when NOT preceded by a word char (which would be indexing)
   // e.g. "(0:L-1)" is a range, but "y2(N/2:end)" is indexing
   if (!/^\s*(for|parfor)\b/.test(content)) {
+    // Square-bracketed colon range `[a:b]` / `[a:s:b]` is just a range in MATLAB
+    // (`[0:5]` == `0:5`). The paren-range logic below never sees it, so it would
+    // survive as invalid Python `[0:(r-1)]`. Require NO internal whitespace so a
+    // space-separated concat like `[1:5 1:5]` (hstack — a different case) is left
+    // for that path. No `;`/`,`/nested `[]` either (those are matrices/lists).
+    result = result.replace(
+      /\[([^\[\]\s;,]*?):([^\[\]\s;,]*?)\]/g,
+      (match, start: string, end: string) => {
+        if (/['"]/.test(match)) return match // string contents — not a range
+        const parts = `${start}:${end}`.split(':')
+        if (parts.length === 2) {
+          imports.add('numpy')
+          return `np.arange(${parts[0].trim()}, (${parts[1].trim()}) + 1)`
+        }
+        if (parts.length === 3) {
+          imports.add('numpy')
+          return `np.arange(${parts[0].trim()}, (${parts[2].trim()}) + 1, ${parts[1].trim()})`
+        }
+        return match
+      },
+    )
     // First: handle ranges with function calls like (0:length(data)-1)
     // These have nested parens so the simple regex won't catch them
     result = result.replace(
