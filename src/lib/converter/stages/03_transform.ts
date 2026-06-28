@@ -114,6 +114,12 @@ export function transform(
     // 1. Control flow transformations
     content = transformControlFlow(content, line, lineFlags, paramsWithDefaultsByLine, varargoutReturnsByLine)
 
+    // Column iteration: `for c in M:` over a known matrix iterates ROWS in numpy
+    // but COLUMNS in MATLAB — rewrite the iterable to `M.T` (no-op for 1-D).
+    if (shapeTable) {
+      content = rewriteColumnIteration(content, shapeTable, lineFlags, line)
+    }
+
     // On function-definition lines, the registry passes below would
     // mangle the function's name. Skip them and let the def line
     // pass through cleanly.
@@ -2155,6 +2161,33 @@ function rewriteRandi(rawArgs: string, imports: Set<string>): string {
  *   - Function-call LHS `func(A) * B` keeps `*` (scan stops at `)`.
  *   - Numeric literals, scalars, unknowns all keep `*`.
  */
+/**
+ * MATLAB `for c = M` iterates the COLUMNS of a 2-D `M`; numpy `for c in M`
+ * iterates rows. When `M` is a known matrix, emit `for c in M.T:` so numpy
+ * matches MATLAB (and `.T` is a harmless no-op on a 1-D vector). Unknown
+ * iterables are left untouched — most `for x = v` loops are over 1-D
+ * vectors/lists, so flagging them all would be noise.
+ */
+function rewriteColumnIteration(
+  content: string,
+  shapes: Map<string, ShapeClass>,
+  flags: Flag[],
+  line: StructuredLine,
+): string {
+  const m = content.match(/^(\s*)for\s+(\w+)\s+in\s+([A-Za-z_]\w*)\s*:\s*$/)
+  if (!m) return content
+  const [, indent, varName, iter] = m
+  if (shapes.get(iter) !== 'matrix') return content
+  flags.push({
+    type: 'INDEX',
+    message: `MATLAB \`for ${varName} = ${iter}\` iterates the COLUMNS of the 2-D \`${iter}\`; emitted \`${iter}.T\` so numpy iterates columns too (a no-op for a 1-D vector).`,
+    originalLine: line.originalLineStart,
+    outputLine: 0,
+    originalCode: content.trim(),
+  })
+  return `${indent}for ${varName} in ${iter}.T:`
+}
+
 function rewriteMatrixMultiply(
   code: string,
   shapes: Map<string, ShapeClass>,
