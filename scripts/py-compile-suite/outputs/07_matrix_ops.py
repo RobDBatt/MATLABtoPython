@@ -6,6 +6,6 @@ B = A.T
 C = A @ B
 D = A + A
 E = A - np.eye(3)
-F = np.linalg.solve(A, np.ones(3))
+F = np.linalg.solve(A, np.ones((3, 3)))
 trace_val = np.trace(A)
 det_val = np.linalg.det(A)

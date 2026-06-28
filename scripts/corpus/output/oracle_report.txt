@@ -1,0 +1,16 @@
+
+=== OCTAVE NUMERIC ORACLE — 173 inputs ===
+  92  OCTAVE_ERR (env/incompat)
+  46  SKIP (nondeterministic rand)
+  19  MATCH ✅
+  12  INCONCLUSIVE (no shared vars)
+   2  MISMATCH ☠ (SILENT-WRONG)
+   2  PY_CRASH (converter)
+
+Numerically comparable: 21
+  MATCH (correct):        19 (90.5%)
+  MISMATCH (SILENT-WRONG): 2 (9.5%)  <-- the number we couldn't measure before
+
+--- silent-wrong files ---
+  vc/03_sum_max  vars: ix
+  vc/20_findpeaks_values  vars: locs
