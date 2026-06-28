@@ -1216,12 +1216,12 @@ describe('MATLAB idiom library', () => {
     expect(py('y = nan(size(x));')).toContain('np.full(x.shape, np.nan)')
   })
 
-  it('reshape(X, [], 1) → X.reshape(-1, 1)', () => {
-    expect(py('c = reshape(x, [], 1);')).toContain('x.reshape(-1, 1)')
+  it("reshape(X, [], 1) → X.reshape(-1, 1, order='F')", () => {
+    expect(py('c = reshape(x, [], 1);')).toContain("x.reshape(-1, 1, order='F')")
   })
 
-  it('reshape(X, 1, []) → X.reshape(1, -1)', () => {
-    expect(py('r = reshape(x, 1, []);')).toContain('x.reshape(1, -1)')
+  it("reshape(X, 1, []) → X.reshape(1, -1, order='F')", () => {
+    expect(py('r = reshape(x, 1, []);')).toContain("x.reshape(1, -1, order='F')")
   })
 
   it('[~, idx] = min(x) → idx = np.argmin(x)', () => {

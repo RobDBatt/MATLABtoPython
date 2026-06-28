@@ -98,7 +98,7 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   floor:   { python: 'np.floor',          args: 'passthrough', imports: ['numpy'] },
   round:   { python: 'np.round',          args: 'passthrough', imports: ['numpy'] },
   mod:     { python: 'np.mod',            args: 'passthrough', imports: ['numpy'] },
-  rem:     { python: 'np.remainder',      args: 'passthrough', imports: ['numpy'] },
+  rem:     { python: 'np.fmod',           args: 'passthrough', imports: ['numpy'] }, // sign of dividend (MATLAB rem), unlike np.remainder
   sign:    { python: 'np.sign',           args: 'passthrough', imports: ['numpy'] },
   max:     { python: 'np.max',            args: 'passthrough', imports: ['numpy'] },
   min:     { python: 'np.min',            args: 'passthrough', imports: ['numpy'] },

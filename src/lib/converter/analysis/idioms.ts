@@ -49,14 +49,14 @@ export const IDIOM_RULES: IdiomRule[] = [
   // ── Reshape shortcuts ─────────────────────────────────────
 
   {
-    name: 'reshape(X, [], 1) → X.reshape(-1, 1)',
+    name: "reshape(X, [], 1) → X.reshape(-1, 1, order='F')",
     pattern: /\breshape\s*\(\s*(\w+)\s*,\s*\[\s*\]\s*,\s*1\s*\)/g,
-    replacement: '$1.reshape(-1, 1)',
+    replacement: "$1.reshape(-1, 1, order='F')",
   },
   {
-    name: 'reshape(X, 1, []) → X.reshape(1, -1)',
+    name: "reshape(X, 1, []) → X.reshape(1, -1, order='F')",
     pattern: /\breshape\s*\(\s*(\w+)\s*,\s*1\s*,\s*\[\s*\]\s*\)/g,
-    replacement: '$1.reshape(1, -1)',
+    replacement: "$1.reshape(1, -1, order='F')",
   },
 
   // ── Flatten (column-major) ────────────────────────────────
