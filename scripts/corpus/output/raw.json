@@ -344,8 +344,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
       {
         "type": "TOOLBOX",
         "message": "expand → sp.expand (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -851,8 +855,8 @@
   },
   {
     "rel": "export_fig\\eps2pdf.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -1034,7 +1038,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 2234: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 2235: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1057,24 +1061,20 @@
   {
     "rel": "export_fig\\fix_lines.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 67: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "export_fig\\ghostscript.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "error": "SyntaxError: invalid syntax. Is this intended to be part of the string?",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -1186,8 +1186,8 @@
   },
   {
     "rel": "export_fig\\print2array.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -1212,9 +1212,9 @@
   {
     "rel": "export_fig\\print2eps.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
@@ -1222,11 +1222,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 507: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 625: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 626: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1271,7 +1267,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_7w0gzpf3mnu.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_m7h9rcl7wp9.py, line 30",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -1935,7 +1931,7 @@
   {
     "rel": "lightspeed\\graphics\\move_obj.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -6785,29 +6781,19 @@
   },
   {
     "rel": "rcnn\\utils\\xVOChash_init.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "rcnn\\utils\\xVOChash_lookup.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "rcnn\\vis\\fig_training_samples.m",
@@ -7041,7 +7027,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_skggppe4ueg.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_fzkd12gzh1.py, line 365)",
     "snippet": "",
     "flagCount": 19,
     "flags": [
@@ -9528,8 +9514,8 @@
   },
   {
     "rel": "vbmc\\gplite\\gplite_meanfun.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -9696,10 +9682,10 @@
   },
   {
     "rel": "vbmc\\gplite\\private\\eissample_lite.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -9751,11 +9737,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 554: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1035: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 561: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -9843,7 +9825,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_zciyvvmp8m.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_bmxym43t1om.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -9873,11 +9855,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 417: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 419: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 523: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 525: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -10103,8 +10085,8 @@
   },
   {
     "rel": "vbmc\\misc\\gptrain_vbmc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -10514,8 +10496,8 @@
   },
   {
     "rel": "vbmc\\private\\vbmc_warmup.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -10831,15 +10813,15 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 512: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 514: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 565: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 567: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 669: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 672: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -10856,7 +10838,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 73,
+    "flagCount": 69,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -11127,22 +11109,6 @@
         "message": "res(end+1) grows the array; converted to np.append(res, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
       },
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1023: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1034: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1035: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1040: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
         "type": "TODO",
         "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
       },
@@ -11192,10 +11158,10 @@
   },
   {
     "rel": "vbmc\\utils\\eissample_lite.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
       {
         "type": "TODO",
@@ -11247,18 +11213,14 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 554: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 1035: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 561: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_vbovrk6xoe.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_dwuobqnj0fd.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -11506,7 +11468,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_8vrjz880su8.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_ijx08y37xvn.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -11543,7 +11505,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_oudvcx8x2ij.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_k3lcobyn6zb.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -11573,11 +11535,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 425: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 427: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 531: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 533: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -11617,8 +11579,8 @@
   },
   {
     "rel": "vbmc\\vbmc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
@@ -12048,8 +12010,8 @@
   },
   {
     "rel": "ypea\\src\\ypea\\doc\\doc_ypea_problem.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -12088,16 +12050,11 @@
   },
   {
     "rel": "ypea\\src\\ypea\\doc\\plot_tsp_results.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "ypea\\src\\ypea\\doc\\publish_all.m",
@@ -12183,8 +12140,8 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_algorithm.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 13,
     "flags": [
@@ -12334,7 +12291,7 @@
   {
     "rel": "ypea\\src\\ypea\\ypea_bbo.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
     "flagCount": 9,
     "flags": [

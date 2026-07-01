@@ -43,8 +43,15 @@ export function tokenize(matlabCode: string): LogicalLine[] {
       continue
     }
 
-    // Join continuation lines (... at end of line)
-    while (line.trimEnd().endsWith('...') && i + 1 < rawLines.length) {
+    // Join continuation lines (... at end of line). The `...` must be in CODE
+    // position — a comment ending in dots (`% not exhaustive...`) is prose, not
+    // a continuation, and joining it would swallow the next statement into the
+    // comment (live-batch bug: `% ...` + `switch flag` → orphaned `case`s).
+    while (
+      line.trimEnd().endsWith('...') &&
+      stripInlineComment(line).trimEnd().endsWith('...') &&
+      i + 1 < rawLines.length
+    ) {
       line = line.trimEnd().slice(0, -3).trimEnd() + ' ' + rawLines[i + 1].trimStart()
       i++
     }

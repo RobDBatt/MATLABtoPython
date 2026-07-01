@@ -102,11 +102,14 @@ export function cleanup(
       awaitingFirstCase = false
     }
 
-    // Handle multi-line content (from flags that injected newlines)
+    // Handle multi-line content (from flags that injected newlines, and from
+    // Stage 3 inline-if/else expansion). Each sub-line still needs the normal
+    // syntax cleanup — skipping it left `repmat(center, [N 1])` bodies with
+    // raw space-separated brackets (live-batch bug).
     if (content.includes('\n')) {
       const subLines = content.split('\n')
       for (const subLine of subLines) {
-        outputLines.push(indent + subLine)
+        outputLines.push(indent + cleanupSyntax(subLine, imports))
       }
       continue
     }
@@ -159,7 +162,10 @@ export function cleanup(
           if (action && !action.includes('=') || action.includes('(')) {
             const indent = fixed.match(/^(\s*)/)?.[1] || ''
             fixedLines.push(`${indent}${kw} ${cond}:`)
-            fixedLines.push(`${indent}    ${action}`)
+            // The `continue` below bypasses the rest of this loop's fixes, so
+            // the action body needs the space-separated-literal pass applied
+            // here (`repmat(center, [N 1])` → `[N, 1]` — live-batch bug).
+            fixedLines.push(`${indent}    ${rewriteSpaceSeparatedElements(action)}`)
             continue
           }
         }
@@ -167,52 +173,30 @@ export function cleanup(
     }
 
     // Fix MATLAB colon-in-parens: var(:, expr) → var[:, expr]
-    // Must track paren depth to find the correct closing paren
-    fixed = fixed.replace(
-      /\b(\w+)\(:/g,
-      (match, varName, offset) => {
-        // Found varName(: — now find the matching ) tracking paren depth
-        const startIdx = offset + varName.length; // index of the (
-        let depth = 1;
-        let endIdx = startIdx + 1; // skip past the (
+    // Single pass: find `name(:`, depth-walk to the MATCHING close, and swap
+    // both ends at once. (The old two-phase version replaced the opener via
+    // regex, then guessed the closer by global paren counting — inside another
+    // call, e.g. `np.isfinite(pts(:,1))`, the guess hit the ENCLOSING
+    // function's `)` and produced mismatched brackets: `pts[:,1)]`.)
+    {
+      const opener = /\b(\w+)\(:/g
+      let m: RegExpExecArray | null
+      while ((m = opener.exec(fixed)) !== null) {
+        const startIdx = m.index + m[1].length // index of the (
+        let depth = 1
+        let endIdx = startIdx + 1
         while (endIdx < fixed.length && depth > 0) {
-          if (fixed[endIdx] === '(') depth++;
-          else if (fixed[endIdx] === ')') depth--;
-          endIdx++;
+          if (fixed[endIdx] === '(') depth++
+          else if (fixed[endIdx] === ')') { depth--; if (depth === 0) break }
+          endIdx++
         }
-        if (depth === 0) {
-          const inner = fixed.substring(startIdx + 1, endIdx - 1); // content between ( and )
-          if (inner.startsWith(':')) {
-            // Replace this specific occurrence
-            return `${varName}[:`
-            // Note: the rest of the string after this point still has the original )
-            // We need to also replace the matching ) with ]
-          }
-        }
-        return match
-      },
-    )
-    // Replace the closing ) that matches our converted [: with ]
-    // Simple approach: if line has varName[: then find the unmatched ) and replace with ]
-    if (/\w+\[:/.test(fixed) && !/\w+\[:\]/.test(fixed)) {
-      // Count [ and ] to find if there's an unmatched )
-      let brackets = 0, parens = 0;
-      const chars = fixed.split('');
-      for (let ci = 0; ci < chars.length; ci++) {
-        if (chars[ci] === '[') brackets++;
-        else if (chars[ci] === ']') brackets--;
-        else if (chars[ci] === '(') parens++;
-        else if (chars[ci] === ')') {
-          parens--;
-          // If parens goes negative and we have unclosed brackets, this ) should be ]
-          if (parens < 0 && brackets > 0) {
-            chars[ci] = ']';
-            brackets--;
-            parens++;
-          }
-        }
+        if (depth !== 0) continue // unbalanced — leave it
+        fixed =
+          fixed.slice(0, startIdx) + '[' +
+          fixed.slice(startIdx + 1, endIdx) + ']' +
+          fixed.slice(endIdx + 1)
+        opener.lastIndex = m.index + m[1].length + 1 // resume just past the swap
       }
-      fixed = chars.join('');
     }
 
     // Fix bare number.method: 2.write(...) → sys.stderr.write(...)
