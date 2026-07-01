@@ -666,6 +666,13 @@ function preTransform(
     },
   )
 
+  // Bracket range-vectors: `[a:b c ...]` — MATLAB concatenates ranges and
+  // scalars inside brackets (`[2:N 1]`; as an index, `x([2:end 1], :)` is the
+  // circular-shift idiom — the #1 live-batch failure bucket). np.r_ expresses
+  // exactly this concat. Must run BEFORE the range handlers below, which
+  // otherwise mangle the bracket internals into invalid np.arange calls.
+  result = rewriteBracketRangeVectors(result, imports)
+
   // Inline range expressions (not in for loops): (0:N-1) → np.arange(0, N)
   // Match (start:end) but ONLY when NOT preceded by a word char (which would be indexing)
   // e.g. "(0:L-1)" is a range, but "y2(N/2:end)" is indexing
@@ -692,9 +699,13 @@ function preTransform(
       },
     )
     // First: handle ranges with function calls like (0:length(data)-1)
-    // These have nested parens so the simple regex won't catch them
+    // These have nested parens so the simple regex won't catch them.
+    // Prefix excludes `}` `]` `)` — a paren group after a closing subscript is
+    // CHAINED INDEXING (`S{i}(1:n)`), not a standalone range; converting it to
+    // np.arange here leaves an invalid juxtaposition after Stage 4. Those are
+    // handled by rewriteChainedSubscript.
     result = result.replace(
-      /([^a-zA-Z0-9_]|^)\((\d+)\s*:\s*(\w+\([^)]*\)\s*[-+*/]\s*\d+|\w+\([^)]*\))\)/g,
+      /([^a-zA-Z0-9_}\])]|^)\((\d+)\s*:\s*(\w+\([^)]*\)\s*[-+*/]\s*\d+|\w+\([^)]*\))\)/g,
       (match, prefix, start, endExpr) => {
         if (/['"]/.test(endExpr)) return match
         imports.add('numpy')
@@ -713,7 +724,7 @@ function preTransform(
     // list, NOT a range, and was previously being mangled to
     // `np.arange(1,, ,: + 1)` because the regex matched start=`1,` end=`,:,`.
     result = result.replace(
-      /([^a-zA-Z0-9_]|^)\(([^(),]*?):([^(),]*?)\)/g,
+      /([^a-zA-Z0-9_}\])]|^)\(([^(),]*?):([^(),]*?)\)/g,
       (match, prefix, start, end) => {
         // Skip if this looks like it contains 'end' keyword (that's indexing)
         if (end.trim() === 'end' || start.trim() === 'end') return match
@@ -728,7 +739,7 @@ function preTransform(
 
     // Three-part range: (expr:expr:expr)
     result = result.replace(
-      /([^a-zA-Z0-9_]|^)\(([^(),]*?):([^(),]*?):([^(),]*?)\)/g,
+      /([^a-zA-Z0-9_}\])]|^)\(([^(),]*?):([^(),]*?):([^(),]*?)\)/g,
       (match, prefix, start, step, end) => {
         if (/['"]/.test(start) || /['"]/.test(end)) return match
         imports.add('numpy')
@@ -738,6 +749,217 @@ function preTransform(
   }
 
   return result
+}
+
+// ── Bracket range-vectors: [a:b c] → np.r_[…] ─────────────
+
+/**
+ * Convert MATLAB bracket vectors that mix ranges and scalars:
+ *
+ *   value:   `iNext = [2:N 1]`        → `np.r_[2:N + 1, 1]`      (no shift)
+ *   index:   `x([2:end 1], :)`        → `x(np.r_[0:len(x), 0], :)` (1→0 shift;
+ *            Stage 4 then converts the outer `x(...)` to `x[...]`)
+ *
+ * Index context is only assumed when it is PROVABLE: an element uses `end`
+ * (legal only inside a subscript) or a sibling arg is a bare `:` / colon range
+ * (ditto). An ambiguous `f([2:N 1])` is left untouched — flag-don't-guess.
+ * Elements must be paren/quote-free and space-free (MATLAB's own `[a +b]`
+ * ambiguity zone); anything else bails and leaves the bracket as-is.
+ */
+function rewriteBracketRangeVectors(source: string, imports: Set<string>): string {
+  // Split bracket innards on top-level commas/whitespace. Null = give up.
+  const splitTop = (inner: string): string[] | null => {
+    const elems: string[] = []
+    let cur = ''
+    let depth = 0
+    for (const c of inner) {
+      if (c === "'" || c === '"') return null
+      if (c === '(' || c === '[' || c === '{') depth++
+      else if (c === ')' || c === ']' || c === '}') depth--
+      if (depth === 0 && /[\s,]/.test(c)) {
+        if (cur) elems.push(cur)
+        cur = ''
+        continue
+      }
+      cur += c
+    }
+    if (cur) elems.push(cur)
+    return elems
+  }
+
+  const SCALAR = /^(end(?:-\d+)?|\d+|[A-Za-z_]\w*)$/
+  const RANGE = /^(\d+|[A-Za-z_]\w*):((?:end(?:-\d+)?)|[\w+\-*/.]+)$/
+
+  // Classify a full element list: needs ≥2 elements, ≥1 range, all recognized.
+  const usable = (elems: string[] | null): elems is string[] =>
+    !!elems && elems.length >= 2 &&
+    elems.some(e => RANGE.test(e)) &&
+    elems.every(e => RANGE.test(e) || SCALAR.test(e))
+
+  // ── index-context conversion (1→0 shift) ──
+  const convertIndexElems = (elems: string[], lenExpr: string): string | null => {
+    const parts: string[] = []
+    for (const e of elems) {
+      const r = e.match(RANGE)
+      if (r) {
+        const [, a, b] = r
+        if (a === 'end') return null
+        const a0 = /^\d+$/.test(a) ? String(Number(a) - 1) : `${a} - 1`
+        let b0: string
+        if (b === 'end') b0 = lenExpr
+        else {
+          const em = b.match(/^end-(\d+)$/)
+          b0 = em ? `${lenExpr} - ${em[1]}` : b // MATLAB inclusive stop ≡ Python exclusive
+        }
+        parts.push(`${a0}:${b0}`)
+        continue
+      }
+      // scalar element
+      if (e === 'end') { parts.push('-1'); continue }
+      const em = e.match(/^end-(\d+)$/)
+      if (em) { parts.push(`-${Number(em[1]) + 1}`); continue }
+      if (/^\d+$/.test(e)) { parts.push(String(Number(e) - 1)); continue }
+      if (/^[A-Za-z_]\w*$/.test(e)) { parts.push(`${e} - 1`); continue }
+      return null
+    }
+    return `np.r_[${parts.join(', ')}]`
+  }
+
+  // ── value-context conversion (no shift; `end` illegal here) ──
+  const convertValueElems = (elems: string[]): string | null => {
+    const parts: string[] = []
+    for (const e of elems) {
+      if (/\bend\b/.test(e)) return null
+      const r = e.match(RANGE)
+      if (r) {
+        const [, a, b] = r
+        const b1 = /^\d+$/.test(b) ? String(Number(b) + 1) : `${b} + 1`
+        parts.push(`${a}:${b1}`)
+      } else {
+        parts.push(e)
+      }
+    }
+    return `np.r_[${parts.join(', ')}]`
+  }
+
+  // ── pass 1: subscript args  name(..., [ELEMS], ...) ──
+  const KEYWORDS = new Set(['if', 'elseif', 'while', 'for', 'parfor', 'switch', 'case', 'return', 'function'])
+  let result = ''
+  let i = 0
+  while (i < source.length) {
+    const ch = source[i]
+    if (ch === "'" || ch === '"') {
+      // copy string literal verbatim
+      const q = ch
+      let j = i + 1
+      while (j < source.length && source[j] !== q) j++
+      result += source.slice(i, j + 1)
+      i = j + 1
+      continue
+    }
+    if (!/[A-Za-z_]/.test(ch) || (i > 0 && /[\w.@]/.test(source[i - 1]))) {
+      result += ch
+      i++
+      continue
+    }
+    let nameEnd = i
+    while (nameEnd < source.length && /\w/.test(source[nameEnd])) nameEnd++
+    const name = source.slice(i, nameEnd)
+    if (source[nameEnd] !== '(' || KEYWORDS.has(name)) {
+      result += name
+      i = nameEnd
+      continue
+    }
+    // Walk the balanced close, recording top-level arg spans.
+    const argSpans: Array<{ start: number; end: number }> = []
+    let depth = 1
+    let j = nameEnd + 1
+    let argStart = j
+    let inStr: string | null = null
+    while (j < source.length && depth > 0) {
+      const c = source[j]
+      if (inStr) { if (c === inStr) inStr = null; j++; continue }
+      if (c === "'" || c === '"') { inStr = c; j++; continue }
+      if (c === '(' || c === '[' || c === '{') depth++
+      else if (c === ')' || c === ']' || c === '}') {
+        depth--
+        if (depth === 0) { argSpans.push({ start: argStart, end: j }); break }
+      } else if (c === ',' && depth === 1) {
+        argSpans.push({ start: argStart, end: j })
+        argStart = j + 1
+      }
+      j++
+    }
+    if (depth !== 0) { result += name; i = nameEnd; continue }
+    const args = argSpans.map(s => source.slice(s.start, s.end).trim())
+    // Which args are bracket range-vectors?
+    const vecIdx = args
+      .map((a, k) => (a.startsWith('[') && a.endsWith(']') && usable(splitTop(a.slice(1, -1))) ? k : -1))
+      .filter(k => k >= 0)
+    if (vecIdx.length === 0) { result += name; i = nameEnd; continue }
+    // Proof of index context: `end` inside a vector, or a sibling `:` arg.
+    const hasEnd = vecIdx.some(k => /\bend\b/.test(args[k]))
+    const hasColonSibling = args.some((a, k) => !vecIdx.includes(k) && (a === ':' || /(^|[^'"]):/.test(a)))
+    if (!hasEnd && !hasColonSibling) { result += name; i = nameEnd; continue }
+    const newArgs = [...args]
+    let ok = true
+    for (const k of vecIdx) {
+      if (k > 1) { ok = false; break } // 3rd+ dim — no clean len expr; bail
+      const lenExpr = k === 0 ? `len(${name})` : `${name}.shape[1]`
+      const conv = convertIndexElems(splitTop(args[k].slice(1, -1))!, lenExpr)
+      if (!conv) { ok = false; break }
+      newArgs[k] = conv
+    }
+    if (!ok) { result += name; i = nameEnd; continue }
+    imports.add('numpy')
+    result += `${name}(${newArgs.join(', ')})`
+    i = j + 1
+  }
+
+  // ── pass 2: value-position brackets ──
+  let out = ''
+  i = 0
+  const src2 = result
+  while (i < src2.length) {
+    const ch = src2[i]
+    if (ch === "'" || ch === '"') {
+      const q = ch
+      let j = i + 1
+      while (j < src2.length && src2[j] !== q) j++
+      out += src2.slice(i, j + 1)
+      i = j + 1
+      continue
+    }
+    if (ch !== '[') { out += ch; i++; continue }
+    const prev = out.trimEnd().slice(-1)
+    if (/[\w.\])]/.test(prev)) { out += ch; i++; continue } // indexing — pass 1 territory
+    let depth = 1
+    let j = i + 1
+    let inStr: string | null = null
+    while (j < src2.length && depth > 0) {
+      const c = src2[j]
+      if (inStr) { if (c === inStr) inStr = null; j++; continue }
+      if (c === "'" || c === '"') { inStr = c; j++; continue }
+      if (c === '[') depth++
+      else if (c === ']') { depth--; if (depth === 0) break }
+      j++
+    }
+    if (depth !== 0) { out += ch; i++; continue }
+    const inner = src2.slice(i + 1, j)
+    const after = src2.slice(j + 1).trimStart()
+    const elems = splitTop(inner)
+    if (!usable(elems) || (after.startsWith('=') && !after.startsWith('=='))) {
+      out += src2.slice(i, j + 1)
+      i = j + 1
+      continue
+    }
+    const conv = convertValueElems(elems)
+    if (!conv) { out += src2.slice(i, j + 1); i = j + 1; continue }
+    imports.add('numpy')
+    out += conv
+    i = j + 1
+  }
+  return out
 }
 
 // ── Post-Transform (remaining MATLAB syntax) ──────────────
@@ -1149,6 +1371,9 @@ function convertComplexRanges(
         // `A(2:2:end, :)` — those are slices, handled by Stage 4. A range
         // inside a FUNCTION call (`plot(0:N)`) still becomes np.arange.
         if (isInArraySubscript(beforeMatch + prefix, arrayNames)) return match
+        // Skip a range right after a chained subscript (`S[i - 1](1:2:n)`) —
+        // that's indexing; rewriteChainedSubscript sliceifies it in Stage 4.
+        if (/[\])}]\(\s*$/.test(beforeMatch + prefix)) return match
         imports.add('numpy')
         return `${prefix}np.arange(${start.trim()}, ${stop.trim()} + ${step.trim()}, ${step.trim()})`
       })
@@ -1171,6 +1396,10 @@ function convertComplexRanges(
           // `A(2:end-1, :)`) — Stage 4 turns it into a proper slice. A range
           // inside a function call (`plot(0:N)`) is still converted.
           if (isInArraySubscript(beforeMatch, arrayNames)) return match
+
+          // Skip a range right after a chained subscript (`S[i - 1](1:n)`) —
+          // that's indexing; rewriteChainedSubscript sliceifies it in Stage 4.
+          if (/[\])}]\(\s*$/.test(beforeMatch)) return match
 
           imports.add('numpy')
           return `np.arange(${left}, ${right} + 1)`

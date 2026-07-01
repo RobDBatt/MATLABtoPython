@@ -55,7 +55,7 @@ return-shape propagation).
 |---|---|---|---|---|
 | Name-value pairs — **FIXED** | `'FontSize',12`→`fontsize=12`; `…,'FontUnits','points'` → `fontunits='points'` | 🟨 | 🟡 | allowlist maps known props; an **unknown** `'Name',value` pair anchored to a preceding `kwarg=` is now promoted to a lowercased kwarg (kills `positional-after-keyword`, the eae-126 bucket). A purely-positional call with no known prop is left alone (no invented kwargs → no new `TypeError`). `set(h,'Prop',v,…)` → `plt.setp(h, prop=v, …)` |
 | Command syntax — **FIXED** | `axis ij`, `disp hello`, `box on`, `close all`, `drawnow`, `shading flat` | 🟨 | 🟢 | command-form registry covers the plot/figure command set; `box on/off`→`plt.box(True/False)`, `shading X`→commented note (it's a surface-call kwarg). `hold`/`grid`/`figure` handled by transformSpecialConstructs |
-| Bracket horizontal concat | `[1:100 1:100]`, `[v1 v2]` | 🟨 | 🟡 | space-separated elements in `[...]` → `np.concatenate`/`column_stack`; distinguish from `[1 2 3]` literal |
+| Bracket horizontal concat — **PARTIAL** | `[1:100 1:100]`, `[v1 v2]`, `x([2:end 1], :)` | 🟨 | 🟡 | `[a b]`/`[1 2 3]` literals → comma-inserted; **range-vectors → `np.r_`** (value: `[2:N 1]`→`np.r_[2:N + 1, 1]`; index with proof (`end`/`:`-sibling): `x([2:end 1], :)`→`x[np.r_[1:len(x), 0], :]` — the circular-shift idiom, matGeom's #1 bucket). Still open: space-sep expression rows in append idioms, multi-line destructure continuations |
 | Bracket colon-range | `[0:(n-1)]` | 🟨 | 🟢 | **fix in flight (PR #18)** — `[a:b]`→`np.arange` |
 | Cell-content splat | `f(c{:})` | 🟨 | 🟡 | `c{:}` in arg position → `*c` |
 | One-line `for` body | `for i=1:n max(x); end` | 🟨 | — | **FIXED (PR #19)** |
@@ -95,6 +95,11 @@ a flag. Then a user never *unknowingly* ships wrong Python. 🟡 (a new Stage-5 
 - `*` matmul flag + column-iteration + `arguments`-block shape inference (PRs #23–#25).
 - **Priority-queue Ranks 2–4** — name-value pairs (generic), function arg-reorder
   (`interp1`/`regexprep`), and command syntax (`box`/`shading`): **FIXED**.
+- **Live-batch buckets** (2,824-file matGeom/OptimTraj/YALMIP run, 83.0%→86.3%):
+  bracket range-vectors → `np.r_`; chained indexing `S{i}(a:b)` → `S[i-1][a-1:b]`;
+  nested-paren index pairing (`pts(isfinite(pts(:,1)), :)`); comment-`...`
+  continuation swallowing the next statement (the switch/`elif`-orphan bucket);
+  inline-if bodies skipping literal cleanup.
 
 ---
 

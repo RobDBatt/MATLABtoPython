@@ -141,7 +141,10 @@ export const IDIOM_RULES: IdiomRule[] = [
 
   {
     name: '[a:step:b] → np.arange(a, b + step, step)',
-    pattern: /(^|[^\w)\]])\[\s*([^\[\],;]+?)\s*:\s*([^\[\],;]+?)\s*:\s*([^\[\],;]+?)\s*\]/g,
+    // Operands restricted like the 2-part rule below: no spaces, so a
+    // space-separated concat of ranges (`[1:3 4:6]` — np.r_ territory,
+    // handled in Stage 3) can't be misread as one range with step "3 4".
+    pattern: /(^|[^\w)\]])\[\s*([\w.+\-*/]+)\s*:\s*([\w.+\-*/]+)\s*:\s*([\w.+\-*/]+)\s*\]/g,
     replacement: '$1np.arange($2, $4 + $3, $3)',
     imports: ['numpy'],
   },

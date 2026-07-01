@@ -485,7 +485,15 @@ function transformUnambiguousIndexing(
   // Parse comma-separated args, apply shifting to non-colon args.
   // Uses balanced-paren walking so `map(np.uint32(A)+1, :)` (args with
   // nested function calls) gets recognized as indexing.
-  result = rewriteMultiDimIndexing(result, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>())
+  // Runs to a FIXPOINT: one scan converts only the outermost subscript
+  // (`pts(np.isfinite(pts(:,1)), :)` — the inner `pts(:,1)` sits inside the
+  // consumed span), so re-scan until nothing changes; the second pass then
+  // converts the inner one with proper shifting. Capped defensively.
+  for (let pass = 0; pass < 5; pass++) {
+    const next = rewriteMultiDimIndexing(result, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>())
+    if (next === result) break
+    result = next
+  }
 
   // A(i:j) → A[i-1:j] (range slicing, no comma)
   result = result.replace(
@@ -649,7 +657,10 @@ function rewriteChainedSubscript(
     const argList = splitArgs(m.args).map((a) => {
       const t = a.trim()
       if (t === ':' || t === '') return t
-      if (t.includes(':')) return t
+      // A range dim after a chain (`S{i}(1:2+n)` → `S[i - 1](1:2+n)`) is
+      // 1-based MATLAB slicing — sliceify it (start-1, keep stop) instead of
+      // passing the raw range through as an unshifted Python slice.
+      if (t.includes(':')) return sliceifyDim(t)
       if (zeroBased.has(t)) return t
       return shiftSingleIndex(t)
     })
@@ -903,7 +914,11 @@ function sliceifyDim(dim: string): string {
   if (/['"@[\]().]|lambda/.test(dim)) return dim
   const parts = dim.split(':').map((s) => s.trim())
   if (parts.length < 2 || parts.length > 3) return dim
-  const SIMPLE = /^(|end|end\s*-\s*\w+|-?\d+|\w+)$/
+  // Plain arithmetic bounds (`1:2+LoN`) are safe: the stop carries over
+  // unchanged (MATLAB's inclusive bound cancels Python's exclusive one) and
+  // the start gets the standard `- 1`. Comparison/paren/quote dims are still
+  // rejected by the guard above and by this class (no `<>=!` chars).
+  const SIMPLE = /^(|end|end\s*-\s*\w+|-?\d+|[\w\s+\-*/]+)$/
   if (!parts.every((p) => SIMPLE.test(p))) return dim
   const start = (s: string): string => {
     if (s === '' || s === 'end') return ''
