@@ -509,6 +509,127 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
     flag: { type: 'WARNING', message: "matlabFunction(f) → sp.lambdify(vars, f, 'numpy') — the VARIABLES come first in lambdify." },
   },
 
+  // Deep Learning — no function mapping exists: the Python path is a
+  // REARCHITECTURE onto PyTorch/Keras (training loop + module graph), not a
+  // rename. Every entry flags with the concrete counterpart so the failure
+  // is explained, never a bare NameError.
+  trainNetwork: {
+    python: 'trainNetwork', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'trainNetwork → a PyTorch/Keras training loop (model.fit in Keras; optimizer/loss loop in PyTorch). Deep Learning code needs rearchitecting, not renaming.' },
+  },
+  trainnet: {
+    python: 'trainnet', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'trainnet → Keras model.fit or a PyTorch training loop.' },
+  },
+  dlnetwork: {
+    python: 'dlnetwork', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'dlnetwork → torch.nn.Module / keras.Model.' },
+  },
+  dlarray: {
+    python: 'dlarray', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'dlarray → torch.tensor(X, requires_grad=True) for autodiff arrays.' },
+  },
+  dlgradient: {
+    python: 'dlgradient', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'dlgradient → torch.autograd.grad / loss.backward().' },
+  },
+  dlfeval: {
+    python: 'dlfeval', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'dlfeval(f, ...) → call f directly; PyTorch traces gradients without a wrapper.' },
+  },
+  layerGraph: {
+    python: 'layerGraph', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'layerGraph → keras.Sequential / torch.nn.Sequential (or a Module with explicit forward()).' },
+  },
+  trainingOptions: {
+    python: 'trainingOptions', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'trainingOptions → optimizer + hyperparameter arguments (keras compile()/fit() kwargs; torch.optim constructor args).' },
+  },
+  imageDatastore: {
+    python: 'imageDatastore', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'imageDatastore → torchvision.datasets.ImageFolder + DataLoader, or keras image_dataset_from_directory.' },
+  },
+  convolution2dLayer: {
+    python: 'convolution2dLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'convolution2dLayer → torch.nn.Conv2d / keras.layers.Conv2D.' },
+  },
+  fullyConnectedLayer: {
+    python: 'fullyConnectedLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'fullyConnectedLayer → torch.nn.Linear / keras.layers.Dense.' },
+  },
+  lstmLayer: {
+    python: 'lstmLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'lstmLayer → torch.nn.LSTM / keras.layers.LSTM.' },
+  },
+  reluLayer: {
+    python: 'reluLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'reluLayer → torch.nn.ReLU / keras.layers.ReLU.' },
+  },
+  maxPooling2dLayer: {
+    python: 'maxPooling2dLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'maxPooling2dLayer → torch.nn.MaxPool2d / keras.layers.MaxPooling2D.' },
+  },
+  softmaxLayer: {
+    python: 'softmaxLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'softmaxLayer → torch.nn.Softmax / keras.layers.Softmax.' },
+  },
+  batchNormalizationLayer: {
+    python: 'batchNormalizationLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'batchNormalizationLayer → torch.nn.BatchNorm2d / keras.layers.BatchNormalization.' },
+  },
+  dropoutLayer: {
+    python: 'dropoutLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'dropoutLayer → torch.nn.Dropout / keras.layers.Dropout.' },
+  },
+  imageInputLayer: {
+    python: 'imageInputLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'imageInputLayer → the input shape argument of the first layer (keras Input(shape=...)).' },
+  },
+  sequenceInputLayer: {
+    python: 'sequenceInputLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'sequenceInputLayer → input shape of the first recurrent layer.' },
+  },
+  classificationLayer: {
+    python: 'classificationLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'classificationLayer → CrossEntropyLoss (PyTorch) / categorical_crossentropy (Keras) as the LOSS, not a layer.' },
+  },
+  regressionLayer: {
+    python: 'regressionLayer', args: 'passthrough', imports: [], toolbox: 'Deep Learning',
+    flag: { type: 'TODO', message: 'regressionLayer → MSELoss / mean_squared_error as the LOSS, not a layer.' },
+  },
+
+  // Parallel Computing — pool management has no direct equivalent; the
+  // Python idioms are multiprocessing/joblib/concurrent.futures. (parfor
+  // itself already degrades to a serial `for` with a WARNING.)
+  parpool: {
+    python: 'parpool', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'parpool → multiprocessing.Pool(n) / joblib.Parallel(n_jobs=n) — often deletable when the parfor was converted to a serial for.' },
+  },
+  gcp: {
+    python: 'gcp', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'gcp (get current pool) — no equivalent; usually deletable.' },
+  },
+  parcluster: {
+    python: 'parcluster', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'parcluster → cluster submission belongs to your scheduler (dask.distributed / SLURM scripts).' },
+  },
+  parfeval: {
+    python: 'parfeval', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'parfeval(pool, f, nout, args...) → concurrent.futures.Executor.submit(f, args...).' },
+  },
+  gpuArray: {
+    python: 'gpuArray', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'gpuArray → cupy.asarray (pip install cupy) — or delete and stay on CPU numpy; downstream code is usually identical.' },
+  },
+  distributed: {
+    python: 'distributed', args: 'passthrough', imports: [], toolbox: 'Parallel Computing',
+    flag: { type: 'TODO', message: 'distributed arrays → dask.array (pip install dask).' },
+  },
+  gather: {
+    python: 'np.asarray', args: 'passthrough', imports: ['numpy'], toolbox: 'Parallel Computing',
+    flag: { type: 'WARNING', message: 'gather → np.asarray covers the CPU case; for CuPy arrays use x.get() instead.' },
+  },
+
   // Wavelet (pywt)
   wfilters: {
     python: 'wfilters', args: 'passthrough', imports: [], toolbox: 'Wavelet',

@@ -423,6 +423,19 @@ function preTransform(
   // Bare `pause` (wait for keypress) — interactive; no batch equivalent.
   result = result.replace(/^(\s*)pause\s*;?\s*$/, '$1# pause — interactive wait-for-keypress skipped')
 
+  // spmd block opener — the body runs serially in Python (like the parfor
+  // degrade); the raw `spmd` word would be a bare NameError.
+  if (/^\s*spmd\s*$/.test(result)) {
+    flags.push({
+      type: 'WARNING',
+      message: 'spmd block runs SERIALLY in Python — parallelize with multiprocessing/joblib if the workload needs it; labindex/numlabs semantics do not transfer.',
+      originalLine: line.originalLineStart,
+      outputLine: 0,
+      originalCode: content,
+    })
+    result = result.replace(/^(\s*)spmd\s*$/, '$1# spmd block — body runs serially in Python')
+  }
+
   // Two-output size: `[d, n] = size(X)`. Emitted via np.atleast_2d so row
   // vectors the converter deliberately de-2-D'd (`rand(1,n)` → 1-D) still
   // unpack as MATLAB's (1, n) instead of raising "not enough values to
