@@ -2,8 +2,8 @@
 
 Total files analyzed: **923**
 - **Clean** (py_compile passes, zero flags): **525** (56.9%)
-- PASS with flags (needs human review): 334 (36.2%)
-- py_compile fail: 64 (6.9%)
+- PASS with flags (needs human review): 333 (36.1%)
+- py_compile fail: 65 (7.0%)
 - converter threw: 0 (0.0%)
 
 ## Top flagged files (highest review effort)
@@ -51,7 +51,7 @@ Total files analyzed: **923**
 
 - `export_fig\export_fig.m`
 
-### 6. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_nd2vcp7ielf.py, line N  —  1 files
+### 6. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_yhuagho5izk.py, line N  —  1 files
 
 - `export_fig\xkcdify.m`
 
@@ -59,35 +59,39 @@ Total files analyzed: **923**
 
 - `lightspeed\graphics\move_obj.m`
 
-### 8. SyntaxError: cannot use starred expression here  —  1 files
+### 8. C:\Sites-Vercel\Matlab\matlabtopython\scripts\corpus\output\_check_5obbfpr902.py:38: SyntaxWarning: "\P" is an invalid e  —  1 files
+
+- `lightspeed\mexcompiler.m`
+
+### 9. SyntaxError: cannot use starred expression here  —  1 files
 
 - `matlab2tikz\src\m2tInputParser.m`
 
-### 9. Sorry: IndentationError: unexpected indent (_check_4zbz5n88prb.py, line N)  —  1 files
+### 10. Sorry: IndentationError: unexpected indent (_check_him5fupyc98.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 
-### 10. Sorry: IndentationError: unexpected indent (_check_tvrf49gjt2j.py, line N)  —  1 files
+### 11. Sorry: IndentationError: unexpected indent (_check_mluu2ndnqc.py, line N)  —  1 files
 
 - `vbmc\gplite\private\slicesamplebnd.m`
 
-### 11. SyntaxError: can't use starred expression here  —  1 files
+### 12. SyntaxError: can't use starred expression here  —  1 files
 
 - `vbmc\misc\setupoptions_vbmc.m`
 
-### 12. Sorry: IndentationError: unindent does not match any outer indentation level (_check_ea91qvb6csf.py, line N)  —  1 files
+### 13. Sorry: IndentationError: unindent does not match any outer indentation level (_check_3o1cd7g20bc.py, line N)  —  1 files
 
 - `vbmc\utils\evalbool.m`
 
-### 13. Sorry: IndentationError: unexpected indent (_check_e2rvp3ifyk.py, line N)  —  1 files
+### 14. Sorry: IndentationError: unexpected indent (_check_vw4zcvuwh5b.py, line N)  —  1 files
 
 - `vbmc\utils\slicesamplebnd.m`
 
-### 14. Sorry: IndentationError: unexpected indent (_check_rthgpih96j.py, line N)  —  1 files
+### 15. Sorry: IndentationError: unexpected indent (_check_b7hxs45n8yk.py, line N)  —  1 files
 
 - `vbmc\utils\slicesample_vbmc.m`
 
-### 15. SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?  —  1 files
+### 16. SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?  —  1 files
 
 - `vbmc\vbmc_examples.m`
 
