@@ -100,6 +100,16 @@ a flag. Then a user never *unknowingly* ships wrong Python. 🟡 (a new Stage-5 
   nested-paren index pairing (`pts(isfinite(pts(:,1)), :)`); comment-`...`
   continuation swallowing the next statement (the switch/`elif`-orphan bucket);
   inline-if bodies skipping literal cleanup.
+- **Live2-batch buckets** (677-file voicebox/gramm/MATLABRobotics run,
+  83.6%→92.6%; original batch 86.3%→86.8%): no-comma inline `if cond body; end`
+  splitting; lambda-arg method calls no longer misread as multi-dim indexing
+  (string args no longer shifted `- 1`); registry renames and paren→bracket
+  swaps no longer fire inside string literals; `axis 'xy'` quote doubling +
+  `plt.plt.` double-prefix; NV pairs with expression/bracket values; templates
+  parenthesize compound args (`(x != 0).toarray()`); assigned variables shadow
+  `xline`/`yline`; glued `||`→` or `; `hold all`; MATLAB `import`/`opengl`
+  commented; Python-keyword lambda params renamed (`in`→`in_`); `;` inside
+  cell braces is a row separator (`{'a' 'b'; 'c' 16}` → `[['a','b'],['c',16]]`).
 
 ---
 

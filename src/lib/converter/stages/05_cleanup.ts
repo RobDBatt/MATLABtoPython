@@ -169,6 +169,21 @@ export function cleanup(
             continue
           }
         }
+        // No-comma one-liner: MATLAB also allows `if cond body; end` with just
+        // a SPACE before the body (`if isempty(mode) mode='c'; end` — the
+        // voicebox house style). Find the first depth-0 space where the left
+        // side is a complete condition and the right side starts a statement.
+        if (commaIdx < 0 && afterKw.trimEnd().endsWith(':')) {
+          const bodyStart = findInlineBodyStart(afterKw.replace(/:\s*$/, ''))
+          if (bodyStart > 0) {
+            const cond = afterKw.slice(0, bodyStart).trim()
+            const action = afterKw.slice(bodyStart).replace(/:\s*$/, '').trim()
+            const indent = fixed.match(/^(\s*)/)?.[1] || ''
+            fixedLines.push(`${indent}${kw} ${cond}:`)
+            fixedLines.push(`${indent}    ${rewriteSpaceSeparatedElements(action)}`)
+            continue
+          }
+        }
       }
     }
 
@@ -681,6 +696,14 @@ function rewriteSpaceSeparatedElements(source: string): string {
       i = j + 1
       continue
     }
+    // A cell literal with `;` row separators (`{'a' 'b'; 'c' 16}`) becomes a
+    // list of row lists: [['a', 'b'], ['c', 16]].
+    if (ch === '{' && hasTopLevelSemicolon(inner)) {
+      const rows = splitTopLevelSemicolons(inner).map(r => `[${splitAllElements(r).join(', ')}]`)
+      out.push(`[${rows.join(', ')}]`)
+      i = j + 1
+      continue
+    }
     // Split inner by top-level commas AND whitespace into elements,
     // re-emit with commas. The output wrapper stays as `[` for both
     // `[...]` and `{...}` inputs — MATLAB cell literals map to Python
@@ -699,6 +722,75 @@ function rewriteSpaceSeparatedElements(source: string): string {
     i = j + 1
   }
   return out.join('')
+}
+
+/**
+ * For a no-comma inline `if`/`while` one-liner, find the index where the BODY
+ * begins: the first depth-0 space whose left side is a plausible complete
+ * condition (balanced, not ending in an operator) and whose right side starts
+ * a statement (assignment, flow keyword, or bare call). Returns -1 when the
+ * line reads as a plain condition (no split).
+ *
+ *   `len(mode) == 0 mode='c'`      → index of `mode='c'`
+ *   `(indx<=0 or indx>m) continue` → index of `continue`
+ *   `x < np.max(a) * 2`            → -1 (operator follows the call — no body)
+ */
+function findInlineBodyStart(s: string): number {
+  const OP_WORDS = /(?:\band\b|\bor\b|\bnot\b|\bin\b|\bis\b|\bif\b|\belse\b)\s*$/
+  const OP_CHARS = /[+\-*/%<>=&|^~,(:@]\s*$/
+  const STMT_START = /^(?:\w+\s*=(?!=)|continue\b|break\b|return\b|pass\b|raise\b|[A-Za-z_][\w.]*\()/
+  let depth = 0
+  let inStr = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inStr) {
+      if (ch === sc) inStr = false
+      continue
+    }
+    if (ch === "'" || ch === '"') { inStr = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    else if (ch === ' ' && depth === 0) {
+      const prefix = s.slice(0, i).trimEnd()
+      const rest = s.slice(i + 1).trimStart()
+      if (!prefix || !rest) continue
+      if (OP_WORDS.test(prefix) || OP_CHARS.test(prefix)) continue
+      if (STMT_START.test(rest)) return i + 1
+    }
+  }
+  return -1
+}
+
+function hasTopLevelSemicolon(s: string): boolean {
+  return splitTopLevelSemicolons(s).length > 1
+}
+
+/** Split on depth-0, outside-string semicolons (cell/matrix row separators). */
+function splitTopLevelSemicolons(s: string): string[] {
+  const rows: string[] = []
+  let cur = ''
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      cur += ch
+      if (ch === sc) {
+        if (i + 1 < s.length && s[i + 1] === sc) { cur += s[++i]; continue }
+        inString = false
+      }
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; cur += ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    if (ch === ';' && depth === 0) { rows.push(cur.trim()); cur = ''; continue }
+    cur += ch
+  }
+  if (cur.trim()) rows.push(cur.trim())
+  return rows
 }
 
 function hasTopLevelComma(s: string): boolean {

@@ -692,6 +692,10 @@ function rewriteMultiDimIndexing(
     if (nameEnd === i || source[nameEnd] !== '(') { i = nameEnd + 1; continue }
     const name = source.slice(i, nameEnd)
     if (isKnownFunction(name, knownArrays, knownFunctions)) { i = nameEnd + 1; continue }
+    // NOTE: dot-preceded names are NOT skipped here — `model.F_struc(top:n, :)`
+    // is struct-FIELD indexing and must convert. Method calls that merely look
+    // like indexing (`g.stat_fit('fun', @(x)...)`) are excluded by the
+    // lambda/quote guard below instead.
     // Walk balanced close
     let depth = 1
     let j = nameEnd + 1
@@ -720,11 +724,16 @@ function rewriteMultiDimIndexing(
       i = nameEnd + 1
       continue
     }
+    const argText = source.slice(nameEnd + 1, j)
+    // A converted lambda in the args means this is a CALL, not indexing — the
+    // lambda's own `:` is what tripped hasTopColon. String args likewise:
+    // numeric multi-dim subscripts never contain string literals.
+    if (/\blambda\b|['"]/.test(argText)) { i = nameEnd + 1; continue }
     matches.push({
       start: i,
       end: j,
       name,
-      args: source.slice(nameEnd + 1, j),
+      args: argText,
     })
     i = j + 1
   }
@@ -942,6 +951,9 @@ function shiftSingleIndex(idx: string): string {
   const trimmed = idx.trim()
   if (trimmed === ':') return ':'
   if (trimmed === '') return ''
+  // A string literal is never a 1-based subscript — shifting it produces
+  // `'fun' - 1` garbage (seen when a method call is misread as indexing).
+  if (/^['"]/.test(trimmed)) return trimmed
 
   // MATLAB `end` as an index: the last element is `-1`, and `end-N` is
   // `-(N+1)` (e.g. `end-1` is second-to-last → `-2`). Handle it here so a

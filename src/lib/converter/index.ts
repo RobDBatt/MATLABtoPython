@@ -74,8 +74,14 @@ export function convert(matlabCode: string): ConversionResult {
   // builtin; Stage 3 must NOT rewrite these to `np.sum(...)`, or Stage 4 would
   // produce nonsense like `np.sum[1]`. Let them flow through as plain names so
   // Stage 4 bracket-indexes them as the arrays they are.
+  // Names converted by dedicated rewriters rather than registry entries —
+  // they need the same shadowing protection (gramm assigns `xline` as a plain
+  // vector variable).
+  const SPECIAL_REWRITE_NAMES = new Set(['xline', 'yline'])
   const shadowed = new Set(
-    [...symbols.variables].filter((v) => FUNCTION_MAP[v] || TOOLBOX_MAP[v]),
+    [...symbols.variables].filter(
+      (v) => FUNCTION_MAP[v] || TOOLBOX_MAP[v] || SPECIAL_REWRITE_NAMES.has(v),
+    ),
   )
 
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)

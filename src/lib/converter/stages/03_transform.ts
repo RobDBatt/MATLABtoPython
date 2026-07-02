@@ -142,10 +142,10 @@ export function transform(
     content = transformConstants(content, imports, lineFlags, line)
 
     // 6. Special constructs (pass function params for nargin)
-    content = transformSpecialConstructs(content, imports, lineFlags, line, currentFuncParams)
+    content = transformSpecialConstructs(content, imports, lineFlags, line, currentFuncParams, shadowed)
 
     // 7. Post-transform: convert remaining MATLAB indexing syntax
-    content = postTransform(content, imports, lineFlags, line, arrayNames)
+    content = postTransform(content, imports, lineFlags, line, arrayNames, shadowed)
 
     // 8. MATLAB array-creation constants used as calls. After step 5 turned
     // `inf` and `nan` into `np.inf` / `np.nan`, any remaining `np.inf(args)`
@@ -485,13 +485,16 @@ function preTransform(
     if (cmd) {
       const [, indent, name, args] = cmd
       const trimmedArgs = args.trim()
+      // Command args may arrive pre-quoted (`axis 'xy'`); strip the quotes so
+      // branches that re-quote don't produce doubled `''xy''`.
+      const unq = trimmedArgs.replace(/^'(.*)'$/, '$1')
       if (name === 'mex' || name === 'make') {
         result = `${indent}# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
       } else if (name === 'disp') {
         // Command syntax: `disp Hello` — the bareword arg is a string literal
         // (MATLAB command form), so quote it. `disp('x')` (function form) is
         // handled by FUNCTION_MAP and never reaches here (no space before `(`).
-        result = `${indent}print('${trimmedArgs}')`
+        result = `${indent}print('${unq}')`
       } else if (name === 'xlabel' || name === 'ylabel' || name === 'zlabel' || name === 'title' || name === 'legend' || name === 'colorbar') {
         imports.add('matplotlib.pyplot')
         result = `${indent}plt.${name}(${trimmedArgs})`
@@ -505,10 +508,10 @@ function preTransform(
         // `axis ij` flips the y-axis; `axis xy` is the default; the rest
         // (equal/off/tight/square/image/...) map straight onto plt.axis(mode).
         imports.add('matplotlib.pyplot')
-        const mode = trimmedArgs.toLowerCase()
+        const mode = unq.toLowerCase()
         if (mode === 'ij') result = `${indent}plt.gca().invert_yaxis()`
         else if (mode === 'xy') result = `${indent}# axis xy — default y-axis direction`
-        else result = `${indent}plt.axis('${trimmedArgs}')`
+        else result = `${indent}plt.axis('${unq}')`
       } else if (name === 'box') {
         // `box on` / `box off` toggle the axes frame → plt.box(True/False).
         imports.add('matplotlib.pyplot')
@@ -523,7 +526,7 @@ function preTransform(
       } else if (name === 'clear' || name === 'clc' || name === 'format' || name === 'warning') {
         result = `${indent}# ${result.trim()} — MATLAB command; no direct Python equivalent`
       } else if (name === 'load') {
-        result = `${indent}${name}('${trimmedArgs}')  # ⚠ MATLAB load: consider scipy.io.loadmat for .mat files`
+        result = `${indent}${name}('${unq}')  # ⚠ MATLAB load: consider scipy.io.loadmat for .mat files`
       } else if (name === 'save') {
         result = `${indent}# ${result.trim()} — use numpy.save / scipy.io.savemat`
       } else {
@@ -695,14 +698,27 @@ function preTransform(
 
   // 1D. Anonymous functions: @(x) x.^2 → lambda x: x**2
   // Must run BEFORE function handle removal (1B)
-  result = result.replace(
-    /@\(([^)]*)\)\s*/g,
-    (match, args) => {
-      // Find the body — everything after @(args) until end of expression
-      // The body continues until: semicolon, comma at depth 0, or end of string
-      return `lambda ${args}: `
-    },
-  )
+  {
+    // MATLAB allows params named after Python keywords (`@(in, sz) in*2`).
+    // Rename them (`in` → `in_`) in the param list AND their uses across the
+    // rest of the line — a keyword param is a SyntaxError in a lambda.
+    const PY_KEYWORDS = new Set(['in', 'is', 'not', 'and', 'or', 'if', 'else', 'lambda', 'def', 'class', 'None', 'True', 'False', 'pass', 'del', 'from', 'import', 'as', 'with', 'yield', 'global'])
+    const renames: string[] = []
+    result = result.replace(
+      /@\(([^)]*)\)\s*/g,
+      (match, args: string) => {
+        const params = args.split(',').map((p: string) => {
+          const t = p.trim()
+          if (PY_KEYWORDS.has(t)) { renames.push(t); return `${t}_` }
+          return t
+        })
+        return `lambda ${params.join(', ')}: `
+      },
+    )
+    for (const k of renames) {
+      result = result.replace(new RegExp(`\\b${k}\\b(?!_)`, 'g'), `${k}_`)
+    }
+  }
 
   // 1B. Function handle removal: @func → func (after anonymous functions handled)
   result = result.replace(/(?<!\w)@(\w+)/g, '$1')
@@ -1077,6 +1093,7 @@ function postTransform(
   flags: Flag[],
   line: StructuredLine,
   arrayNames?: Set<string>,
+  shadowed?: Set<string>,
 ): string {
   let result = content
 
@@ -1218,9 +1235,12 @@ function convertMatlabNamedArgs(content: string): string {
 
   let result = content
 
-  // Special handling for plt.legend — wrap string label args in a list
-  result = result.replace(
-    /plt\.legend\(([^)]+)\)/g,
+  // Special handling for plt.legend — wrap string label args in a list.
+  // Balanced string-aware extraction (a `[^)]+` regex here stopped at the `)`
+  // INSIDE labels like 'f(x)' and mangled them to 'f(x]').
+  result = replaceFunctionCalls(
+    result,
+    'plt.legend',
     (match, argsStr) => {
       const args = splitFormatArgs(argsStr)
       const labels: string[] = []
@@ -1260,7 +1280,9 @@ function convertMatlabNamedArgs(content: string): string {
   while (changed) {
     changed = false
     result = result.replace(
-      /,\s*'([A-Z]\w+)'\s*,\s*('(?:[^']*)'|"(?:[^"]*)"|[\d.]+(?:e[+-]?\d+)?|\w+)(\s*[,)])/,
+      // value alternatives: quoted string | number | bracket list | dotted /
+      // indexed / called expression | bare word
+      /,\s*'([A-Z]\w+)'\s*,\s*('(?:[^']*)'|"(?:[^"]*)"|[\d.]+(?:e[+-]?\d+)?|\[[^\[\]]*\]|[\w.]+(?:\([^()]*\)|\[[^\][]*\])*)(\s*[,)])/,
       (match, propName, value, trailing) => {
         const pyProp = PLOT_PROP_MAP[propName.toLowerCase()]
         if (pyProp) {
@@ -1288,7 +1310,7 @@ function convertMatlabNamedArgs(content: string): string {
   while (chained) {
     chained = false
     result = result.replace(
-      /([A-Za-z_]\w*\s*=\s*(?:'[^']*'|"[^"]*"|[^,()]+?))\s*,\s*'([A-Za-z]\w*)'\s*,\s*('[^']*'|"[^"]*"|[\d.]+(?:e[+-]?\d+)?|\w+)(\s*[,)])/,
+      /([A-Za-z_]\w*\s*=\s*(?:'[^']*'|"[^"]*"|[^,()]+?))\s*,\s*'([A-Za-z]\w*)'\s*,\s*('[^']*'|"[^"]*"|[\d.]+(?:e[+-]?\d+)?|\[[^\[\]]*\]|[\w.]+(?:\([^()]*\)|\[[^\][]*\])*)(\s*[,)])/,
       (_m, anchor, propName, value, trailing) => {
         chained = true
         const pyProp = PLOT_PROP_MAP[propName.toLowerCase()] ?? propName.toLowerCase()
@@ -2139,8 +2161,15 @@ function transformOperators(
     if (!result.includes(op.matlab)) continue
 
     const before = result
-    // Use careful replacement to avoid breaking strings
-    result = replaceOutsideStrings(result, op.matlab, op.python)
+    // Use careful replacement to avoid breaking strings. Word operators
+    // (`||`→`or`, `&&`→`and`) must be space-padded when the source glues them
+    // to operands (`0||indx` → `0 or indx`, not `0orindx`); symbol operators
+    // are replaced verbatim.
+    if (/^\w+$/.test(op.python)) {
+      result = replaceOutsideStringsPadded(result, op.matlab, op.python)
+    } else {
+      result = replaceOutsideStrings(result, op.matlab, op.python)
+    }
 
     // Only flag if the replacement actually changed something
     // (meaning the operator appeared outside of strings)
@@ -2227,7 +2256,13 @@ function transformFunctions(
     // Apply transformation based on arg type
     switch (mapping.args) {
       case 'passthrough':
-        result = result.replace(pattern, `${mapping.python}(`)
+        // Via replaceFunctionCalls (not a raw regex replace) so occurrences
+        // inside string literals and after `.` (already-converted `plt.axis(`)
+        // are skipped — a raw replace produced `plt.plt.axis` doubles and
+        // renamed function names inside user prose.
+        result = replaceFunctionCalls(result, matlabName, (_, args) =>
+          `${mapping.python}(${args})`,
+        )
         break
 
       case 'reshape': {
@@ -2327,7 +2362,13 @@ function transformFunctions(
         // (e.g. `{}.strip()`), leave it alone.
         result = replaceFunctionCalls(result, matlabName, (_, args) => {
           const argList = splitArgsRespectingStrings(args).map(s => s.trim())
-          const firstArg = argList[0] ?? ''
+          const rawFirst = argList[0] ?? ''
+          // Parenthesize a compound first arg when the template attaches an
+          // attribute/method: `full(x~=0)` must become `(x != 0).toarray()`,
+          // not `x != 0.toarray()` (an invalid decimal literal).
+          const attaches = /\{\}\s*[.\[]/.test(mapping.python)
+          const atomic = /^[\w.]+$|^[\w.]+\([^()]*\)$|^[\w.]+\[[^\][]*\]$|^'[^']*'$|^"[^"]*"$/.test(rawFirst)
+          const firstArg = attaches && !atomic && rawFirst !== '' ? `(${rawFirst})` : rawFirst
           const restArgs = argList.slice(1)
           const substituted = mapping.python.replace(/\{\}/g, firstArg)
           // If template ends with an identifier char (no `)` or `]`) and
@@ -3166,6 +3207,7 @@ function transformSpecialConstructs(
   flags: Flag[],
   line: StructuredLine,
   funcParams: string[] = [],
+  shadowed?: Set<string>,
 ): string {
   let result = content
 
@@ -3237,7 +3279,9 @@ function transformSpecialConstructs(
     imports.add('matplotlib.pyplot')
     return `plt.set_cmap('${name}')`
   })
-  result = result.replace(/\bcolormap\s*\(([^)]+)\)/, (_, arg) => {
+  // Via replaceFunctionCalls so `colormap(...)` inside a STRING (user prose in
+  // a disp/error message) is never rewritten.
+  result = replaceFunctionCalls(result, 'colormap', (_, arg) => {
     imports.add('matplotlib.pyplot')
     return `plt.set_cmap(${arg.trim()})`
   })
@@ -3266,16 +3310,24 @@ function transformSpecialConstructs(
   result = result.replace(/^\s*rotate3d\s*(on|off)?\s*$/, '# rotate3d — use plt toolbar for interactive rotation')
   result = result.replace(/^\s*zoom\s*(on|off|in|out|\d+\.?\d*)?\s*$/, '# zoom — use plt toolbar for interactive zoom')
 
-  // hold on/off — drop the line. matplotlib accumulates plots by default,
+  // hold on/all/off — drop the line. matplotlib accumulates plots by default,
   // so the conversion is correct without further user action; no flag needed.
-  if (/\bhold\s+on\b/.test(result)) {
-    result = result.replace(/\bhold\s+on\b/g, '')
+  // (`hold all` is the pre-R2014b spelling of `hold on` + color cycling.)
+  if (/\bhold\s+(on|all)\b/.test(result)) {
+    result = result.replace(/\bhold\s+(on|all)\b/g, '')
     result = result.trim() || '# hold on removed — matplotlib accumulates plots by default'
   }
   if (/\bhold\s+off\b/.test(result)) {
     result = result.replace(/\bhold\s+off\b/g, '')
     result = result.trim() || '# hold off removed'
   }
+
+  // opengl software/hardware — renderer selection, no matplotlib equivalent.
+  result = result.replace(/^\s*opengl\s+\w+\s*;?\s*$/, (m) => `# ${m.trim()} — MATLAB renderer selection; no Python equivalent`)
+
+  // MATLAB namespace imports (`import matlab.buildtool.tasks*`) have no
+  // Python meaning — comment them out rather than emitting invalid syntax.
+  result = result.replace(/^\s*import\s+[\w.]+\*?\s*;?\s*$/, (m) => `# ${m.trim()} — MATLAB namespace import; use Python imports instead`)
 
   // rng — random number seed: rng shuffle → np.random.seed(); rng(n) → np.random.seed(n)
   if (/^\s*rng\s+shuffle\s*$/.test(result)) {
@@ -3346,7 +3398,9 @@ function transformSpecialConstructs(
 
   // yline(y) → plt.axhline(y=y), xline(x) → plt.axvline(x=x)
   // yline(y, '--k') → plt.axhline(y=y, linestyle='--', color='k')
-  result = result.replace(
+  // A user VARIABLE named xline/yline (gramm assigns them via multi-return)
+  // shadows the R2018b builtins — skip the rewrite entirely then.
+  if (!shadowed?.has('yline')) result = result.replace(
     /\byline\(([^,)]+)(?:,\s*'([^']*)'\s*)?(?:,\s*'([^']*)'\s*)?\)/g,
     (_, val, styleStr, labelStr) => {
       imports.add('matplotlib.pyplot')
@@ -3365,7 +3419,7 @@ function transformSpecialConstructs(
       return `plt.axhline(${parts.join(', ')})`
     },
   )
-  result = result.replace(
+  if (!shadowed?.has('xline')) result = result.replace(
     /\bxline\(([^,)]+)(?:,\s*'([^']*)'\s*)?(?:,\s*'([^']*)'\s*)?\)/g,
     (_, val, styleStr, labelStr) => {
       imports.add('matplotlib.pyplot')
@@ -3773,6 +3827,33 @@ function replaceFunctionCalls(
 ): string {
   const nameRe = new RegExp(`\\b${escapeRegex(funcName)}\\(`, 'g')
   const matches: Array<{ start: number; end: number; args: string }> = []
+  // Mask of which positions sit inside a string literal, so a function name
+  // appearing in prose (`disp('custom colormap(...) ...')`) is never renamed.
+  const inStringAt: boolean[] = new Array(source.length)
+  {
+    let inStr = false
+    let sc = ''
+    for (let k = 0; k < source.length; k++) {
+      const ch = source[k]
+      if (inStr) {
+        inStringAt[k] = true
+        if (ch === sc) {
+          if (k + 1 < source.length && source[k + 1] === sc) { inStringAt[++k] = true; continue }
+          inStr = false
+        }
+        continue
+      }
+      if (ch === "'" || ch === '"') {
+        // transpose vs string-open: same rule as the tokenizer
+        if (ch === "'" && k > 0 && /[\w)\].']/.test(source[k - 1])) { inStringAt[k] = false; continue }
+        inStr = true
+        sc = ch
+        inStringAt[k] = true
+        continue
+      }
+      inStringAt[k] = false
+    }
+  }
   let m: RegExpExecArray | null
   while ((m = nameRe.exec(source)) !== null) {
     const nameStart = m.index
@@ -3780,6 +3861,11 @@ function replaceFunctionCalls(
     // not a free MATLAB function (e.g. `x.reshape(...)` after an idiom
     // rewrite must not re-match as `reshape(...)`).
     if (nameStart > 0 && source[nameStart - 1] === '.') {
+      nameRe.lastIndex = nameStart + 1
+      continue
+    }
+    // Skip when the match sits inside a string literal.
+    if (inStringAt[nameStart]) {
       nameRe.lastIndex = nameStart + 1
       continue
     }
@@ -4004,6 +4090,21 @@ function splitFormatArgs(argsStr: string): string[] {
 /**
  * Replace a substring only when it appears outside of string literals.
  */
+/**
+ * Like replaceOutsideStrings, but for WORD replacements (`or`, `and`): inserts
+ * a space on either side when the neighboring char isn't already whitespace,
+ * so `0||indx` becomes `0 or indx` rather than the invalid `0orindx`.
+ */
+function replaceOutsideStringsPadded(code: string, search: string, word: string): string {
+  // A sentinel marks each side of the inserted word; collapsing the sentinel
+  // plus any adjacent whitespace to ONE space both pads glued operands
+  // (`0||indx` -> `0 or indx`) and avoids double-spacing spaced ones.
+  const SENT = String.fromCharCode(0)
+  const replaced = replaceOutsideStrings(code, search, SENT + word + SENT)
+  const collapse = new RegExp('[ \t]*' + SENT + '[ \t]*', 'g')
+  return replaced.replace(collapse, ' ')
+}
+
 function replaceOutsideStrings(code: string, search: string, replacement: string): string {
   const result: string[] = []
   let inString = false

@@ -265,6 +265,9 @@ function fixColonInsideParensNested(line: string): string {
       if (!nameMatch) continue
       const name = nameMatch[1]
       if (RESERVED.test(name)) continue
+      // NOTE: dot-preceded names are NOT skipped — `model.F_struc(a:b, :)` is
+      // struct-field indexing. Method calls are excluded by the lambda guard
+      // below instead.
       // Find the matching close paren. Track bracket depth separately so
       // a `:` inside an inner `[...]` subscript (like `bsxfun(X, mu[:, i])`)
       // is NOT misread as a top-level colon belonging to the outer call —
@@ -292,6 +295,10 @@ function fixColonInsideParensNested(line: string): string {
         if (depth > 0) j++
       }
       if (depth !== 0 || !topColon) continue
+      // A lambda in the args means the "top colon" is (or may be) the lambda
+      // body separator — this is a CALL with a converted anonymous-function
+      // arg, not indexing (mirrors the guard in fixColonInsideParens).
+      if (/\blambda\b/.test(result.slice(i + 1, j))) continue
       // Rewrite: keep `name`, swap `(` → `[`, close at `j` with `]`
       result = result.slice(0, i) + '[' + result.slice(i + 1, j) + ']' + result.slice(j + 1)
       changed = true
