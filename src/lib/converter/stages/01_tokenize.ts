@@ -349,6 +349,7 @@ function splitStatements(code: string): string[] {
   let stringChar = ''
   let parenDepth = 0
   let bracketDepth = 0
+  let braceDepth = 0
 
   for (let i = 0; i < code.length; i++) {
     const ch = code[i]
@@ -388,7 +389,15 @@ function splitStatements(code: string): string[] {
       } else if (ch === ']') {
         bracketDepth--
         current += ch
-      } else if (ch === ';' && parenDepth === 0 && bracketDepth === 0) {
+      } else if (ch === '{') {
+        // `;` inside a cell literal is a ROW separator, not a statement end
+        // (`pv={'a' 'b'; 'c' 16};` is ONE statement).
+        braceDepth++
+        current += ch
+      } else if (ch === '}') {
+        braceDepth--
+        current += ch
+      } else if (ch === ';' && parenDepth === 0 && bracketDepth === 0 && braceDepth === 0) {
         // Statement separator (or terminator)
         statements.push(current)
         current = ''

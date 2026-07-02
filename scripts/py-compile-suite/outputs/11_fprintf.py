@@ -7,6 +7,6 @@ name = 'Alice'
 print('x = %.3f' % (x,))
 print('y = %d' % (y,))
 print('%s has %d apples' % (name, y))
-plt.plt.savefig('stdout: %f\n')
+plt.savefig('stdout: %f\n')
 msg = 'The value is %g' % (x,)
 print(msg)
