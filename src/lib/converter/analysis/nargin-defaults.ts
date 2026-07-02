@@ -47,6 +47,10 @@ export function extractNarginDefaults(lines: StructuredLine[]): NarginPassResult
     defLine: number
     params: string[]
     defaults: Map<string, string>
+    /** Smallest caller arity implied by any nargin comparison in the body
+     *  (Infinity when the body never compares nargin). Params at index >=
+     *  minArity are optional and get `=None` unless a default was lifted. */
+    minArity: number
   }
   const fnStack: FuncCtx[] = []
 
@@ -65,6 +69,15 @@ export function extractNarginDefaults(lines: StructuredLine[]): NarginPassResult
   let state: State = { kind: 'IDLE' }
 
   const commitFunc = (ctx: FuncCtx) => {
+    // Dispatch-arity optionality: `if nargin == 2 ... elseif nargin == 3 ...`
+    // means callers may legally pass as few as minArity args — every later
+    // param needs a `=None` default or Python raises TypeError at call time.
+    if (Number.isFinite(ctx.minArity)) {
+      for (let j = Math.max(0, ctx.minArity); j < ctx.params.length; j++) {
+        const p = ctx.params[j]
+        if (p && p !== 'varargin' && !ctx.defaults.has(p)) ctx.defaults.set(p, 'None')
+      }
+    }
     if (ctx.defaults.size === 0) return
     // Python requires defaulted params to form a contiguous suffix. If
     // the user defaulted, say, param[1] but left param[2] non-defaulted,
@@ -119,6 +132,19 @@ export function extractNarginDefaults(lines: StructuredLine[]): NarginPassResult
     if (line.isComment) continue
     const content = line.content.trim()
 
+    // Track the smallest caller arity any nargin comparison implies for the
+    // enclosing function (drives dispatch-arity `=None` defaults).
+    if (fnStack.length > 0 && /\bnargin\b/.test(content)) {
+      const ctx = fnStack[fnStack.length - 1]
+      for (const m of content.matchAll(/\bnargin\s*(==|<=|<|>=|>)\s*(\d+)/g)) {
+        const n = parseInt(m[2], 10)
+        // `< N` handles arity N-1; `<= N`/`== N` handle arity N; a `>= N` or
+        // `> N` GUARD implies arities below N-1 / N occur unguarded.
+        const implied = m[1] === '<' || m[1] === '>=' ? n - 1 : n
+        if (implied < ctx.minArity) ctx.minArity = implied
+      }
+    }
+
     // Block-close: pop block-kind stack. If we just closed a function, also
     // pop the function-context stack and commit its defaults.
     if (line.isBlockClose) {
@@ -170,7 +196,7 @@ export function extractNarginDefaults(lines: StructuredLine[]): NarginPassResult
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean)
-      fnStack.push({ defLine: line.originalLineStart, params, defaults: new Map() })
+      fnStack.push({ defLine: line.originalLineStart, params, defaults: new Map(), minArity: Infinity })
       state = { kind: 'IDLE' }
       continue
     }

@@ -823,7 +823,10 @@ end`
   y = a;
 end`
     const result = convert(matlab)
-    expect(result.python).toContain('def foo(a, b):')
+    // The default is NOT lifted (body assigns `other`, not `b`), but the
+    // nargin comparison still implies b is optional — the signature now gets
+    // `b=None` (dispatch-arity defaults) so 1-arg calls actually work.
+    expect(result.python).toContain('def foo(a, b=None):')
     expect(result.python).toContain('b is None')
     expect(result.report.flags.map(f => f.message).join('|')).not.toContain('nargin used')
   })

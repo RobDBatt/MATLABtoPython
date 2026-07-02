@@ -1848,7 +1848,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_tfzvaz1fizi.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_nd2vcp7ielf.py, line 30",
     "snippet": "",
     "flagCount": 25,
     "flags": [
@@ -5893,13 +5893,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegEm_spSignal_demo.m",
@@ -5919,13 +5914,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegFp_spSignal_demo.m",
@@ -5945,13 +5935,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegSeq_spSignal_demo.m",
@@ -6121,13 +6106,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch10\\rvmRegVb_spSignal_demo.m",
@@ -8494,7 +8474,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_visau39j3em.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_4zbz5n88prb.py, line 365)",
     "snippet": "",
     "flagCount": 62,
     "flags": [
@@ -12455,7 +12435,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_7bwuxrtxvn.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_tvrf49gjt2j.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -13954,7 +13934,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_wnytxn1r9m.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_ea91qvb6csf.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -14193,7 +14173,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_09gsp0odtk0i.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_e2rvp3ifyk.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -14230,7 +14210,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_ghym8ccbo34.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_rthgpih96j.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [

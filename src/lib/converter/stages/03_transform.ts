@@ -3674,10 +3674,22 @@ function transformSpecialConstructs(
       const paramName = funcParams[paramIdx]
       return paramName ? `${paramName} is None` : `nargin < ${n}`
     })
+    // nargin == N → the Nth param is PRESENT and the (N+1)th is ABSENT.
+    // (The old mapping tested only presence of the Nth param — in a
+    // `== 2 / == 3 / == 4` dispatch chain that made every branch collapse
+    // into the first one.)
     result = result.replace(/\bnargin\s*==\s*(\d+)\b/g, (_, n) => {
-      const paramIdx = parseInt(n, 10) - 1
-      const paramName = funcParams[paramIdx]
-      return paramName ? `${paramName} is not None` : `nargin == ${n}`
+      const k = parseInt(n, 10)
+      const present = funcParams[k - 1]
+      const absent = funcParams[k]
+      if (present && absent) return `(${present} is not None and ${absent} is None)`
+      if (present) return `${present} is not None` // N == total params
+      return `nargin == ${n}`
+    })
+    // nargin <= N → the (N+1)th param is absent.
+    result = result.replace(/\bnargin\s*<=\s*(\d+)\b/g, (_, n) => {
+      const paramName = funcParams[parseInt(n, 10)]
+      return paramName ? `${paramName} is None` : `nargin <= ${n}`
     })
     // nargin >= N → Nth param is not None (at least N args given); must precede > N check
     result = result.replace(/\bnargin\s*>=\s*(\d+)\b/g, (_, n) => {
