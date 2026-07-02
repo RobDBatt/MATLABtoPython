@@ -1,16 +1,27 @@
 
-=== OCTAVE NUMERIC ORACLE — 173 inputs ===
-  92  OCTAVE_ERR (env/incompat)
-  46  SKIP (nondeterministic rand)
-  19  MATCH ✅
+=== OCTAVE NUMERIC ORACLE — 176 inputs ===
+ 139  OCTAVE_ERR (env/incompat)
+  20  MATCH ✅
   12  INCONCLUSIVE (no shared vars)
-   2  MISMATCH ☠ (SILENT-WRONG)
-   2  PY_CRASH (converter)
+   3  PY_CRASH (converter)
+   2  MATCH ✅ (incl. 0-based index contract)
 
-Numerically comparable: 21
-  MATCH (correct):        19 (90.5%)
-  MISMATCH (SILENT-WRONG): 2 (9.5%)  <-- the number we couldn't measure before
+Numerically comparable: 22
+  MATCH (correct):        22 (100.0%)
+  MISMATCH (SILENT-WRONG): 0 (0.0%)  <-- the number we couldn't measure before
 
---- silent-wrong files ---
-  vc/03_sum_max  vars: ix
-  vc/20_findpeaks_values  vars: locs
+0-based index-contract vars verified (uniform -1): 2
+  vc/03_sum_max:ix
+  vc/20_findpeaks_values:locs
+
+--- OCTAVE_ERR causes (top) ---
+   15  error: syntax error near line 4, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
+   14  error: syntax error near line 3, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
+   14  error: 'ypea_problem' undefined near line 15, column 11
+    4  error: 'linRnd' undefined near line 7, column 9
+    4  error: 'kmeansRnd' undefined near line 8, column 9
+    4  error: 'unitize' undefined near line 18, column 5
+    4  error: 'randinit' undefined near line 9, column 1
+    3  error: 'ppcaRnd' undefined near line 10, column 5
+    2  error: 'mixBernRnd' undefined near line 8, column 12
+    2  error: syntax error near line 113, column 8 in file C:\Users\Rober\AppData\Local\Temp\orac

@@ -1,0 +1,66 @@
+name: Octave numeric oracle
+
+# The silent-wrong detector: runs each verification-corpus MATLAB script in
+# real GNU Octave AND in converted Python, then diffs the numeric workspaces
+# within tolerance. This is the only gate that catches output that parses,
+# runs, and is numerically WRONG.
+#
+# rand/randn/randi are replaced on both sides by an identical LCG (see
+# scripts/octave_oracle.mts), so random scripts are compared, not skipped.
+# The converter's 0-based index contract (uniform -1 on returned indices) is
+# verified explicitly rather than misreported as a mismatch.
+#
+# FAILS when any curated case is silently wrong. The wide corpus-sample run
+# stays a local/manual job (the corpus repos are not fetchable in CI).
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/octave_oracle.mts'
+      - 'tests/verification-corpus/**'
+
+permissions:
+  contents: read
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Octave + packages
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q octave octave-signal octave-statistics
+          octave --version | head -1
+      - name: Install Python deps (same interpreter the oracle spawns)
+        run: python -m pip install --quiet numpy scipy matplotlib
+      - run: npm ci
+      - name: Run the numeric oracle
+        run: OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-report
+          path: scripts/corpus/output/oracle_report.txt
+      - name: Gate — zero silent-wrong on the curated set
+        run: |
+          if grep -q 'MISMATCH ☠' scripts/corpus/output/oracle_report.txt; then
+            echo '::error::Numeric oracle found SILENT-WRONG output:'
+            grep -A 40 'silent-wrong files' scripts/corpus/output/oracle_report.txt || true
+            exit 1
+          fi
+          # Vacuous-pass protection: require a healthy comparable count.
+          COMPARED=$(grep -oP 'Numerically comparable: \K\d+' scripts/corpus/output/oracle_report.txt)
+          echo "comparable: $COMPARED"
+          if [ "${COMPARED:-0}" -lt 15 ]; then
+            echo '::error::Oracle compared too few cases — environment problem, not a pass.'
+            exit 1
+          fi

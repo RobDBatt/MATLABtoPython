@@ -148,6 +148,25 @@ encode, and any candidate fix is checkable end-to-end with the existing harness:
 4. **Re-run the 375-file batch** — syntax-clean rate is the fast signal; the
    **Octave numeric oracle** is the gate for the 🟥 silent-wrong class.
 
+### Numeric oracle status (2026-07)
+
+Runs locally (`OCTAVE_BIN="<path to octave-cli>" npx tsx
+scripts/octave_oracle.mts`, optionally `CORPUS_SAMPLE=N`) and weekly in CI
+(`.github/workflows/octave-oracle.yml`, gate: zero silent-wrong on the curated
+set + vacuous-pass protection). Current verdict: **0 silent-wrong across all
+comparable inputs** — curated set 20/20 MATCH, corpus sample 22/22 MATCH.
+
+- `rand`/`randn`/`randi`/`randperm` are replaced on BOTH sides by an identical
+  minstd LCG (Octave shadow stubs / numpy monkeypatch, column-major fill), so
+  random scripts are compared instead of skipped (was: 46 skips).
+- The locked **0-based index contract** is verified explicitly: a returned-index
+  var that differs from Octave by uniform −1 counts as a contract MATCH
+  (`vc/03:ix`, `vc/20:locs`) — previously misreported as silent-wrong.
+- Headless-graphics calls are stubbed on the Octave side; remaining OCTAVE_ERRs
+  are bucketed by their `error:` line in the report. The dominant residual
+  causes are repo-local library calls (multi-file deps a single-file oracle
+  can't resolve) and MATLAB-only syntax Octave rejects — both environmental.
+
 Roughly **half the gaps are 🟢/🟡** (registry or localized transform — `rem`,
 `reshape order`, command syntax, cell-splat, arg-reorder, name-value pairs). A few
 are **🔴** (matmul, column-iteration, struct-arrays) where the honest fix is to
