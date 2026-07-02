@@ -75,6 +75,30 @@ return-shape propagation).
 | Cell-array literal | `{1,'two',[3 4]}` → list | 🟧 | 🟡 | currently `+`-joined → `TypeError`; emit a Python list |
 | Struct *arrays* | `s(2).x = 1` | 🟧 | 🔴 | scalar struct→dict done; array-of-structs needs a different shape |
 
+### C2. Toolbox coverage (sweep of 2026-07)
+
+~230 toolbox-function mappings across 13 areas. Policy: exact-signature
+scipy/skimage/control/sympy/pywt matches map silently (plus the automatic
+TOOLBOX review flag); known differences carry an explicit WARNING naming the
+difference (arg order, return order, parameterization); functions with no
+Python equivalent get a TODO with the replacement recipe; **Simulink and code
+generation are ❌ UNSUPPORTED by nature** — `sim`/`set_param`/`codegen` operate
+on `.slx` block diagrams / compiler toolchains, which have no textual Python
+analog (the flag says to reimplement dynamics with `scipy.integrate.solve_ivp`
+or use Numba/Cython workflows).
+
+| Area | Highlights |
+|---|---|
+| Statistics | full `Xpdf/Xcdf/Xinv` distribution family via a generic rewriter with per-dist scale surgery (`gampdf(x,a,b)`→`stats.gamma.pdf(x,a,scale=b)`, `wbl` swaps shape/scale, `logn` exponentiates mu); `*rnd`→numpy.random; nan* family; pdist/linkage/kmeans2 |
+| Signal | buttord/cheb1ord/besself/windows/medfilt/detrend exact; `fir1(n,…)`→`firwin(n+1,…)`; `dct`→`norm='ortho'`; `sgolayfilt` argReorder; `downsample(x,n)`→`x[::n]`; cpsd/mscohere flagged (swapped returns) |
+| Image | skimage morphology/exposure/filters; `strel('disk',r)`→`morphology.disk(r)`; `imfill(bw,'holes')`→`binary_fill_holes`; `imbinarize`→inline otsu; graythresh flagged (normalized vs absolute) |
+| Control | python-control 1:1 (lqr/place/ctrb/obsv/dcgain/poles/zeros); response functions flagged (TimeResponseData vs [y,t,x]) |
+| Rotations | scipy `Rotation` templates (eul2rotm/rotm2eul exact ZYX; quaternion entries WARN about [w x y z]→[x y z w] order) |
+| Symbolic | dsolve/collect/vpa(→sp.N)/taylor/fourier; ztrans flagged (no sympy equivalent) |
+| Optimization | least_squares/lsq_linear/milp; ga/patternsearch/particleswarm flagged with nearest scipy analog |
+| Financial | flagged with closed-form formulas (no numpy_financial dep by policy) |
+| Wavelet / Audio | pywt swt/iswt + coeff recipes; soundfile info; playback flagged (sounddevice) |
+
 ### D. Unmapped functions (🟧 crash)
 | Construct | Example | Behavior | Fixability | Notes |
 |---|---|---|---|---|

@@ -172,7 +172,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 15,
     "flags": [
       {
         "type": "WARNING",
@@ -209,6 +209,10 @@
       {
         "type": "WARNING",
         "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "detrend → signal.detrend (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "TOOLBOX",
@@ -1844,9 +1848,9 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_lnk55ev6cnp.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_ft5ixbinfh.py, line 300",
     "snippet": "",
-    "flagCount": 23,
+    "flagCount": 25,
     "flags": [
       {
         "type": "WARNING",
@@ -1927,6 +1931,14 @@
       {
         "type": "TOOLBOX",
         "message": "filtfilt → signal.filtfilt — Same interface. Make sure b,a coefficients are from scipy.signal.butter(), not MATLAB-saved values."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "smooth → smooth (Curve Fitting Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TODO",
+        "message": "smooth(y, span) moving average → np.convolve(y, np.ones(span)/span, mode='same'), or signal.savgol_filter for 'sgolay'."
       },
       {
         "type": "WARNING",
@@ -4981,8 +4993,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\chapter11\\discreteRnd.m",
@@ -5810,16 +5827,42 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch06\\knLin_demo.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 4,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "pca → pca (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TODO",
+        "message": "pca → np.linalg.svd on the centered data, or sklearn.decomposition.PCA — output layout differs from MATLAB [coeff, score, latent]."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch06\\knReg_demo.m",
@@ -5966,8 +6009,40 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 9,
     "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      },
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `mu` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
@@ -5979,8 +6054,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "kmeans → cluster.vq.kmeans2 (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch09\\kmedoids_demo.m",
@@ -6087,8 +6171,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "pca → pca (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TODO",
+        "message": "pca → np.linalg.svd on the centered data, or sklearn.decomposition.PCA — output layout differs from MATLAB [coeff, score, latent]."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\demo\\ch12\\ppcaEm_demo.m",
@@ -7020,7 +7113,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 7,
     "flags": [
       {
         "type": "TODO",
@@ -7045,6 +7138,10 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor set.b → def set_b. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "betarnd → np.random.beta (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -7053,7 +7150,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -7066,6 +7163,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "binornd → np.random.binomial (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -7074,7 +7175,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 7,
     "flags": [
       {
         "type": "TODO",
@@ -7095,6 +7196,14 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor set.alphas → def set_alphas. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -7140,7 +7249,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -7153,6 +7262,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -7239,7 +7352,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
@@ -7256,6 +7369,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "poissrnd → np.random.poisson (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -7888,11 +8005,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
         "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "nanmean → np.nanmean (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "nanmean → np.nanmean (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       }
     ]
   },
@@ -8369,7 +8494,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_26j68pcpuyt.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_xrcedcwa3cn.py, line 365)",
     "snippet": "",
     "flagCount": 62,
     "flags": [
@@ -9442,7 +9567,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 41,
+    "flagCount": 42,
     "flags": [
       {
         "type": "TODO",
@@ -9523,6 +9648,10 @@
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "vpa → sp.N (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "WARNING",
@@ -11217,11 +11346,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 5,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "Simulink reference — out of scope for code converter"
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "sim → sim (Simulink Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "sim() runs a Simulink MODEL (.slx block diagram) — there is no Python equivalent; the model itself cannot be converted. Reimplement the dynamics with scipy.integrate.solve_ivp."
       },
       {
         "type": "TODO",
@@ -12318,7 +12455,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_d7yt03hreco.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_v8ceutnuo7.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -12886,7 +13023,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 11,
     "flags": [
       {
         "type": "TODO",
@@ -12914,11 +13051,19 @@
       },
       {
         "type": "TOOLBOX",
+        "message": "mvnrnd → np.random.multivariate_normal (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
       },
       {
         "type": "TOOLBOX",
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "mvnrnd → np.random.multivariate_normal (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "WARNING",
@@ -13809,7 +13954,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_uoyaqwktso.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_93i3n2tr1za.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -14048,7 +14193,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_9upavpd3ot6.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_wdibhk0zobk.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -14085,7 +14230,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_wu1k5nuu96n.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_v4z7izc1j9o.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -14477,8 +14622,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "gamrnd → np.random.gamma (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\Contents.m",
