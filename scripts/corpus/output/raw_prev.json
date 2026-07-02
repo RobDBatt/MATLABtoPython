@@ -903,7 +903,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: expected ':'",
     "snippet": "",
-    "flagCount": 132,
+    "flagCount": 133,
     "flags": [
       {
         "type": "WARNING",
@@ -1216,6 +1216,10 @@
       {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "cast(x, 'type') → ndarray.astype(dtype) in NumPy."
       },
       {
         "type": "WARNING",
@@ -1840,7 +1844,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_zaeknx07ozl.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_lnk55ev6cnp.py, line 30",
     "snippet": "",
     "flagCount": 23,
     "flags": [
@@ -3650,7 +3654,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 65,
+    "flagCount": 73,
     "flags": [
       {
         "type": "TODO",
@@ -3685,6 +3689,18 @@
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
+        "type": "TODO",
+        "message": "mat2cell partitions a matrix into blocks — use np.split / nested slicing."
+      },
+      {
+        "type": "TODO",
+        "message": "mat2cell partitions a matrix into blocks — use np.split / nested slicing."
+      },
+      {
+        "type": "TODO",
+        "message": "mat2cell partitions a matrix into blocks — use np.split / nested slicing."
+      },
+      {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
@@ -3707,6 +3723,22 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "diff → sp.diff (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "diff could be symbolic (sp.diff) or numeric (np.diff) — verify context"
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "diff → sp.diff (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "diff could be symbolic (sp.diff) or numeric (np.diff) — verify context"
       },
       {
         "type": "WARNING",
@@ -3849,6 +3881,10 @@
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
+        "type": "TODO",
+        "message": "mat2cell partitions a matrix into blocks — use np.split / nested slicing."
+      },
+      {
         "type": "WARNING",
         "message": "Ambiguous `*`: `` or `dataCell` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
@@ -3916,8 +3952,8 @@
   },
   {
     "rel": "matlab2tikz\\src\\dev\\formatWhitespace.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -8333,7 +8369,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_nrzke0bcnfc.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_26j68pcpuyt.py, line 365)",
     "snippet": "",
     "flagCount": 62,
     "flags": [
@@ -9065,8 +9101,8 @@
   },
   {
     "rel": "spatialmath-matlab\\plot_point.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: positional argument follows keyword argument",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -12282,7 +12318,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_s9ilwe7zs5d.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_d7yt03hreco.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -13773,7 +13809,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_s96rpvkg9z.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_uoyaqwktso.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -13785,16 +13821,11 @@
   },
   {
     "rel": "vbmc\\utils\\fastkmeans.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "MATLAB inline if/while body — in Python the statement must be on its own indented line after the `:`."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\utils\\fminadam.m",
@@ -13876,10 +13907,10 @@
   },
   {
     "rel": "vbmc\\utils\\ibslike.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '['",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
@@ -13892,10 +13923,6 @@
       {
         "type": "WARNING",
         "message": "histc → np.histogram — return format differs"
-      },
-      {
-        "type": "WARNING",
-        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
@@ -14021,7 +14048,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_6hes1q0zmio.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_9upavpd3ot6.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -14058,7 +14085,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_h4wwl3etew4.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_wu1k5nuu96n.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -14431,8 +14458,8 @@
   },
   {
     "rel": "vbmc\\vbmc_plot.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: positional argument follows keyword argument",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []

@@ -2466,6 +2466,53 @@ function transformFunctions(
             // timestamp, so plain subtraction is the equivalent.
             return a.length === 2 ? `(${a[0]} - ${a[1]})` : full
           })
+        } else if (DIST_FN.test(matlabName)) {
+          result = replaceFunctionCalls(result, matlabName, (full, args) =>
+            rewriteDistributionFn(matlabName, full, args),
+          )
+        } else if (matlabName === 'fir1' || matlabName === 'fir2') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            if (a.length < 2) return full
+            // MATLAB filter ORDER n = n+1 taps (numtaps) in scipy.
+            const n = /^\d+$/.test(a[0]) ? String(Number(a[0]) + 1) : `${a[0]} + 1`
+            const fn = matlabName === 'fir1' ? 'signal.firwin' : 'signal.firwin2'
+            return `${fn}(${n}, ${a.slice(1).join(', ')})`
+          })
+        } else if (matlabName === 'dct' || matlabName === 'idct') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            // MATLAB dct/idct are orthonormal type-II — scipy needs norm='ortho'
+            `sfft.${matlabName}(${args}, norm='ortho')`,
+          )
+        } else if (matlabName === 'downsample') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            // downsample(x, n) keeps every nth sample starting at the first —
+            // exactly Python's x[::n].
+            return a.length === 2 ? `${a[0]}[::${a[1]}]` : full
+          })
+        } else if (matlabName === 'strel') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            const shape = (a[0] ?? '').replace(/['"]/g, '')
+            const SHAPES: Record<string, string> = {
+              disk: 'morphology.disk', square: 'morphology.square',
+              rectangle: 'morphology.rectangle', line: 'morphology.line',
+              diamond: 'morphology.diamond', sphere: 'morphology.ball',
+              cube: 'morphology.cube', octahedron: 'morphology.octahedron',
+            }
+            const py = SHAPES[shape]
+            return py ? `${py}(${a.slice(1).join(', ')})` : full
+          })
+        } else if (matlabName === 'imfill') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            // imfill(bw, 'holes') → ndi.binary_fill_holes(bw); other forms
+            // (seed points) have no one-liner — leave for the flag net.
+            if (a.length === 2 && /^['"]holes['"]$/.test(a[1])) return `ndi.binary_fill_holes(${a[0]})`
+            if (a.length === 1) return `ndi.binary_fill_holes(${a[0]})`
+            return full
+          })
         } else if (matlabName === 'strjoin' || matlabName === 'join') {
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
             // strjoin(c, delim) → delim.join(c); 1-arg default is a space.
@@ -2567,6 +2614,63 @@ function rewriteRegexprep(rawArgs: string): string {
 }
 
 // ── bsxfun / isa / cellfun rewriters (coverage-audit batch) ──
+
+// ── Probability distribution rewriter ────────────────────
+
+/** Matches the Xpdf/Xcdf/Xinv family handled by rewriteDistributionFn. */
+const DIST_FN = /^(beta|gam|exp|poiss|bino|t|chi2|f|logn|wbl|unif)(pdf|cdf|inv)$/
+
+/**
+ * MATLAB distribution functions → scipy.stats. The method name maps directly
+ * (pdf→pdf/pmf, cdf→cdf, inv→ppf); the ARGUMENTS need per-distribution surgery
+ * because MATLAB parameterizes some by mean/scale where scipy uses loc/scale
+ * kwargs, and Weibull swaps shape/scale order:
+ *
+ *   gampdf(x, a, b)    → stats.gamma.pdf(x, a, scale=b)
+ *   exppdf(x, mu)      → stats.expon.pdf(x, scale=mu)
+ *   lognpdf(x, mu, s)  → stats.lognorm.pdf(x, s, scale=np.exp(mu))
+ *   wblpdf(x, a, b)    → stats.weibull_min.pdf(x, b, scale=a)
+ *   unifpdf(x, a, b)   → stats.uniform.pdf(x, loc=a, scale=(b) - (a))
+ *   betapdf/tpdf/chi2pdf/fpdf/binopdf/poisspdf → direct arg passthrough
+ */
+function rewriteDistributionFn(matlabName: string, fullCall: string, rawArgs: string): string {
+  const m = matlabName.match(DIST_FN)
+  if (!m) return fullCall
+  const [, dist, kind] = m
+  const a = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (a.length === 0) return fullCall
+  const DISCRETE = new Set(['poiss', 'bino'])
+  const method = kind === 'inv' ? 'ppf' : kind === 'cdf' ? 'cdf' : DISCRETE.has(dist) ? 'pmf' : 'pdf'
+  const PY: Record<string, string> = {
+    beta: 'beta', gam: 'gamma', exp: 'expon', poiss: 'poisson', bino: 'binom',
+    t: 't', chi2: 'chi2', f: 'f', logn: 'lognorm', wbl: 'weibull_min', unif: 'uniform',
+  }
+  let pyArgs: string
+  switch (dist) {
+    case 'gam':
+      if (a.length === 3) pyArgs = `${a[0]}, ${a[1]}, scale=${a[2]}`
+      else pyArgs = a.join(', ')
+      break
+    case 'exp':
+      pyArgs = a.length === 2 ? `${a[0]}, scale=${a[1]}` : a.join(', ')
+      break
+    case 'logn':
+      if (a.length === 3) pyArgs = `${a[0]}, ${a[2]}, scale=np.exp(${a[1]})`
+      else return fullCall // mu/sigma both needed to translate — leave + flag net
+      break
+    case 'wbl':
+      if (a.length === 3) pyArgs = `${a[0]}, ${a[2]}, scale=${a[1]}`
+      else return fullCall
+      break
+    case 'unif':
+      if (a.length === 3) pyArgs = `${a[0]}, loc=${a[1]}, scale=(${a[2]}) - (${a[1]})`
+      else return fullCall
+      break
+    default:
+      pyArgs = a.join(', ') // beta/t/chi2/f/poiss/bino match scipy shapes directly
+  }
+  return `stats.${PY[dist]}.${method}(${pyArgs})`
+}
 
 /** isa(x, 'classname') → isinstance with the MATLAB→Python type map. */
 const ISA_TYPES: Record<string, string> = {
@@ -3123,11 +3227,20 @@ function transformToolboxFunctions(
       imports.add(imp)
     }
 
-    // Simple name replacement for passthrough
-    if (mapping.args === 'passthrough') {
-      result = result.replace(pattern, `${mapping.python}(`)
+    // Name replacement via replaceFunctionCalls so occurrences inside string
+    // literals and after `.` are skipped (same protection as FUNCTION_MAP).
+    // Entries with argReorder get the same arity-gated permutation.
+    if (mapping.argReorder) {
+      const order = mapping.argReorder
+      result = replaceFunctionCalls(result, matlabName, (_, args) => {
+        const list = splitArgsRespectingStrings(args).map(s => s.trim())
+        if (list.length !== order.length) return `${mapping.python}(${args})`
+        return `${mapping.python}(${order.map(i => list[i]).join(', ')})`
+      })
     } else {
-      result = result.replace(pattern, `${mapping.python}(`)
+      result = replaceFunctionCalls(result, matlabName, (_, args) =>
+        `${mapping.python}(${args})`,
+      )
     }
 
     // Add a TOOLBOX flag with specific guidance for known differences

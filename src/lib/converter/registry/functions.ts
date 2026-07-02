@@ -569,6 +569,103 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
                flagWhen: (c) => /interp1\s*\([^)]*,\s*['"](?:spline|pchip|cubic|nearest|makima|v5cubic)['"]/i.test(c) },
 
   // ── Coverage-audit batch (systematic builtin sweep, 2026-07) ────────────
+  // ── Toolbox coverage sweep: forms needing arg surgery (template/custom) ──
+
+  // Probability distributions — one generic rewriter handles the whole
+  // Xpdf/Xcdf/Xinv family (scipy scale/shape conventions differ per dist).
+  betapdf: { python: 'betapdf', args: 'custom', imports: ['scipy.stats'] },
+  betacdf: { python: 'betacdf', args: 'custom', imports: ['scipy.stats'] },
+  betainv: { python: 'betainv', args: 'custom', imports: ['scipy.stats'] },
+  gampdf:  { python: 'gampdf',  args: 'custom', imports: ['scipy.stats'] },
+  gamcdf:  { python: 'gamcdf',  args: 'custom', imports: ['scipy.stats'] },
+  gaminv:  { python: 'gaminv',  args: 'custom', imports: ['scipy.stats'] },
+  exppdf:  { python: 'exppdf',  args: 'custom', imports: ['scipy.stats'] },
+  expcdf:  { python: 'expcdf',  args: 'custom', imports: ['scipy.stats'] },
+  expinv:  { python: 'expinv',  args: 'custom', imports: ['scipy.stats'] },
+  poisspdf: { python: 'poisspdf', args: 'custom', imports: ['scipy.stats'] },
+  poisscdf: { python: 'poisscdf', args: 'custom', imports: ['scipy.stats'] },
+  poissinv: { python: 'poissinv', args: 'custom', imports: ['scipy.stats'] },
+  binopdf: { python: 'binopdf', args: 'custom', imports: ['scipy.stats'] },
+  binocdf: { python: 'binocdf', args: 'custom', imports: ['scipy.stats'] },
+  binoinv: { python: 'binoinv', args: 'custom', imports: ['scipy.stats'] },
+  tpdf:    { python: 'tpdf',    args: 'custom', imports: ['scipy.stats'] },
+  tcdf:    { python: 'tcdf',    args: 'custom', imports: ['scipy.stats'] },
+  tinv:    { python: 'tinv',    args: 'custom', imports: ['scipy.stats'] },
+  chi2pdf: { python: 'chi2pdf', args: 'custom', imports: ['scipy.stats'] },
+  chi2cdf: { python: 'chi2cdf', args: 'custom', imports: ['scipy.stats'] },
+  chi2inv: { python: 'chi2inv', args: 'custom', imports: ['scipy.stats'] },
+  fpdf:    { python: 'fpdf',    args: 'custom', imports: ['scipy.stats'] },
+  fcdf:    { python: 'fcdf',    args: 'custom', imports: ['scipy.stats'] },
+  finv:    { python: 'finv',    args: 'custom', imports: ['scipy.stats'] },
+  lognpdf: { python: 'lognpdf', args: 'custom', imports: ['scipy.stats', 'numpy'] },
+  logncdf: { python: 'logncdf', args: 'custom', imports: ['scipy.stats', 'numpy'] },
+  logninv: { python: 'logninv', args: 'custom', imports: ['scipy.stats', 'numpy'] },
+  wblpdf:  { python: 'wblpdf',  args: 'custom', imports: ['scipy.stats'] },
+  wblcdf:  { python: 'wblcdf',  args: 'custom', imports: ['scipy.stats'] },
+  wblinv:  { python: 'wblinv',  args: 'custom', imports: ['scipy.stats'] },
+  unifpdf: { python: 'unifpdf', args: 'custom', imports: ['scipy.stats'] },
+  unifcdf: { python: 'unifcdf', args: 'custom', imports: ['scipy.stats'] },
+  unifinv: { python: 'unifinv', args: 'custom', imports: ['scipy.stats'] },
+
+  zscore:  { python: 'stats.zscore({}, ddof=1)', args: 'template', imports: ['scipy.stats'] },
+
+  // FIR design — MATLAB order n means n+1 taps in scipy
+  fir1:    { python: 'fir1', args: 'custom', imports: ['scipy.signal'] },
+  fir2:    { python: 'fir2', args: 'custom', imports: ['scipy.signal'] },
+  // sgolayfilt(x, order, framelen) → savgol_filter(x, window_length, polyorder)
+  sgolayfilt: { python: 'signal.savgol_filter', args: 'passthrough', imports: ['scipy.signal'], argReorder: [0, 2, 1] },
+  // MATLAB dct/idct are orthonormal type-II — scipy needs norm='ortho'
+  dct:     { python: 'dct',  args: 'custom', imports: ['scipy.fft'] },
+  idct:    { python: 'idct', args: 'custom', imports: ['scipy.fft'] },
+  downsample: { python: 'downsample', args: 'custom', imports: [] },
+
+  // Image morphology structuring elements + fill
+  strel:   { python: 'strel',  args: 'custom', imports: ['skimage.morphology'] },
+  imfill:  { python: 'imfill', args: 'custom', imports: ['scipy.ndimage'] },
+  imbinarize: { python: '({} > filters.threshold_otsu({}))', args: 'template', imports: ['skimage.filters'] },
+  mat2gray: { python: '(({}) - np.min({})) / (np.max({}) - np.min({}))', args: 'template', imports: ['numpy'] },
+
+  // Rotation conversions (scipy.spatial.transform.Rotation)
+  quat2rotm: {
+    python: 'Rotation.from_quat({}).as_matrix()', args: 'template', imports: ['scipy.spatial.transform'],
+    flag: { type: 'WARNING', message: 'MATLAB quaternions are [w x y z]; scipy expects [x y z w] — reorder with q[..., [1, 2, 3, 0]].' },
+  },
+  rotm2quat: {
+    python: 'Rotation.from_matrix({}).as_quat()', args: 'template', imports: ['scipy.spatial.transform'],
+    flag: { type: 'WARNING', message: 'scipy returns quaternions as [x y z w]; MATLAB uses [w x y z] — reorder with q[..., [3, 0, 1, 2]].' },
+  },
+  quat2eul: {
+    python: "Rotation.from_quat({}).as_euler('ZYX')", args: 'template', imports: ['scipy.spatial.transform'],
+    flag: { type: 'WARNING', message: 'MATLAB quaternions are [w x y z]; scipy expects [x y z w].' },
+  },
+  eul2quat: {
+    python: "Rotation.from_euler('ZYX', {}).as_quat()", args: 'template', imports: ['scipy.spatial.transform'],
+    flag: { type: 'WARNING', message: 'scipy returns [x y z w]; MATLAB uses [w x y z].' },
+  },
+  eul2rotm:  { python: "Rotation.from_euler('ZYX', {}).as_matrix()", args: 'template', imports: ['scipy.spatial.transform'] },
+  rotm2eul:  { python: "Rotation.from_matrix({}).as_euler('ZYX')", args: 'template', imports: ['scipy.spatial.transform'] },
+  axang2rotm: {
+    python: 'Rotation.from_rotvec({}[..., :3] * {}[..., 3:]).as_matrix()', args: 'template', imports: ['scipy.spatial.transform'],
+  },
+  rotm2axang: {
+    python: 'rotm2axang', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'rotm2axang → r = Rotation.from_matrix(R).as_rotvec(); angle = np.linalg.norm(r); axis = r / angle.' },
+  },
+  quatmultiply: {
+    python: 'quatmultiply', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'quatmultiply → (Rotation.from_quat(q2) * Rotation.from_quat(q1)).as_quat() — note scipy order is [x y z w] and composition order reverses.' },
+  },
+  quatinv: {
+    python: 'quatinv', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'quatinv → Rotation.from_quat(q).inv().as_quat() (scipy order [x y z w]).' },
+  },
+  quatnormalize: {
+    python: 'quatnormalize', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'quatnormalize → q / np.linalg.norm(q).' },
+  },
+
+  symvar: { python: 'list({}.free_symbols)', args: 'template', imports: [] },
+
   // custom-rewritten forms (branches live in 03_transform's custom dispatcher;
   // bsxfun is handled earlier by convertBsxfun in preTransform)
   isa: {
