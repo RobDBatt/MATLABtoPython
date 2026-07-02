@@ -10,7 +10,17 @@
  * py_compile, runtime-exec, and the flag system all miss). PY_CRASH = a crash
  * bug. OCTAVE_ERR = the original itself failed (environmental, excluded).
  *
- *   OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts [globOrDir]
+ * Determinism: rand/randn/randi are replaced on BOTH sides by an identical
+ * minstd LCG (Octave: shadowing .m stubs in the work dir; Python: numpy
+ * monkeypatch preamble), so random scripts are numerically comparable instead
+ * of skipped. Headless-graphics calls are stubbed out on the Octave side.
+ *
+ * Index contract: the converter intentionally returns 0-based indices
+ * ("0-based + flag on display", REVIEW_PUNCHLIST). A variable whose values
+ * differ from Octave by EXACTLY +1 everywhere (and are integers) is counted as
+ * MATCH (index contract), verifying the contract rather than misreporting it.
+ *
+ *   OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts
  *   CORPUS_SAMPLE=150 npx tsx scripts/octave_oracle.mts   # also sample corpus scripts
  */
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync } from 'node:fs'
@@ -66,6 +76,124 @@ for _k, _v in list(globals().items()):
 open(_os.environ['ORACLE_OUT'], 'w').write(_j.dumps(_o))
 `
 
+// ── Deterministic RNG: identical minstd LCG on both sides ─────────────────
+// x' = 16807 x mod (2^31 - 1); u = x' / (2^31 - 1). All products stay below
+// 2^53, so plain double arithmetic is exact in both runtimes. randn uses
+// one-value-per-draw Box-Muller (the sine partner is discarded) so the draw
+// streams stay aligned. MATLAB fills column-major; the numpy patch reshapes
+// with order='F' to match.
+
+const OCT_RAND_STUBS: Record<string, string> = {
+  '__lcg.m': `function u = __lcg()
+  global __lcg_state
+  if isempty(__lcg_state); __lcg_state = 123456; end
+  __lcg_state = mod(16807 * __lcg_state, 2147483647);
+  u = __lcg_state / 2147483647;
+end`,
+  'rand.m': `function r = rand(varargin)
+  [m, n] = __randsize(varargin{:});
+  v = zeros(1, m*n);
+  for i = 1:m*n; v(i) = __lcg(); end
+  r = reshape(v, m, n);
+end`,
+  'randn.m': `function r = randn(varargin)
+  [m, n] = __randsize(varargin{:});
+  v = zeros(1, m*n);
+  for i = 1:m*n
+    u1 = __lcg(); u2 = __lcg();
+    v(i) = sqrt(-2*log(u1)) * cos(2*pi*u2);
+  end
+  r = reshape(v, m, n);
+end`,
+  'randi.m': `function r = randi(imax, varargin)
+  if numel(imax) == 2; lo = imax(1); hi = imax(2); else; lo = 1; hi = imax; end
+  [m, n] = __randsize(varargin{:});
+  v = zeros(1, m*n);
+  for i = 1:m*n; v(i) = floor(__lcg() * (hi - lo + 1)) + lo; end
+  r = reshape(v, m, n);
+end`,
+  'randperm.m': `function p = randperm(n, varargin)
+  % Fisher-Yates driven by the shared LCG (identical on the Python side)
+  p = 1:n;
+  for i = n:-1:2
+    j = floor(__lcg() * i) + 1;
+    t = p(i); p(i) = p(j); p(j) = t;
+  end
+  if nargin > 1; p = p(1:varargin{1}); end
+end`,
+  '__randsize.m': `function [m, n] = __randsize(varargin)
+  if nargin == 0; m = 1; n = 1;
+  elseif nargin == 1
+    if numel(varargin{1}) == 2; m = varargin{1}(1); n = varargin{1}(2);
+    else; m = varargin{1}; n = varargin{1}; end
+  else; m = varargin{1}; n = varargin{2}; end
+end`,
+  'rng.m': `function rng(varargin)
+  global __lcg_state
+  __lcg_state = 123456;  % any seeding resets the shared stream
+end`,
+}
+
+// Headless-graphics no-op stubs: these produce no numeric workspace output,
+// and headless Octave errors on real rendering. `hist`/`set`/`get` are NOT
+// stubbed (they carry data / non-graphics uses).
+const OCT_GRAPHICS_NOOPS = [
+  'figure', 'clf', 'cla', 'close', 'plot', 'plot3', 'surf', 'mesh', 'contour',
+  'contourf', 'imagesc', 'image', 'scatter', 'scatter3', 'semilogx', 'semilogy',
+  'loglog', 'bar', 'barh', 'stairs', 'stem', 'errorbar', 'fill', 'patch',
+  'text', 'xlabel', 'ylabel', 'zlabel', 'title', 'legend', 'grid', 'axis',
+  'axes', 'subplot', 'colorbar', 'colormap', 'drawnow', 'pause', 'view',
+  'shading', 'print', 'saveas', 'hold', 'xlim', 'ylim', 'zlim', 'box', 'quiver',
+]
+
+const PY_RAND_PATCH = `
+import numpy as _onp
+_lcg_state = [123456]
+def _lcg_u():
+    _lcg_state[0] = (16807 * _lcg_state[0]) % 2147483647
+    return _lcg_state[0] / 2147483647
+def _lcg_fill(shape):
+    import math as _mm
+    total = 1
+    for s in shape: total *= int(s)
+    vals = [_lcg_u() for _ in range(total)]
+    return _onp.array(vals).reshape(shape, order='F') if len(shape) > 1 else _onp.array(vals)
+def _p_rand(*args):
+    if len(args) == 0: return _lcg_u()
+    return _lcg_fill(tuple(int(a) for a in args))
+def _p_randn(*args):
+    import math as _mm
+    def draw():
+        u1, u2 = _lcg_u(), _lcg_u()
+        return _mm.sqrt(-2*_mm.log(u1)) * _mm.cos(2*_mm.pi*u2)
+    if len(args) == 0: return draw()
+    shape = tuple(int(a) for a in args)
+    total = 1
+    for s in shape: total *= s
+    vals = [draw() for _ in range(total)]
+    return _onp.array(vals).reshape(shape, order='F') if len(shape) > 1 else _onp.array(vals)
+def _p_randint(low, high=None, size=None):
+    if high is None: low, high = 1, low + 1
+    def draw(): return int(_lcg_u() * (high - low)) + low
+    if size is None: return draw()
+    if isinstance(size, int): size = (size,)
+    total = 1
+    for s in size: total *= int(s)
+    vals = [draw() for _ in range(total)]
+    return _onp.array(vals).reshape(size, order='F') if len(size) > 1 else _onp.array(vals)
+def _p_permutation(n):
+    p = list(range(1, int(n) + 1))
+    for i in range(int(n) - 1, 0, -1):
+        j = int(_lcg_u() * (i + 1))
+        p[i], p[j] = p[j], p[i]
+    return _onp.array(p)
+_onp.random.rand = _p_rand
+_onp.random.randn = _p_randn
+_onp.random.randint = _p_randint
+_onp.random.permutation = _p_permutation
+_onp.random.seed = lambda *a, **k: _lcg_state.__setitem__(0, 123456)
+`
+
 function firstCodeLine(src: string): string {
   for (const raw of src.split('\n')) {
     const l = raw.trim()
@@ -87,6 +215,16 @@ function closeEnough(a: number[], b: number[]): boolean {
   for (let i = 0; i < a.length; i++) {
     const d = Math.abs(a[i] - b[i])
     if (d > ATOL + RTOL * Math.abs(b[i])) return false
+  }
+  return true
+}
+/** Octave value = Python value + 1 everywhere, all integers → the converter's
+ *  locked 0-based index contract, not a bug. */
+function isIndexContract(py: number[], oct: number[]): boolean {
+  if (py.length !== oct.length || py.length === 0) return false
+  for (let i = 0; i < py.length; i++) {
+    if (!Number.isInteger(py[i]) || !Number.isInteger(oct[i])) return false
+    if (oct[i] !== py[i] + 1) return false
   }
   return true
 }
@@ -119,31 +257,45 @@ function collectInputs(): Input[] {
 }
 
 const work = mkdtempSync(join(tmpdir(), 'oracle-'))
+// Deterministic-RNG + graphics stubs shadow the builtins for scripts run with cwd=work.
+for (const [name, body] of Object.entries(OCT_RAND_STUBS)) writeFileSync(join(work, name), body + '\n')
+for (const fn of OCT_GRAPHICS_NOOPS) {
+  writeFileSync(join(work, `${fn}.m`), `function varargout = ${fn}(varargin)\n  varargout = cell(1, nargout);\nend\n`)
+}
+
 const inputs = collectInputs()
 const buckets: Record<string, number> = {}
 const mismatches: string[] = []
+const contractVars: string[] = []
+const octErrCauses: Record<string, number> = {}
 let compared = 0, match = 0
 
 for (const inp of inputs) {
   if (isFunctionFile(inp.src)) { buckets['SKIP (function file)'] = (buckets['SKIP (function file)'] || 0) + 1; continue }
-  if (/\brand[ni]?\s*\(/.test(inp.src)) { buckets['SKIP (nondeterministic rand)'] = (buckets['SKIP (nondeterministic rand)'] || 0) + 1; continue }
 
   // Octave
   const octOut = join(work, 'oct.json')
+  rmSync(octOut, { force: true })
   const mFile = join(work, 'run.m')
   writeFileSync(mFile, OCT_PROLOGUE + inp.src + '\n' + OCT_DUMP)
   const oct = spawnSync(OCTAVE, ['--no-gui', '--norc', '--quiet', mFile], {
-    cwd: work, encoding: 'utf8', timeout: 20000, env: { ...process.env, ORACLE_OUT: octOut },
+    cwd: work, encoding: 'utf8', timeout: 30000, env: { ...process.env, ORACLE_OUT: octOut },
   })
-  if (oct.status !== 0 || !existsSync(octOut)) { buckets['OCTAVE_ERR (env/incompat)'] = (buckets['OCTAVE_ERR (env/incompat)'] || 0) + 1; continue }
+  if (oct.status !== 0 || !existsSync(octOut)) {
+    buckets['OCTAVE_ERR (env/incompat)'] = (buckets['OCTAVE_ERR (env/incompat)'] || 0) + 1
+    const cause = (oct.stderr || '').split('\n').find(l => l.trim().startsWith('error:'))?.trim().slice(0, 90) || (oct.status === null ? 'timeout' : 'unknown')
+    octErrCauses[cause] = (octErrCauses[cause] || 0) + 1
+    continue
+  }
 
   // Python (converted)
   let py: string
   try { py = convert(inp.src).python } catch { buckets['convert() threw'] = (buckets['convert() threw'] || 0) + 1; continue }
   const pyOut = join(work, 'py.json')
+  rmSync(pyOut, { force: true })
   const pyFile = join(work, 'run.py')
-  writeFileSync(pyFile, py + '\n' + PY_DUMP)
-  const pr = spawnSync('python', [pyFile], { cwd: work, encoding: 'utf8', timeout: 20000, env: { ...process.env, ORACLE_OUT: pyOut, MPLBACKEND: 'Agg' } })
+  writeFileSync(pyFile, PY_RAND_PATCH + '\n' + py + '\n' + PY_DUMP)
+  const pr = spawnSync('python', [pyFile], { cwd: work, encoding: 'utf8', timeout: 30000, env: { ...process.env, ORACLE_OUT: pyOut, MPLBACKEND: 'Agg' } })
   if (pr.status !== 0 || !existsSync(pyOut)) { buckets['PY_CRASH (converter)'] = (buckets['PY_CRASH (converter)'] || 0) + 1; continue }
 
   const o = JSON.parse(readFileSync(octOut, 'utf8')) as Record<string, unknown>
@@ -152,9 +304,23 @@ for (const inp of inputs) {
   if (shared.length === 0) { buckets['INCONCLUSIVE (no shared vars)'] = (buckets['INCONCLUSIVE (no shared vars)'] || 0) + 1; continue }
 
   compared++
-  const bad = shared.filter(k => !closeEnough(flat(p[k]), flat(o[k])))
-  if (bad.length === 0) { match++; buckets['MATCH ✅'] = (buckets['MATCH ✅'] || 0) + 1 }
-  else { buckets['MISMATCH ☠ (SILENT-WRONG)'] = (buckets['MISMATCH ☠ (SILENT-WRONG)'] || 0) + 1; mismatches.push(`${inp.name}  vars: ${bad.join(', ')}`) }
+  const bad: string[] = []
+  let sawContract = false
+  for (const k of shared) {
+    const pv = flat(p[k])
+    const ov = flat(o[k])
+    if (closeEnough(pv, ov)) continue
+    if (isIndexContract(pv, ov)) { sawContract = true; contractVars.push(`${inp.name}:${k}`); continue }
+    bad.push(k)
+  }
+  if (bad.length === 0) {
+    match++
+    const label = sawContract ? 'MATCH ✅ (incl. 0-based index contract)' : 'MATCH ✅'
+    buckets[label] = (buckets[label] || 0) + 1
+  } else {
+    buckets['MISMATCH ☠ (SILENT-WRONG)'] = (buckets['MISMATCH ☠ (SILENT-WRONG)'] || 0) + 1
+    mismatches.push(`${inp.name}  vars: ${bad.join(', ')}`)
+  }
 }
 rmSync(work, { recursive: true, force: true })
 
@@ -164,7 +330,10 @@ for (const [b, n] of Object.entries(buckets).sort((a, c) => c[1] - a[1])) lines.
 lines.push(`\nNumerically comparable: ${compared}`)
 lines.push(`  MATCH (correct):        ${match} (${compared ? ((100 * match) / compared).toFixed(1) : '0'}%)`)
 lines.push(`  MISMATCH (SILENT-WRONG): ${compared - match} (${compared ? ((100 * (compared - match)) / compared).toFixed(1) : '0'}%)  <-- the number we couldn't measure before`)
+if (contractVars.length) lines.push(`\n0-based index-contract vars verified (uniform -1): ${contractVars.length}\n  ${contractVars.slice(0, 20).join('\n  ')}`)
 if (mismatches.length) { lines.push(`\n--- silent-wrong files ---`); for (const m of mismatches.slice(0, 40)) lines.push('  ' + m) }
+const octErrTop = Object.entries(octErrCauses).sort((a, b) => b[1] - a[1]).slice(0, 10)
+if (octErrTop.length) { lines.push(`\n--- OCTAVE_ERR causes (top) ---`); for (const [c, n] of octErrTop) lines.push(`  ${String(n).padStart(3)}  ${c}`) }
 const out = lines.join('\n')
 console.log(out)
 writeFileSync(join(root, 'scripts', 'corpus', 'output', 'oracle_report.txt'), out)
