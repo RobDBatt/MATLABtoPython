@@ -109,6 +109,12 @@ export function transform(
     // converts `.*` → `*`, or the two would become indistinguishable.
     if (shapeTable) {
       content = rewriteMatrixMultiply(content, shapeTable, imports, lineFlags, line)
+      // Scalar transpose is a no-op in MATLAB (`w'` where w is a scalar), but
+      // the stage-0 quote resolver emits `w.T` — and Python floats have no
+      // `.T`. Drop the transpose on known-scalar names.
+      content = content.replace(/\b([A-Za-z_]\w*)\.T\b/g, (m, name) =>
+        shapeTable.get(name) === 'scalar' ? name : m,
+      )
     }
 
     // 1. Control flow transformations
@@ -413,6 +419,9 @@ function preTransform(
 
   // (assert() is handled by the existing statement rewriter in postTransform —
   // it also formats trailing args as `msg % (a,)`.)
+
+  // Bare `pause` (wait for keypress) — interactive; no batch equivalent.
+  result = result.replace(/^(\s*)pause\s*;?\s*$/, '$1# pause — interactive wait-for-keypress skipped')
 
   // Input-validation statements with no Python equivalent → commented no-op.
   if (/^\s*(narginchk|nargoutchk|validateattributes)\s*\(/.test(result)) {
@@ -722,6 +731,19 @@ function preTransform(
 
   // 1B. Function handle removal: @func → func (after anonymous functions handled)
   result = result.replace(/(?<!\w)@(\w+)/g, '$1')
+
+  // No-paren invocation of zero-arg RNG builtins: MATLAB `w = randn;` CALLS
+  // randn — leaving the bare name emits a Python NameError. Convert the safe
+  // observed set to explicit calls. Guards: lines containing quotes are left
+  // alone (no prose corruption); `rand = ...` (user variable) is an assignment
+  // TARGET, not a call. (A stripped `@randn` handle also lands here; the call
+  // form is still the closer conversion for the dominant case.)
+  if (!/['"]/.test(result)) {
+    result = result.replace(/(^|[^.\w])(rand|randn)\b(?!\s*[(=])/g, (m, pre, name) => {
+      imports.add('numpy')
+      return `${pre}np.random.${name}()`
+    })
+  }
 
   // 4C. Struct creation: struct('key', val, 'key2', val2) → {'key': val, 'key2': val2}
   // Uses balanced paren matching to handle nested function calls like ci_boot(1)

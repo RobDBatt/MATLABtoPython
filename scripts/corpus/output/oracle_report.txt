@@ -1,10 +1,12 @@
 
 === OCTAVE NUMERIC ORACLE — 176 inputs ===
- 139  OCTAVE_ERR (env/incompat)
+ 124  OCTAVE_ERR (env/incompat)
   20  MATCH ✅
-  12  INCONCLUSIVE (no shared vars)
-   3  PY_CRASH (converter)
+  17  PY_CRASH (converter)
+  13  INCONCLUSIVE (no shared vars)
    2  MATCH ✅ (incl. 0-based index contract)
+
+Multi-file bundles: 17 inputs pulled 82 sibling function files
 
 Numerically comparable: 22
   MATCH (correct):        22 (100.0%)
@@ -14,14 +16,45 @@ Numerically comparable: 22
   vc/03_sum_max:ix
   vc/20_findpeaks_values:locs
 
+--- PY_CRASH files ---
+  PRMLT\demo\ch01\info_demo.m  ValueError: too many values to unpack (expected 3)
+  PRMLT\demo\ch06\knCenter_demo.m  TypeError: knCenter() missing 1 required positional argument: 'X2'
+  PRMLT\demo\ch06\knReg_demo.m  TypeError: knCenter() missing 2 required positional arguments: 'X1' and 'X2'
+  PRMLT\demo\ch07\rvmRegEm_demo.m  TypeError: rvmRegEm() missing 2 required positional arguments: 'alpha' and 'beta'
+  PRMLT\demo\ch07\rvmRegEm_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch07\rvmRegFp_demo.m  TypeError: rvmRegFp() missing 2 required positional arguments: 'alpha' and 'beta'
+  PRMLT\demo\ch07\rvmRegFp_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch07\rvmRegSeq_demo.m  ValueError: not enough values to unpack (expected 2, got 1)
+  PRMLT\demo\ch07\rvmRegSeq_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch10\rvmRegVb_demo.m  TypeError: linRegVb() missing 1 required positional argument: 'prior'
+  PRMLT\demo\ch10\rvmRegVb_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch11\gauss_demo.m  numpy.exceptions.AxisError: axis 2 is out of bounds for array of dimension 2
+  probabilistic_matlab\example_inference_calls\run_branching.m  SyntaxError: invalid syntax
+  ypea\src\ypea\doc\doc_publish_all.m  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
+  ypea\src\ypea\doc\doc_ypea_problem.m  NameError: name 'ypea_problem' is not defined
+  ypea\src\ypea\doc\doc_ypea_var.m  NameError: name 'which' is not defined
+  ypea\src\ypea\doc\publish_all.m  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
+
+--- PY_CRASH causes (top) ---
+    4  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+    2  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
+    1  ValueError: too many values to unpack (expected 3)
+    1  TypeError: knCenter() missing 1 required positional argument: 'X2'
+    1  TypeError: knCenter() missing 2 required positional arguments: 'X1' and 'X2'
+    1  TypeError: rvmRegEm() missing 2 required positional arguments: 'alpha' and 'beta'
+    1  TypeError: rvmRegFp() missing 2 required positional arguments: 'alpha' and 'beta'
+    1  ValueError: not enough values to unpack (expected 2, got 1)
+    1  TypeError: linRegVb() missing 1 required positional argument: 'prior'
+    1  numpy.exceptions.AxisError: axis 2 is out of bounds for array of dimension 2
+
 --- OCTAVE_ERR causes (top) ---
-   15  error: syntax error near line 4, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
-   14  error: syntax error near line 3, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
-   14  error: 'ypea_problem' undefined near line 15, column 11
-    4  error: 'linRnd' undefined near line 7, column 9
-    4  error: 'kmeansRnd' undefined near line 8, column 9
-    4  error: 'unitize' undefined near line 18, column 5
-    4  error: 'randinit' undefined near line 9, column 1
-    3  error: 'ppcaRnd' undefined near line 10, column 5
-    2  error: 'mixBernRnd' undefined near line 8, column 12
-    2  error: syntax error near line 113, column 8 in file C:\Users\Rober\AppData\Local\Temp\orac
+   20  error: 'histcounts' undefined near line 12, column 11
+   15  error: syntax error near line 5, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
+   14  error: syntax error near line 4, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracle
+   14  error: external methods are only allowed in @-folders near line 339, column 24 in file C:\
+    9  error: 'RandStream' undefined near line 47, column 14
+    8  error: randg: insufficient arguments
+    4  timeout
+    2  error: transpose not defined for N-D objects
+    2  error: syntax error near line 114, column 8 in file C:\Users\Rober\AppData\Local\Temp\orac
+    2  error: syntax error near line 74, column 8 in file C:\Users\Rober\AppData\Local\Temp\oracl
