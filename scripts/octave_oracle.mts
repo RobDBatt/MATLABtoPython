@@ -23,11 +23,12 @@
  *   OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts
  *   CORPUS_SAMPLE=150 npx tsx scripts/octave_oracle.mts   # also sample corpus scripts
  */
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { spawnSync } from 'node:child_process'
 import { convert } from '../src/lib/converter/index'
+import { convertBundle } from '../src/lib/converter/bundle'
 
 const OCTAVE = process.env.OCTAVE_BIN || 'octave'
 const root = process.cwd()
@@ -127,6 +128,10 @@ end`,
     if numel(varargin{1}) == 2; m = varargin{1}(1); n = varargin{1}(2);
     else; m = varargin{1}; n = varargin{1}; end
   else; m = varargin{1}; n = varargin{2}; end
+end`,
+  'fields.m': `function f = fields(s)
+  % MATLAB alias for fieldnames() that Octave lacks - exact shim
+  f = fieldnames(s);
 end`,
   'rng.m': `function rng(varargin)
   global __lcg_state
@@ -229,7 +234,7 @@ function isIndexContract(py: number[], oct: number[]): boolean {
   return true
 }
 
-interface Input { name: string; src: string }
+interface Input { name: string; src: string; repoRoot?: string }
 function collectInputs(): Input[] {
   const out: Input[] = []
   const vcDir = join(root, 'tests', 'verification-corpus')
@@ -249,11 +254,50 @@ function collectInputs(): Input[] {
         try { return !isFunctionFile(readFileSync(join(root, 'scripts', 'corpus', 'repos', rel.replace(/\\/g, '/')), 'utf8')) } catch { return false }
       })
       for (const rel of scripts.slice(0, sample)) {
-        out.push({ name: rel, src: readFileSync(join(root, 'scripts', 'corpus', 'repos', rel.replace(/\\/g, '/')), 'utf8') })
+        const relFwd = rel.replace(/\\/g, '/')
+        const repo = relFwd.split('/')[0]
+        out.push({
+          name: rel,
+          src: readFileSync(join(root, 'scripts', 'corpus', 'repos', relFwd), 'utf8'),
+          repoRoot: join(root, 'scripts', 'corpus', 'repos', repo),
+        })
       }
     }
   }
   return out
+}
+
+// Per-repo index of FUNCTION files (basename → source) for multi-file
+// bundling — mirrors MATLAB's resolve-by-filename path lookup. Class folders
+// (@x) and package dirs (+x) are excluded (out of converter scope).
+const repoIndexCache = new Map<string, Map<string, string>>()
+function repoFunctionIndex(repoRoot: string): Map<string, string> {
+  const cached = repoIndexCache.get(repoRoot)
+  if (cached) return cached
+  const index = new Map<string, string>()
+  const walk = (dir: string) => {
+    let entries: string[]
+    try { entries = readdirSync(dir) } catch { return }
+    for (const e of entries) {
+      if (e.startsWith('.') || e.startsWith('@') || e.startsWith('+')) continue
+      const p = join(dir, e)
+      let st
+      try { st = statSync(p) } catch { continue }
+      if (st.isDirectory()) walk(p)
+      else if (e.endsWith('.m')) {
+        try {
+          const src = readFileSync(p, 'utf8')
+          if (isFunctionFile(src)) {
+            const base = e.slice(0, -2)
+            if (!index.has(base)) index.set(base, src) // first hit wins (like path order)
+          }
+        } catch { /* unreadable — skip */ }
+      }
+    }
+  }
+  walk(repoRoot)
+  repoIndexCache.set(repoRoot, index)
+  return index
 }
 
 const work = mkdtempSync(join(tmpdir(), 'oracle-'))
@@ -268,16 +312,23 @@ const buckets: Record<string, number> = {}
 const mismatches: string[] = []
 const contractVars: string[] = []
 const octErrCauses: Record<string, number> = {}
+const pyCrashCauses: Record<string, number> = {}
+const pyCrashFiles: string[] = []
 let compared = 0, match = 0
+let bundledInputs = 0, bundledDeps = 0
 
 for (const inp of inputs) {
   if (isFunctionFile(inp.src)) { buckets['SKIP (function file)'] = (buckets['SKIP (function file)'] || 0) + 1; continue }
 
-  // Octave
+  // Octave — repo scripts get their repo on the path so sibling function
+  // files resolve natively (cwd stubs still take precedence for the RNG).
   const octOut = join(work, 'oct.json')
   rmSync(octOut, { force: true })
   const mFile = join(work, 'run.m')
-  writeFileSync(mFile, OCT_PROLOGUE + inp.src + '\n' + OCT_DUMP)
+  const pathLine = inp.repoRoot
+    ? `addpath(genpath('${inp.repoRoot.replace(/\\/g, '/')}'));\n`
+    : ''
+  writeFileSync(mFile, OCT_PROLOGUE + pathLine + inp.src + '\n' + OCT_DUMP)
   const oct = spawnSync(OCTAVE, ['--no-gui', '--norc', '--quiet', mFile], {
     cwd: work, encoding: 'utf8', timeout: 30000, env: { ...process.env, ORACLE_OUT: octOut },
   })
@@ -288,15 +339,33 @@ for (const inp of inputs) {
     continue
   }
 
-  // Python (converted)
+  // Python (converted) — repo scripts convert as a BUNDLE: the entry plus its
+  // dependency closure over sibling function files, in one self-contained file.
   let py: string
-  try { py = convert(inp.src).python } catch { buckets['convert() threw'] = (buckets['convert() threw'] || 0) + 1; continue }
+  try {
+    if (inp.repoRoot) {
+      const bundle = convertBundle(inp.src, repoFunctionIndex(inp.repoRoot))
+      py = bundle.python
+      if (bundle.included.length > 0) bundledDeps += bundle.included.length, bundledInputs++
+    } else {
+      py = convert(inp.src).python
+    }
+  } catch { buckets['convert() threw'] = (buckets['convert() threw'] || 0) + 1; continue }
   const pyOut = join(work, 'py.json')
   rmSync(pyOut, { force: true })
   const pyFile = join(work, 'run.py')
   writeFileSync(pyFile, PY_RAND_PATCH + '\n' + py + '\n' + PY_DUMP)
-  const pr = spawnSync('python', [pyFile], { cwd: work, encoding: 'utf8', timeout: 30000, env: { ...process.env, ORACLE_OUT: pyOut, MPLBACKEND: 'Agg' } })
-  if (pr.status !== 0 || !existsSync(pyOut)) { buckets['PY_CRASH (converter)'] = (buckets['PY_CRASH (converter)'] || 0) + 1; continue }
+  // PYTHONPATH gains the vendored compat package so conversions that emit
+  // `from matlabtopython_compat import ...` can resolve it.
+  const compatSrc = join(root, 'packages', 'matlabtopython-compat', 'src')
+  const pr = spawnSync('python', [pyFile], { cwd: work, encoding: 'utf8', timeout: 30000, env: { ...process.env, ORACLE_OUT: pyOut, MPLBACKEND: 'Agg', PYTHONPATH: compatSrc } })
+  if (pr.status !== 0 || !existsSync(pyOut)) {
+    buckets['PY_CRASH (converter)'] = (buckets['PY_CRASH (converter)'] || 0) + 1
+    const errLine = (pr.stderr || '').split('\n').reverse().find(l => /Error|Exception/.test(l))?.trim().slice(0, 90) || (pr.status === null ? 'timeout' : 'unknown')
+    pyCrashCauses[errLine] = (pyCrashCauses[errLine] || 0) + 1
+    pyCrashFiles.push(`${inp.name}  ${errLine}`)
+    continue
+  }
 
   const o = JSON.parse(readFileSync(octOut, 'utf8')) as Record<string, unknown>
   const p = JSON.parse(readFileSync(pyOut, 'utf8')) as Record<string, unknown>
@@ -327,11 +396,16 @@ rmSync(work, { recursive: true, force: true })
 const lines: string[] = []
 lines.push(`\n=== OCTAVE NUMERIC ORACLE — ${inputs.length} inputs ===`)
 for (const [b, n] of Object.entries(buckets).sort((a, c) => c[1] - a[1])) lines.push(`${String(n).padStart(4)}  ${b}`)
+if (bundledInputs) lines.push(`\nMulti-file bundles: ${bundledInputs} inputs pulled ${bundledDeps} sibling function files`)
 lines.push(`\nNumerically comparable: ${compared}`)
 lines.push(`  MATCH (correct):        ${match} (${compared ? ((100 * match) / compared).toFixed(1) : '0'}%)`)
 lines.push(`  MISMATCH (SILENT-WRONG): ${compared - match} (${compared ? ((100 * (compared - match)) / compared).toFixed(1) : '0'}%)  <-- the number we couldn't measure before`)
 if (contractVars.length) lines.push(`\n0-based index-contract vars verified (uniform -1): ${contractVars.length}\n  ${contractVars.slice(0, 20).join('\n  ')}`)
 if (mismatches.length) { lines.push(`\n--- silent-wrong files ---`); for (const m of mismatches.slice(0, 40)) lines.push('  ' + m) }
+if (pyCrashFiles.length) { lines.push(`\n--- PY_CRASH files ---`); for (const f of pyCrashFiles.slice(0, 25)) lines.push('  ' + f) }
+const pyCrashTop = Object.entries(pyCrashCauses).sort((a, b) => b[1] - a[1]).slice(0, 10)
+if (pyCrashTop.length) { lines.push(`
+--- PY_CRASH causes (top) ---`); for (const [c, n] of pyCrashTop) lines.push(`  ${String(n).padStart(3)}  ${c}`) }
 const octErrTop = Object.entries(octErrCauses).sort((a, b) => b[1] - a[1]).slice(0, 10)
 if (octErrTop.length) { lines.push(`\n--- OCTAVE_ERR causes (top) ---`); for (const [c, n] of octErrTop) lines.push(`  ${String(n).padStart(3)}  ${c}`) }
 const out = lines.join('\n')

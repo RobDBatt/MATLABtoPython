@@ -22,7 +22,18 @@ import { TOOLBOX_MAP } from './registry/toolboxes'
  * No randomness, no API calls, no side effects.
  * 100% deterministic, runs entirely on the server.
  */
-export function convert(matlabCode: string): ConversionResult {
+export interface ConvertOptions {
+  /**
+   * Names of USER functions defined in sibling files of the same project
+   * (multi-file conversion). These are treated as known function calls —
+   * never registry-mapped (`smooth.m` in the repo beats the Curve Fitting
+   * mapping, matching MATLAB's path precedence) and never bracket-indexed
+   * by Stage 4.
+   */
+  externalFunctions?: string[]
+}
+
+export function convert(matlabCode: string, options?: ConvertOptions): ConversionResult {
   const start = performance.now()
 
   // Stage 0: Resolve MATLAB's `'` ambiguity. The string extractor replaces
@@ -39,6 +50,11 @@ export function convert(matlabCode: string): ConversionResult {
   // Build symbol table (variables vs functions) from the raw tokenized form
   // so that every `A(i)` disambiguation downstream uses the same facts.
   const symbols = buildSymbolTable(tokenized)
+
+  // Sibling-file user functions (multi-file conversion): known calls, exactly
+  // like local functions — Stage 4 must not bracket-index them.
+  const externals = new Set(options?.externalFunctions ?? [])
+  for (const f of externals) symbols.functions.add(f)
 
   // Build shape table (scalar vs matrix) for the * → @ rewrite in Stage 3.
   const shapeTable = buildShapeTable(tokenized)
@@ -83,6 +99,9 @@ export function convert(matlabCode: string): ConversionResult {
       (v) => FUNCTION_MAP[v] || TOOLBOX_MAP[v] || SPECIAL_REWRITE_NAMES.has(v),
     ),
   )
+  // A sibling-file user function also shadows any registry mapping of the
+  // same name — MATLAB path precedence puts project files first.
+  for (const f of externals) shadowed.add(f)
 
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)
   const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable, shadowed, symbols.variables)

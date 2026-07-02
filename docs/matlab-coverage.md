@@ -164,8 +164,17 @@ comparable inputs** — curated set 20/20 MATCH, corpus sample 22/22 MATCH.
   (`vc/03:ix`, `vc/20:locs`) — previously misreported as silent-wrong.
 - Headless-graphics calls are stubbed on the Octave side; remaining OCTAVE_ERRs
   are bucketed by their `error:` line in the report. The dominant residual
-  causes are repo-local library calls (multi-file deps a single-file oracle
-  can't resolve) and MATLAB-only syntax Octave rejects — both environmental.
+  causes are MATLAB-only builtins Octave lacks (`histcounts`, `RandStream`) and
+  MATLAB-only syntax Octave rejects — both environmental.
+- **Multi-file conversion (bundles):** corpus scripts convert together with
+  their sibling-function dependency closure (`src/lib/converter/bundle.ts` —
+  `convertBundle(entry, files)` resolves calls by filename like the MATLAB
+  path, shadows registry mappings with project files, and emits one
+  self-contained Python file with a merged import block). The oracle runs
+  Octave with `addpath(genpath(repo))` and Python on the bundle: 17 corpus
+  inputs pull 80 sibling function files. PY_CRASH causes/files are bucketed in
+  the report — those are the newly-VISIBLE converter frontier (previously
+  hidden behind NameErrors).
 
 Roughly **half the gaps are 🟢/🟡** (registry or localized transform — `rem`,
 `reshape order`, command syntax, cell-splat, arg-reorder, name-value pairs). A few

@@ -228,6 +228,12 @@ export function buildShapeTable(lines: LogicalLine[]): Map<string, ShapeClass> {
       continue
     }
 
+    // 2b. Bare no-paren RNG call: `w = randn;` is a scalar draw in MATLAB.
+    if (/^(rand|randn)\s*;?\s*$/.test(rhs)) {
+      record(varName, 'scalar')
+      continue
+    }
+
     // 3. Boolean literal
     if (rhs === 'true' || rhs === 'false') {
       record(varName, 'scalar')
