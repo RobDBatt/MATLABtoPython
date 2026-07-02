@@ -41,7 +41,9 @@ jobs:
           octave --version | head -1
       - name: Install Python deps (same interpreter the oracle spawns)
         run: python -m pip install --quiet numpy scipy matplotlib
-      - run: npm ci
+      # `npm install`, not `npm ci` — the committed lockfile trips npm ci's
+      # strict @emnapi check (same workaround as converter-gate.yml).
+      - run: npm install --no-audit --no-fund
       - name: Run the numeric oracle
         run: OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts
       - name: Upload report
