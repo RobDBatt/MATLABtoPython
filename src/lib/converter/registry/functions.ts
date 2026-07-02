@@ -100,16 +100,20 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   mod:     { python: 'np.mod',            args: 'passthrough', imports: ['numpy'] },
   rem:     { python: 'np.fmod',           args: 'passthrough', imports: ['numpy'] }, // sign of dividend (MATLAB rem), unlike np.remainder
   sign:    { python: 'np.sign',           args: 'passthrough', imports: ['numpy'] },
-  max:     { python: 'np.max',            args: 'passthrough', imports: ['numpy'] },
-  min:     { python: 'np.min',            args: 'passthrough', imports: ['numpy'] },
-  sum:     { python: 'np.sum',            args: 'passthrough', imports: ['numpy'] },
-  any:     { python: 'np.any',            args: 'passthrough', imports: ['numpy'] },
-  all:     { python: 'np.all',            args: 'passthrough', imports: ['numpy'] },
-  prod:    { python: 'np.prod',           args: 'passthrough', imports: ['numpy'] },
-  cumsum:  { python: 'np.cumsum',         args: 'passthrough', imports: ['numpy'] },
-  cumprod: { python: 'np.cumprod',        args: 'passthrough', imports: ['numpy'] },
-  mean:    { python: 'np.mean',           args: 'passthrough', imports: ['numpy'] },
-  median:  { python: 'np.median',         args: 'passthrough', imports: ['numpy'] },
+  // Reductions route through rewriteReductionDim: the MATLAB dim arg becomes
+  // a keyword axis (dim 2 → axis=-1, correct for both de-2-D'd row vectors
+  // and genuine 2-D); plain `np.mean(X, 2)` was axis=2 — an AxisError on 2-D
+  // and SILENT-WRONG on 3-D.
+  max:     { python: 'np.max',            args: 'custom', imports: ['numpy'] },
+  min:     { python: 'np.min',            args: 'custom', imports: ['numpy'] },
+  sum:     { python: 'np.sum',            args: 'custom', imports: ['numpy'] },
+  any:     { python: 'np.any',            args: 'custom', imports: ['numpy'] },
+  all:     { python: 'np.all',            args: 'custom', imports: ['numpy'] },
+  prod:    { python: 'np.prod',           args: 'custom', imports: ['numpy'] },
+  cumsum:  { python: 'np.cumsum',         args: 'custom', imports: ['numpy'] },
+  cumprod: { python: 'np.cumprod',        args: 'custom', imports: ['numpy'] },
+  mean:    { python: 'np.mean',           args: 'custom', imports: ['numpy'] },
+  median:  { python: 'np.median',         args: 'custom', imports: ['numpy'] },
   std: { python: 'np.std', args: 'custom', imports: ['numpy'] },
   var: { python: 'np.var', args: 'custom', imports: ['numpy'] },
   cross: { python: 'np.cross',           args: 'passthrough', imports: ['numpy'] },

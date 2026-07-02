@@ -1423,7 +1423,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 2237: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 2247: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1848,7 +1848,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_ft5ixbinfh.py, line 300",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_c07bg6ycgzw.py, line 30",
     "snippet": "",
     "flagCount": 25,
     "flags": [
@@ -3251,8 +3251,8 @@
   },
   {
     "rel": "lightspeed\\mexcompiler.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_tc5brvqn3e.py:38: SyntaxWarning: \"\\P\" is an invalid e",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -5893,13 +5893,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegEm_spSignal_demo.m",
@@ -5919,13 +5914,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegFp_spSignal_demo.m",
@@ -5945,13 +5935,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegSeq_spSignal_demo.m",
@@ -6121,13 +6106,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch10\\rvmRegVb_spSignal_demo.m",
@@ -8494,7 +8474,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_xrcedcwa3cn.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_2a0af3rzciq.py, line 365)",
     "snippet": "",
     "flagCount": 62,
     "flags": [
@@ -8732,11 +8712,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 825: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 829: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 828: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -8744,7 +8720,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 843: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 835: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 846: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -12455,7 +12435,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_v8ceutnuo7.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_xnco4c2x4z.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -12489,7 +12469,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 525: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 526: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -13954,7 +13934,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_93i3n2tr1za.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_qkumpjer09n.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -14145,7 +14125,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 466: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 467: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -14193,7 +14173,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_wdibhk0zobk.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_d5r92wdqgyq.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -14223,14 +14203,14 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 477: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 478: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_v4z7izc1j9o.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_f5y16sl26je.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -14264,7 +14244,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 533: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 534: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },

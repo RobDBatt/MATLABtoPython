@@ -423,6 +423,19 @@ function preTransform(
   // Bare `pause` (wait for keypress) — interactive; no batch equivalent.
   result = result.replace(/^(\s*)pause\s*;?\s*$/, '$1# pause — interactive wait-for-keypress skipped')
 
+  // Two-output size: `[d, n] = size(X)`. Emitted via np.atleast_2d so row
+  // vectors the converter deliberately de-2-D'd (`rand(1,n)` → 1-D) still
+  // unpack as MATLAB's (1, n) instead of raising "not enough values to
+  // unpack" — no-op for genuine 2-D arrays.
+  result = result.replace(
+    /^(\s*)\[\s*([\w~]+)\s*,\s*([\w~]+)\s*\]\s*=\s*size\s*\(([^()]+)\)\s*;?\s*$/,
+    (_m, ind, a, b, arg) => {
+      imports.add('numpy')
+      const lhs = [a, b].map(v => (v === '~' ? '_' : v)).join(', ')
+      return `${ind}${lhs} = np.atleast_2d(${arg.trim()}).shape`
+    },
+  )
+
   // Input-validation statements with no Python equivalent → commented no-op.
   if (/^\s*(narginchk|nargoutchk|validateattributes)\s*\(/.test(result)) {
     result = `# ${result.trim()} — MATLAB input validation; no direct Python equivalent`
@@ -2488,6 +2501,10 @@ function transformFunctions(
             // timestamp, so plain subtraction is the equivalent.
             return a.length === 2 ? `(${a[0]} - ${a[1]})` : full
           })
+        } else if (REDUCTION_DIM_FNS.has(matlabName)) {
+          result = replaceFunctionCalls(result, matlabName, (full, args) =>
+            rewriteReductionDim(matlabName, full, args),
+          )
         } else if (DIST_FN.test(matlabName)) {
           result = replaceFunctionCalls(result, matlabName, (full, args) =>
             rewriteDistributionFn(matlabName, full, args),
@@ -2636,6 +2653,49 @@ function rewriteRegexprep(rawArgs: string): string {
 }
 
 // ── bsxfun / isa / cellfun rewriters (coverage-audit batch) ──
+
+// ── Reduction dim→axis rewriter ───────────────────────────
+
+/** Reductions whose MATLAB dim arg must become a numpy axis keyword. */
+const REDUCTION_DIM_FNS = new Set([
+  'max', 'min', 'sum', 'any', 'all', 'prod', 'cumsum', 'cumprod', 'mean', 'median',
+])
+
+/** MATLAB dim → numpy axis. dim 2 emits axis=-1: identical to axis=1 on a
+ *  genuine 2-D array, and still correct on the 1-D arrays the converter
+ *  deliberately produces for row vectors (`rand(1,n)` de-2-D). */
+function dimToAxis(dim: string): string {
+  const t = dim.trim()
+  if (t === '2') return '-1'
+  if (/^\d+$/.test(t)) return String(Number(t) - 1)
+  return `${t} - 1`
+}
+
+/**
+ * mean/sum/... (X)          → np.mean(X)
+ * mean/sum/... (X, dim)     → np.mean(X, axis=dim-1)   (dim 2 → axis=-1)
+ * max/min      (X, [], dim) → np.max(X, axis=dim-1)    (the along-dim form)
+ * max/min      (a, b)       → np.maximum(a, b)          (elementwise pair form)
+ * sum(X, 'all')             → np.sum(X)
+ */
+function rewriteReductionDim(matlabName: string, fullCall: string, rawArgs: string): string {
+  const py = `np.${matlabName}`
+  const a = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (a.length <= 1) return `${py}(${rawArgs})`
+  if ((matlabName === 'max' || matlabName === 'min') && a.length >= 2) {
+    if (a[1] === '[]' && a.length === 3) return `${py}(${a[0]}, axis=${dimToAxis(a[2])})`
+    if (a[1] !== '[]' && a.length === 2) {
+      // two-array elementwise form
+      return `np.${matlabName === 'max' ? 'maximum' : 'minimum'}(${a[0]}, ${a[1]})`
+    }
+    return fullCall // exotic arity — leave for the flag net
+  }
+  if (a.length === 2) {
+    if (/^['"]all['"]$/.test(a[1])) return `${py}(${a[0]})`
+    return `${py}(${a[0]}, axis=${dimToAxis(a[1])})`
+  }
+  return fullCall
+}
 
 // ── Probability distribution rewriter ────────────────────
 

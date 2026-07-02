@@ -77,6 +77,12 @@ export function cleanup(
     // Track function returns for return statement generation
     const returnsMatch = content.match(/^def\s+\w+\([^)]*\):\s*#\s*returns\s+(.+)$/)
     if (returnsMatch) {
+      // A new def while a return is still pending means the previous function
+      // had NO closing `end` (legal in MATLAB function files) — flush its
+      // return before starting the new one.
+      if (currentFunctionReturns) {
+        outputLines.push('    '.repeat(currentFunctionIndent + 1) + `return ${currentFunctionReturns}`)
+      }
       currentFunctionReturns = returnsMatch[1].trim()
       currentFunctionIndent = line.indentLevel
       // Remove the returns comment from the def line, keep single colon
@@ -118,6 +124,14 @@ export function cleanup(
     content = cleanupSyntax(content, imports)
 
     outputLines.push(indent + content)
+  }
+
+  // A function file may omit its closing `end` entirely (legal MATLAB) — the
+  // block-close return emission never fires then, and callers unpacking
+  // `model, llh = f(...)` crash on the implicit None. Flush at EOF.
+  if (currentFunctionReturns) {
+    outputLines.push('    '.repeat(currentFunctionIndent + 1) + `return ${currentFunctionReturns}`)
+    currentFunctionReturns = null
   }
 
   // Remove trailing empty lines
