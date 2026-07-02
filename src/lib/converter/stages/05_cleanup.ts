@@ -453,6 +453,11 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     if (inner.includes(',') || inner.trim() === '' || inner.includes(':')) {
       return match
     }
+    // Skip Python comprehensions emitted by earlier passes
+    // (`[f(_x) for _x in c]`) — comma-joining their keywords destroys them.
+    if (/\bfor\b/.test(inner) && /\bin\b/.test(inner)) {
+      return match
+    }
     // Split on spaces that separate distinct elements
     // Elements can be simple values (1, x, 3.14) or expressions (M-1, N+1, x*2)
     // Strategy: split on whitespace that's preceded by a value-end and followed by a value-start
@@ -579,6 +584,7 @@ function wrapArithmeticListLiterals(source: string, imports: Set<string>): strin
       !hasQuote &&
       inner.trim() !== '' &&
       !hasTopLevelColon(inner) &&
+      !(/\bfor\b/.test(inner) && /\bin\b/.test(inner)) && // Python comprehension — already typed
       !isLHS &&
       (opAdjacent || topLevel)
 
@@ -656,6 +662,13 @@ function rewriteSpaceSeparatedElements(source: string): string {
     // outside of strings at top level — that's either np.arange territory
     // or already-converted Python slicing).
     if (hasTopLevelColon(inner)) {
+      out.push(source.slice(i, j + 1))
+      i = j + 1
+      continue
+    }
+    // Skip Python comprehensions emitted by earlier passes (`[f(_x) for _x
+    // in c]`) — comma-joining their keywords destroys them.
+    if (/\bfor\b/.test(inner) && /\bin\b/.test(inner)) {
       out.push(source.slice(i, j + 1))
       i = j + 1
       continue

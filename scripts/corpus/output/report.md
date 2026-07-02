@@ -1,23 +1,23 @@
 # Corpus Analysis Report
 
 Total files analyzed: **923**
-- **Clean** (py_compile passes, zero flags): **574** (62.2%)
-- PASS with flags (needs human review): 280 (30.3%)
+- **Clean** (py_compile passes, zero flags): **524** (56.8%)
+- PASS with flags (needs human review): 330 (35.8%)
 - py_compile fail: 69 (7.5%)
 - converter threw: 0 (0.0%)
 
 ## Top flagged files (highest review effort)
 
-- 44 flags — `lightspeed\install_lightspeed.m`
+- 50 flags — `lightspeed\install_lightspeed.m`
+- 26 flags — `spatialmath-matlab\SE2.m`
+- 25 flags — `spatialmath-matlab\UnitQuaternion.m`
 - 25 flags — `vbmc\shared\warpvars_vbmc.m`
+- 24 flags — `spatialmath-matlab\SE3.m`
+- 24 flags — `spatialmath-matlab\SO3.m`
+- 20 flags — `spatialmath-matlab\unit_test\SpatialTest.m`
 - 20 flags — `ypea\src\ypea\ypea_ba.m`
-- 17 flags — `ypea\src\ypea\ypea_ica.m`
-- 15 flags — `spatialmath-matlab\SE2.m`
-- 14 flags — `spatialmath-matlab\SE3.m`
-- 14 flags — `vbmc\gplite\private\fminfill.m`
-- 14 flags — `vbmc\utils\fminfill.m`
-- 14 flags — `ypea\src\ypea\ypea_de.m`
-- 13 flags — `spatialmath-matlab\SO3.m`
+- 18 flags — `spatialmath-matlab\Quaternion.m`
+- 18 flags — `spatialmath-matlab\SO2.m`
 
 ## Failure patterns (grouped by error signature)
 
@@ -44,7 +44,7 @@ Total files analyzed: **923**
 
 ### 4. SyntaxError: starred assignment target must be in a list or tuple  —  2 files
 
-- `probabilistic_matlab\generic_toolbox\process_final_samples.m`  `*rw_cell = deal(samples_array.flatten(order="F").relative_particle_weights)`
+- `probabilistic_matlab\generic_toolbox\process_final_samples.m`  `*rw_cell = samples_array.flatten(order="F").relative_particle_weights`
 - `ypea\src\ypea\ypea_version.m`  `*varargout = version`
 
 ### 5. SyntaxError: positional argument follows keyword argument  —  2 files
@@ -56,7 +56,7 @@ Total files analyzed: **923**
 
 - `export_fig\export_fig.m`
 
-### 7. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_m7h9rcl7wp9.py, line N  —  1 files
+### 7. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_zaeknx07ozl.py, line N  —  1 files
 
 - `export_fig\xkcdify.m`
 
@@ -68,11 +68,11 @@ Total files analyzed: **923**
 
 - `matlab2tikz\src\m2tInputParser.m`
 
-### 10. Sorry: IndentationError: unexpected indent (_check_fzkd12gzh1.py, line N)  —  1 files
+### 10. Sorry: IndentationError: unexpected indent (_check_nrzke0bcnfc.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 
-### 11. Sorry: IndentationError: unexpected indent (_check_bmxym43t1om.py, line N)  —  1 files
+### 11. Sorry: IndentationError: unexpected indent (_check_s9ilwe7zs5d.py, line N)  —  1 files
 
 - `vbmc\gplite\private\slicesamplebnd.m`
 
@@ -80,7 +80,7 @@ Total files analyzed: **923**
 
 - `vbmc\misc\setupoptions_vbmc.m`
 
-### 13. Sorry: IndentationError: unindent does not match any outer indentation level (_check_dwuobqnj0fd.py, line N)  —  1 files
+### 13. Sorry: IndentationError: unindent does not match any outer indentation level (_check_s96rpvkg9z.py, line N)  —  1 files
 
 - `vbmc\utils\evalbool.m`
 
@@ -88,11 +88,11 @@ Total files analyzed: **923**
 
 - `vbmc\utils\ibslike.m`
 
-### 15. Sorry: IndentationError: unexpected indent (_check_ijx08y37xvn.py, line N)  —  1 files
+### 15. Sorry: IndentationError: unexpected indent (_check_6hes1q0zmio.py, line N)  —  1 files
 
 - `vbmc\utils\slicesamplebnd.m`
 
-### 16. Sorry: IndentationError: unexpected indent (_check_k3lcobyn6zb.py, line N)  —  1 files
+### 16. Sorry: IndentationError: unexpected indent (_check_h4wwl3etew4.py, line N)  —  1 files
 
 - `vbmc\utils\slicesample_vbmc.m`
 

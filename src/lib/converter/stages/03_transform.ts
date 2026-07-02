@@ -248,6 +248,8 @@ const BSXFUN_OPS: Record<string, string> = {
   eq: '==', ne: '!=', lt: '<', le: '<=', gt: '>', ge: '>=',
   and: '&', or: '|',
   max: 'np.maximum', min: 'np.minimum',
+  xor: 'np.logical_xor', hypot: 'np.hypot', atan2: 'np.arctan2',
+  mod: 'np.mod', rem: 'np.fmod',
 }
 
 /**
@@ -280,6 +282,11 @@ function convertBsxfun(
     const b = argList[2]
     const py = BSXFUN_OPS[op]
     if (!py) {
+      // A bare function name is still convertible: bsxfun(@f, A, B) ≡ f(A, B)
+      // with numpy's native broadcasting. Only non-name forms get flagged.
+      if (/^[A-Za-z_]\w*$/.test(op)) {
+        return `${op}(${a}, ${b})`
+      }
       flags.push({
         type: 'WARNING',
         message: `bsxfun(@${op}, ...) has no automatic numpy broadcasting equivalent — replace with the appropriate elementwise operation`,
@@ -398,6 +405,65 @@ function preTransform(
   // (the general command-form handler below excludes `=` chars, missing `mex CFLAGS=...`)
   if (/^\s*mex\b/.test(result) || /^\s*make\b/.test(result)) {
     result = `# ❌ UNSUPPORTED: ${result.trim()} — MEX/C extension, out of scope for converter`
+  }
+
+  // ── Statement-form builtins (coverage-audit batch) ─────────────────────
+  // These are statements, not value expressions, so they're rewritten here
+  // (before the FUNCTION_MAP expression pass ever sees them).
+
+  // (assert() is handled by the existing statement rewriter in postTransform —
+  // it also formats trailing args as `msg % (a,)`.)
+
+  // Input-validation statements with no Python equivalent → commented no-op.
+  if (/^\s*(narginchk|nargoutchk|validateattributes)\s*\(/.test(result)) {
+    result = `# ${result.trim()} — MATLAB input validation; no direct Python equivalent`
+  }
+
+  // rethrow(err) inside a catch → bare re-raise.
+  result = result.replace(/^(\s*)rethrow\s*\([^)]*\)\s*;?\s*$/, '$1raise')
+
+  // deal(): [a, b] = deal(x, y) → a, b = x, y ;  [a, b] = deal(x) → a = b = x.
+  // (Runs on the raw MATLAB LHS form — the multi-return `[...] =` conversion
+  // happens later in this stage.)
+  {
+    const dm = result.match(/^(\s*)\[([^\]]+)\]\s*=\s*deal\s*\((.+)\)\s*;?\s*$/)
+    if (dm) {
+      const [, indent, lhsRaw, rhsRaw] = dm
+      const lhs = lhsRaw.split(/[,\s]+/).filter(Boolean).map(v => (v === '~' ? '_' : v))
+      const rhs = splitArgsRespectingStrings(rhsRaw).map(s => s.trim())
+      if (rhs.length === 1) result = `${indent}${lhs.join(' = ')} = ${rhs[0]}`
+      else if (rhs.length === lhs.length) result = `${indent}${lhs.join(', ')} = ${rhs.join(', ')}`
+      // arity mismatch — leave for the flag net
+    }
+  }
+
+  // MATLAB `print` (figure export) — statement position only, and rewritten
+  // BEFORE disp→print mapping so it can never touch converter-generated
+  // Python print() calls. `print('-dpng', 'file')` / `print(fig, '-dpng',
+  // 'f.png')` / command form `print -dpng file` → plt.savefig(file).
+  {
+    const parenForm = result.match(/^(\s*)print\s*\(([^)]*)\)\s*;?\s*$/)
+    const cmdForm = parenForm ? null : result.match(/^(\s*)print\s+([^=(].*?)\s*;?\s*$/)
+    if (parenForm || cmdForm) {
+      const indent = (parenForm ?? cmdForm)![1]
+      let fileArg: string | undefined
+      if (parenForm) {
+        // paren form: the filename is a QUOTED arg that isn't a -flag;
+        // bare identifiers here are figure handles, not filenames.
+        const parts = splitArgsRespectingStrings(parenForm[2]).map(s => s.trim())
+        fileArg = parts.find(p => /^['"]/.test(p) && !/^['"]-/.test(p))
+      } else {
+        // command form (`print -dpng file`): any token not starting with `-`.
+        const bare = cmdForm![2].trim().split(/\s+/).find(p => !p.startsWith('-'))
+        if (bare) fileArg = `'${bare}'`
+      }
+      if (fileArg) {
+        imports.add('matplotlib.pyplot')
+        result = `${indent}plt.savefig(${fileArg})`
+      } else {
+        result = `${indent}# ${result.trim()} — MATLAB figure export; use plt.savefig('name.png')`
+      }
+    }
   }
 
   // Remove MATLAB trailing commas in conditions: if x>0, → if x>0
@@ -2314,6 +2380,97 @@ function transformFunctions(
           result = replaceFunctionCalls(result, matlabName, (_, args) =>
             rewriteRegexprep(args),
           )
+        } else if (matlabName === 'isa') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteIsa(args),
+          )
+        } else if (matlabName === 'cellfun' || matlabName === 'arrayfun') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) =>
+            rewriteMapFun(matlabName, full, args),
+          )
+        } else if (matlabName === 'strncmp' || matlabName === 'strncmpi') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            if (a.length !== 3) return full
+            const lc = matlabName === 'strncmpi' ? '.lower()' : ''
+            return `(${a[0]}[:${a[2]}]${lc} == ${a[1]}[:${a[2]}]${lc})`
+          })
+        } else if (matlabName === 'circshift') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            // MATLAB circshift operates along the first dimension by default;
+            // np.roll FLATTENS by default, so axis is always explicit.
+            if (a.length === 2) return `np.roll(${a[0]}, ${a[1]}, axis=0)`
+            if (a.length === 3) {
+              const axis = /^\d+$/.test(a[2]) ? String(Number(a[2]) - 1) : `${a[2]} - 1`
+              return `np.roll(${a[0]}, ${a[1]}, axis=${axis})`
+            }
+            return full
+          })
+        } else if (matlabName === 'ndgrid') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            `np.meshgrid(${args}, indexing='ij')`,
+          )
+        } else if (matlabName === 'saveas') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            // saveas(fig, filename[, fmt]) — matplotlib saves the current
+            // figure, so the handle arg drops.
+            return a.length >= 2 ? `plt.savefig(${a[1]})` : full
+          })
+        } else if (matlabName === 'etime') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            // etime(t2, t1) = seconds from t1 to t2; clock() maps to a float
+            // timestamp, so plain subtraction is the equivalent.
+            return a.length === 2 ? `(${a[0]} - ${a[1]})` : full
+          })
+        } else if (matlabName === 'strjoin' || matlabName === 'join') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            // strjoin(c, delim) → delim.join(c); 1-arg default is a space.
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            if (a.length === 1) return `' '.join(${a[0]})`
+            if (a.length === 2) return `${a[1]}.join(${a[0]})`
+            return full
+          })
+        } else if (matlabName === 'erase') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            return a.length === 2 ? `${a[0]}.replace(${a[1]}, '')` : full
+          })
+        } else if (matlabName === 'nthroot') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            return a.length === 2 ? `np.power(${a[0]}, 1.0 / (${a[1]}))` : full
+          })
+        } else if (matlabName === 'regexpi') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            // regexpi(str, pat) → re.search(pat, str, re.IGNORECASE) —
+            // subject and pattern SWAP.
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            return a.length === 2 ? `re.search(${a[1]}, ${a[0]}, re.IGNORECASE)` : full
+          })
+        } else if (matlabName === 'permute') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            // permute(A, [2 1 3]) → np.transpose(A, (1, 0, 2)) — dims are a
+            // LITERAL 1-based vector or we don't guess.
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            if (a.length !== 2) return full
+            const dims = a[1].match(/^\[([\d\s,]+)\]$/)
+            if (!dims) return full
+            const axes = dims[1].split(/[\s,]+/).filter(Boolean).map(d => Number(d) - 1)
+            return `np.transpose(${a[0]}, (${axes.join(', ')}))`
+          })
+        } else if (matlabName === 'rmfield') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            // rmfield(s, f) returns a NEW struct without field f. Emitted as
+            // dict(generator) rather than a dict comprehension — the `{k: v}`
+            // colon would be mangled by the later range/brace passes.
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            return a.length === 2
+              ? `dict((_k, _v) for _k, _v in ${a[0]}.items() if _k != ${a[1]})`
+              : full
+          })
         } else {
           result = result.replace(pattern, `${mapping.python}(`)
         }
@@ -2366,6 +2523,61 @@ function rewriteRegexprep(rawArgs: string): string {
   // 4th+ args in MATLAB are option flags ('ignorecase', 'once', ...).
   if (rest.some(o => /ignorecase/i.test(o))) call += `, flags=re.IGNORECASE`
   return call + ')'
+}
+
+// ── bsxfun / isa / cellfun rewriters (coverage-audit batch) ──
+
+/** isa(x, 'classname') → isinstance with the MATLAB→Python type map. */
+const ISA_TYPES: Record<string, string> = {
+  double: 'float', single: 'float', float: '(float, int)',
+  char: 'str', string: 'str',
+  cell: 'list', struct: 'dict', logical: 'bool',
+  numeric: '(int, float, np.ndarray)',
+  int8: 'int', int16: 'int', int32: 'int', int64: 'int',
+  uint8: 'int', uint16: 'int', uint32: 'int', uint64: 'int',
+}
+
+function rewriteIsa(rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  if (args.length !== 2) return `isa(${rawArgs})`
+  const [obj, cls] = args
+  const m = cls.match(/^['"](\w+)['"]$/)
+  if (!m) return `isa(${rawArgs})` // non-literal class — flagged via registry
+  if (m[1] === 'function_handle') return `callable(${obj})`
+  const py = ISA_TYPES[m[1]]
+  if (!py) return `isa(${rawArgs})` // user class name — flagged via registry
+  return `isinstance(${obj}, ${py})`
+}
+
+/**
+ * cellfun(@f, c) → [f(_x) for _x in c]; arrayfun wraps in np.array.
+ * Handles: bare function name, 'name' string form, and the trailing
+ * `'UniformOutput', false` pair (same output shape either way here).
+ * Multi-array and lambda forms are left alone — the flag net's
+ * higher-order-function marker already annotates them.
+ */
+function rewriteMapFun(kind: string, fullCall: string, rawArgs: string): string {
+  const args = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  // MATLAB default UniformOutput=true returns an ARRAY; the explicit
+  // `'UniformOutput', false` pair returns a cell → Python list.
+  let uniformFalse = false
+  if (args.length >= 4 && /^['"]UniformOutput['"]$/i.test(args[args.length - 2])) {
+    uniformFalse = /^(false|0)$/i.test(args[args.length - 1].replace(/['"]/g, ''))
+    args.splice(args.length - 2, 2)
+  }
+  if (args.length !== 2) return fullCall
+  const [f, data] = args
+  const fname = f.replace(/^['"]|['"]$/g, '')
+  if (!/^[A-Za-z_][\w.]*$/.test(fname)) return fullCall // lambda / expr — flag net
+  // The inner name won't pass through the registry loop again, so resolve
+  // simple mappings here (`cellfun(@double, c)` must emit np.float64, not a
+  // NameError on `double`).
+  const mapped = FUNCTION_MAP[fname]
+  const pyName = mapped && mapped.args === 'passthrough' ? mapped.python : fname
+  // cellfun('isempty', c) — the classic string form.
+  const body = fname === 'isempty' ? `len(_x) == 0` : `${pyName}(_x)`
+  const comp = `[${body} for _x in ${data}]`
+  return uniformFalse ? comp : `np.array(${comp})`
 }
 
 // ── sortrows rewriter ─────────────────────────────────────

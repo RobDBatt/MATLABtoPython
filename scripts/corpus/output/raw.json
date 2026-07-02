@@ -114,11 +114,27 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
         "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
       }
     ]
   },
@@ -127,11 +143,19 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
         "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      },
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
       }
     ]
   },
@@ -183,6 +207,10 @@
         "message": "spline → interpolate.CubicSpline (Curve Fitting Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
         "type": "TOOLBOX",
         "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
@@ -201,10 +229,6 @@
       {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
-      },
-      {
-        "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
@@ -791,7 +815,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 9,
     "flags": [
       {
         "type": "WARNING",
@@ -802,16 +826,24 @@
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
       },
       {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 140: unterminated string literal — converter output may be corrupted"
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 159: unterminated string literal — converter output may be corrupted"
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 141: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 160: unterminated string literal — converter output may be corrupted"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 161: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -858,15 +890,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      }
+    ]
   },
   {
     "rel": "export_fig\\export_fig.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: expected ':'",
     "snippet": "",
-    "flagCount": 47,
+    "flagCount": 132,
     "flags": [
       {
         "type": "WARNING",
@@ -874,9 +911,117 @@
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
       },
       {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
@@ -917,8 +1062,8 @@
         "message": "imresize → transform.resize (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
-        "type": "TOOLBOX",
-        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TOOLBOX",
@@ -941,8 +1086,56 @@
         "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
         "type": "TOOLBOX",
         "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "TODO",
+        "message": "typecast reinterprets raw bytes — use ndarray.view(dtype) in NumPy."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -951,6 +1144,66 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TOOLBOX",
@@ -966,7 +1219,131 @@
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "datestr → datetime.strftime; MATLAB datenum/datestr formats need manual translation."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -1034,11 +1411,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 662: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 663: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 2235: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 2237: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1076,7 +1453,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Is this intended to be part of the string?",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 9,
     "flags": [
       {
         "type": "WARNING",
@@ -1088,7 +1465,23 @@
       },
       {
         "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "sscanf has no direct equivalent — use re groups or str.split() + float()."
+      },
+      {
+        "type": "WARNING",
         "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
       },
       {
         "type": "WARNING",
@@ -1113,7 +1506,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 7,
     "flags": [
       {
         "type": "TOOLBOX",
@@ -1126,6 +1519,10 @@
       {
         "type": "TOOLBOX",
         "message": "imwrite → io.imsave (Image Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
       },
       {
         "type": "TOOLBOX",
@@ -1146,8 +1543,60 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 14,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
       {
         "type": "TODO",
         "message": "Unmapped MATLAB function `arrayfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
@@ -1172,7 +1621,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 5,
     "flags": [
       {
         "type": "WARNING",
@@ -1181,6 +1630,18 @@
       {
         "type": "WARNING",
         "message": "varargout found — Python returns tuples, not output-arg variants. Always return all outputs and let callers ignore extras with `_`."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
       }
     ]
   },
@@ -1189,8 +1650,28 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 14,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -1202,6 +1683,26 @@
       {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "typecast reinterprets raw bytes — use ndarray.view(dtype) in NumPy."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TOOLBOX",
@@ -1214,8 +1715,76 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 20,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "textscan has no direct equivalent — use csv module, np.loadtxt, or manual parsing."
+      },
+      {
+        "type": "TODO",
+        "message": "textscan has no direct equivalent — use csv module, np.loadtxt, or manual parsing."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
       {
         "type": "WARNING",
         "message": "hTitles(end+1) grows the array; converted to np.append(hTitles, ...). In a hot or large loop this reallocates every pass — consider building a Python list with .append() and calling np.array() once at the end."
@@ -1256,24 +1825,100 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
       {
         "type": "WARNING",
         "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
       }
     ]
   },
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_m7h9rcl7wp9.py, line 30",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_zaeknx07ozl.py, line 30",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 23,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TOOLBOX",
@@ -1306,16 +1951,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\@mutable\\getfield.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\@mutable\\immutable.m",
@@ -1346,32 +2001,56 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\@mutable\\setfield.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\@mutable\\subsasgn.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\@mutable\\subsref.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\addflops.m",
@@ -1694,8 +2373,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
@@ -1707,11 +2398,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
       },
       {
         "type": "WARNING",
@@ -1744,8 +2443,69 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 15,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\graphics\\category_colors.m",
@@ -1933,7 +2693,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 22,
     "flags": [
       {
         "type": "WARNING",
@@ -1946,6 +2706,74 @@
       {
         "type": "WARNING",
         "message": "persistent variable — use class attribute or closure in Python"
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -2007,16 +2835,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\graphics\\set_linespec.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "lightspeed\\graphics\\test_draw.m",
@@ -2063,7 +2901,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 44,
+    "flagCount": 50,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -2074,8 +2912,76 @@
         "message": "MEX file call — C extension, out of scope"
       },
       {
+        "type": "TODO",
+        "message": "sscanf has no direct equivalent — use re groups or str.split() + float()."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
       },
       {
         "type": "UNSUPPORTED",
@@ -2146,8 +3052,8 @@
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
       },
       {
         "type": "UNSUPPORTED",
@@ -2166,52 +3072,8 @@
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
       },
       {
         "type": "UNSUPPORTED",
@@ -2376,11 +3238,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 5,
     "flags": [
       {
         "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
       },
       {
         "type": "TODO",
@@ -2780,7 +3650,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 65,
     "flags": [
       {
         "type": "TODO",
@@ -2791,12 +3661,104 @@
         "message": "Range at the top of an array literal ([1:10, a, b]) — Python list/np.array syntax does not allow a:b inside. Use np.concatenate([np.arange(1, 11), [a, b]]) or np.r_[1:11, a, b]."
       },
       {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
       },
       {
         "type": "TODO",
         "message": "Unconverted range (:) found — replace start:end with np.arange(start, end+1) or start:step:end with np.arange(start, end+1, step). For array slicing, use Python slice notation arr[start:end]."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -2812,11 +3774,139 @@
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `P` or `corners` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `` or `dataCell` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TODO",
@@ -2841,7 +3931,7 @@
       },
       {
         "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
       }
     ]
   },
@@ -2850,8 +3940,29 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 5,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "matlab2tikz\\src\\m2tcustom.m",
@@ -2933,8 +4044,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "matlab2tikz\\src\\private\\isVersionBelow.m",
@@ -3148,8 +4264,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\chapter04\\fda.m",
@@ -3832,8 +4953,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "histcounts → np.histogram returns (counts, edges); MATLAB returns counts first too, but bin defaults differ."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\chapter11\\Gauss.m",
@@ -4449,8 +5575,21 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "scatter3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.scatter(x, y, z)."
+      }
+    ]
   },
   {
     "rel": "PRMLT\\common\\plotCurveBar.m",
@@ -4518,28 +5657,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "bsxfun(@minux, ...) has no automatic numpy broadcasting equivalent — replace with the appropriate elementwise operation"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\common\\sub.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "INDEX",
         "message": "sub2ind indices shifted to 0-based — verify"
-      },
-      {
-        "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
@@ -5588,8 +6718,8 @@
     "rel": "probabilistic_matlab\\generic_toolbox\\process_final_samples.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: starred assignment target must be in a list or tuple",
-    "snippet": "*rw_cell = deal(samples_array.flatten(order=\"F\").relative_particle_weights)",
-    "flagCount": 4,
+    "snippet": "*rw_cell = samples_array.flatten(order=\"F\").relative_particle_weights",
+    "flagCount": 3,
     "flags": [
       {
         "type": "TODO",
@@ -5602,10 +6732,6 @@
       {
         "type": "WARNING",
         "message": "[r, c, v] = find(M) → np.where returns only (rows, cols). After this line, set weight_vals = M[i, j] to recover the values array."
-      },
-      {
-        "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
@@ -6299,8 +7425,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\experiments\\rcnn_exp_train_and_test.m",
@@ -6401,8 +7532,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "datestr → datetime.strftime; MATLAB datenum/datestr formats need manual translation."
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
@@ -6541,8 +7676,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "datestr → datetime.strftime; MATLAB datenum/datestr formats need manual translation."
+      }
+    ]
   },
   {
     "rel": "rcnn\\selective_search\\op_selective_search_boxes.m",
@@ -6587,11 +7727,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 3,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "MATLAB command-form pause/keyboard/dbstop — no Python equivalent; remove or use breakpoint()/input(). (The pause(n) call form converts to time.sleep(n).)"
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
       },
       {
         "type": "WARNING",
@@ -6654,8 +7798,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      },
+      {
+        "type": "WARNING",
+        "message": "system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\mkdir_if_missing.m",
@@ -6670,8 +7823,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\rcnn_test_softmax.m",
@@ -6694,8 +7852,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\seed_rand.m",
@@ -6784,16 +7947,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      }
+    ]
   },
   {
     "rel": "rcnn\\utils\\xVOChash_lookup.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      }
+    ]
   },
   {
     "rel": "rcnn\\vis\\fig_training_samples.m",
@@ -6837,11 +8010,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
       {
         "type": "TOOLBOX",
         "message": "imread → io.imread — MATLAB imread returns uint8 by default. skimage.io.imread returns uint8 too, but use img_as_float() if you need [0,1] range."
+      },
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
       },
       {
         "type": "TODO",
@@ -6939,8 +8120,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\angvec2tr.m",
@@ -6984,7 +8170,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 39,
     "flags": [
       {
         "type": "WARNING",
@@ -7001,6 +8187,126 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -7027,9 +8333,9 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_fzkd12gzh1.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_nrzke0bcnfc.py, line 365)",
     "snippet": "",
-    "flagCount": 19,
+    "flagCount": 62,
     "flags": [
       {
         "type": "WARNING",
@@ -7037,7 +8343,83 @@
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `q` or `diag` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -7046,6 +8428,10 @@
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `r` or `sin` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "WARNING",
@@ -7061,7 +8447,99 @@
       },
       {
         "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
         "message": "global variable — Python global scoping differs from MATLAB"
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
       },
       {
         "type": "WARNING",
@@ -7114,8 +8592,13 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\colnorm.m",
@@ -7138,8 +8621,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
       {
         "type": "TODO",
         "message": "surf — use mpl_toolkits.mplot3d for 3D surface plots"
@@ -7147,6 +8642,10 @@
       {
         "type": "TODO",
         "message": "surf — use mpl_toolkits.mplot3d for 3D surface plots"
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
       }
     ]
   },
@@ -7261,8 +8760,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\lift23.m",
@@ -7309,7 +8813,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 19,
+    "flagCount": 28,
     "flags": [
       {
         "type": "TODO",
@@ -7328,6 +8832,10 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TODO",
         "message": "MATLAB property accessor get.n → def get_n. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
@@ -7338,6 +8846,38 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor get.nc → def get_nc. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
       },
       {
         "type": "WARNING",
@@ -7394,16 +8934,26 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plotvol.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plot_arrow.m",
@@ -7418,23 +8968,37 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plot_circle.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plot_ellipse.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 11,
     "flags": [
       {
         "type": "TODO",
@@ -7471,6 +9035,14 @@
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `` or `centre` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
       }
     ]
   },
@@ -7479,8 +9051,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plot_point.m",
@@ -7495,16 +9076,33 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\plot_ribbon.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
       {
         "type": "TODO",
         "message": "surf — use mpl_toolkits.mplot3d for 3D surface plots"
@@ -7533,7 +9131,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 17,
     "flags": [
       {
         "type": "TODO",
@@ -7565,7 +9163,23 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -7574,6 +9188,18 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor or → def or_. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       }
     ]
   },
@@ -7582,7 +9208,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 18,
     "flags": [
       {
         "type": "TODO",
@@ -7605,12 +9231,56 @@
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TODO",
         "message": "MATLAB property accessor set.s → def set_s. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TODO",
         "message": "MATLAB property accessor set.v → def set_v. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -7643,24 +9313,51 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\roty.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\rotz.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\rpy2jac.m",
@@ -7709,7 +9406,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 27,
+    "flagCount": 41,
     "flags": [
       {
         "type": "TODO",
@@ -7768,20 +9465,32 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TOOLBOX",
         "message": "simplify → sp.simplify (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
@@ -7797,11 +9506,55 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TOOLBOX",
         "message": "subs → {}.subs (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
@@ -7826,7 +9579,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 15,
+    "flagCount": 26,
     "flags": [
       {
         "type": "TODO",
@@ -7845,8 +9598,28 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -7857,12 +9630,20 @@
         "message": "MATLAB property accessor set.t → def set_t. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
       },
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -7885,6 +9666,22 @@
         "message": "MATLAB `for T = obj` iterates the COLUMNS of the 2-D `obj`; emitted `obj.T` so numpy iterates columns too (a no-op for a 1-D vector)."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TODO",
         "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
@@ -7895,7 +9692,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 24,
     "flags": [
       {
         "type": "TODO",
@@ -7914,8 +9711,24 @@
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -7930,6 +9743,10 @@
         "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
         "type": "TODO",
         "message": "MException.identifier — no direct Python equivalent"
       },
@@ -7947,7 +9764,27 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -7976,15 +9813,36 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 5,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\SO2.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 18,
     "flags": [
       {
         "type": "TODO",
@@ -8016,7 +9874,47 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "eig → np.linalg.eig — MATLAB eig returns eigenvalues in ascending order for symmetric matrices; NumPy does not sort. If your code depends on eigenvalue order, add: idx = np.argsort(eigenvalues); V = V[:, idx]."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -8025,7 +9923,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 24,
     "flags": [
       {
         "type": "TODO",
@@ -8062,6 +9960,26 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TODO",
@@ -8077,7 +9995,31 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "eig → np.linalg.eig — MATLAB eig returns eigenvalues in ascending order for symmetric matrices; NumPy does not sort. If your code depends on eigenvalue order, add: idx = np.argsort(eigenvalues); V = V[:, idx]."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -8133,7 +10075,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 9,
     "flags": [
       {
         "type": "TODO",
@@ -8154,6 +10096,22 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -8162,7 +10120,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -8174,7 +10132,15 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `vcross` or `other` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
@@ -8204,7 +10170,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -8217,6 +10183,10 @@
       {
         "type": "TODO",
         "message": "methods block — add self as the first parameter to every method (e.g. def my_method(self, arg1):)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       }
     ]
   },
@@ -8242,8 +10212,16 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "textscan has no direct equivalent — use csv module, np.loadtxt, or manual parsing."
+      },
       {
         "type": "TODO",
         "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
@@ -8263,11 +10241,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
         "message": "arrayfun/cellfun(..., 'UniformOutput', false) → use a list comprehension: [f(x) for x in items]. The non-uniform (cell) output has no array equivalent."
+      },
+      {
+        "type": "TODO",
+        "message": "verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch."
       },
       {
         "type": "TODO",
@@ -8300,8 +10282,17 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\tr2eul.m",
@@ -8340,8 +10331,16 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
       {
         "type": "TODO",
         "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
@@ -8357,8 +10356,16 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 4,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
       {
         "type": "TODO",
         "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
@@ -8390,11 +10397,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 13,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "TODO",
         "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TOOLBOX",
@@ -8431,6 +10446,10 @@
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `T` or `transl` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -8439,11 +10458,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 10,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "TODO",
         "message": "isfield(s, {fields}) tests multiple fields and returns a logical array — convert manually, e.g. np.array([k in s for k in [...]])."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TOOLBOX",
@@ -8468,6 +10495,10 @@
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `T` or `transl2` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -8518,8 +10549,24 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `` or `skw` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
@@ -8575,11 +10622,55 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 13,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TODO",
@@ -8592,11 +10683,15 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
         "type": "TODO",
@@ -8643,7 +10738,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 14,
     "flags": [
       {
         "type": "TODO",
@@ -8660,6 +10755,46 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       }
     ]
   },
@@ -8668,15 +10803,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\UnitQuaternion.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 25,
     "flags": [
       {
         "type": "TODO",
@@ -8700,7 +10840,75 @@
       },
       {
         "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
         "message": "Ambiguous `*`: `pi` or `u` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "TOOLBOX",
@@ -8973,11 +11181,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 3,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "Simulink reference — out of scope for code converter"
+      },
+      {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
       }
     ]
   },
@@ -9052,24 +11268,106 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\plotXTest.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 17,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\PluckerTest.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `L` or `M` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
@@ -9143,8 +11441,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "TOOLBOX",
         "message": "interp → signal.resample (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -9168,8 +11474,20 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 6,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
       {
         "type": "TOOLBOX",
         "message": "interp → signal.resample (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -9189,24 +11507,131 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\SO3Test.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\SpatialTest.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 20,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      }
+    ]
   },
   {
     "rel": "spatialmath-matlab\\unit_test\\tboptparseTest.m",
@@ -9315,8 +11740,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      }
+    ]
   },
   {
     "rel": "vbmc\\acq\\acqeig_vbmc.m",
@@ -9541,8 +11971,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "vbmc\\gplite\\gplite_post.m",
@@ -9640,16 +12075,25 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      }
+    ]
   },
   {
     "rel": "vbmc\\gplite\\outwarp_negpowc1.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
+    "flagCount": 2,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      },
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `k` or `y` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
@@ -9661,8 +12105,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      }
+    ]
   },
   {
     "rel": "vbmc\\gplite\\outwarp_test.m",
@@ -9685,7 +12134,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 15,
     "flags": [
       {
         "type": "TODO",
@@ -9720,6 +12169,10 @@
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
       },
       {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      },
+      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
@@ -9737,7 +12190,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 561: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 562: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "TODO",
+        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
@@ -9825,7 +12282,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_bmxym43t1om.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_s9ilwe7zs5d.py, line 300)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -9881,8 +12338,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      }
+    ]
   },
   {
     "rel": "vbmc\\lpostfun.m",
@@ -9945,8 +12407,12 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 8,
+    "flagCount": 9,
     "flags": [
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      },
       {
         "type": "TOOLBOX",
         "message": "expand → sp.expand (Symbolic Math Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
@@ -10157,11 +12623,15 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: can't use starred expression here",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 4,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
@@ -10178,8 +12648,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      }
+    ]
   },
   {
     "rel": "vbmc\\misc\\testpdf.m",
@@ -10293,13 +12768,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\misc\\vptrain2real.m",
@@ -10454,8 +12924,25 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 4,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion."
+      },
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "vbmc\\private\\vbmc_iterplot.m",
@@ -10470,16 +12957,30 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name."
+      }
+    ]
   },
   {
     "rel": "vbmc\\private\\vbmc_plot2d.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order)."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      }
+    ]
   },
   {
     "rel": "vbmc\\private\\vbmc_termination.m",
@@ -10838,8 +13339,28 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 69,
+    "flagCount": 78,
     "flags": [
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
@@ -10911,6 +13432,22 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "TODO",
+        "message": "sscanf has no direct equivalent — use re groups or str.split() + float()."
+      },
+      {
+        "type": "TODO",
+        "message": "sscanf has no direct equivalent — use re groups or str.split() + float()."
+      },
+      {
+        "type": "TODO",
+        "message": "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)."
+      },
+      {
+        "type": "TODO",
+        "message": "sscanf has no direct equivalent — use re groups or str.split() + float()."
       },
       {
         "type": "UNSUPPORTED",
@@ -11123,7 +13660,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
-    "flagCount": 4,
+    "flagCount": 6,
     "flags": [
       {
         "type": "WARNING",
@@ -11140,6 +13677,14 @@
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
+      },
+      {
+        "type": "WARNING",
+        "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       }
     ]
   },
@@ -11161,7 +13706,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 15,
     "flags": [
       {
         "type": "TODO",
@@ -11196,6 +13741,10 @@
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
       },
       {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      },
+      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
@@ -11213,14 +13762,18 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 561: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 562: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "TODO",
+        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_dwuobqnj0fd.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_s96rpvkg9z.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -11468,7 +14021,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_ijx08y37xvn.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_6hes1q0zmio.py, line 288)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -11505,7 +14058,7 @@
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_k3lcobyn6zb.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_h4wwl3etew4.py, line 308)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -11582,11 +14135,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 3,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      },
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
       },
       {
         "type": "WARNING",
@@ -11620,7 +14177,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?",
     "snippet": "",
-    "flagCount": 36,
+    "flagCount": 40,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -11735,12 +14292,28 @@
         "message": "surf — use mpl_toolkits.mplot3d for 3D surface plots"
       },
       {
+        "type": "TODO",
+        "message": "zlabel needs a 3-D axes: ax.set_zlabel(...)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
+        "type": "TODO",
+        "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
+      },
+      {
         "type": "TOOLBOX",
         "message": "fminsearch → optimize.minimize({}, method='Nelder-Mead') (Optimization Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
       },
       {
         "type": "TOOLBOX",
         "message": "fminsearch → optimize.minimize({}, method='Nelder-Mead') (Optimization Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
       },
       {
         "type": "WARNING",
@@ -12143,7 +14716,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 15,
     "flags": [
       {
         "type": "TODO",
@@ -12196,6 +14769,14 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor get.eff_problem → def get_eff_problem. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
+      },
+      {
+        "type": "WARNING",
+        "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       }
     ]
   },
@@ -12444,7 +15025,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 17,
     "flags": [
       {
         "type": "TODO",
@@ -12485,6 +15066,18 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor set.type → def set_type. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
+      },
+      {
+        "type": "WARNING",
+        "message": "str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case."
       },
       {
         "type": "TODO",
@@ -12737,7 +15330,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 2,
     "flags": [
       {
         "type": "TODO",
@@ -12746,10 +15339,6 @@
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "TODO",
-        "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
       }
     ]
   },
@@ -12985,8 +15574,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_problem.m",
@@ -13168,8 +15762,13 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 0,
-    "flags": []
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
+      }
+    ]
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_tlbo.m",

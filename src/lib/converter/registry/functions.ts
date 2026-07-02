@@ -167,7 +167,10 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   strtrim:  { python: '{}.strip()',           args: 'template', imports: [] },
   upper:    { python: '{}.upper()',           args: 'template', imports: [] },
   lower:    { python: '{}.lower()',           args: 'template', imports: [] },
-  regexp:   { python: 're.search',            args: 'custom', imports: ['re'] },
+  // MATLAB regexp(str, pat) → re.search(pat, str): subject and pattern SWAP.
+  // The reorder applies only to the 2-arg form; option forms ('match',
+  // 'tokens', …) differ structurally and are flagged when they survive.
+  regexp:   { python: 're.search',            args: 'custom', imports: ['re'], argReorder: [1, 0] },
   regexprep: { python: 're.sub',             args: 'custom', imports: ['re'] },
 
   // ── File I/O ───────────────────────────────────────────
@@ -564,4 +567,226 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
                argReorder: [2, 0, 1],
                flag: { type: 'WARNING', message: "interp1: np.interp does LINEAR interpolation only — a non-linear method arg (spline/pchip/cubic) is ignored; use scipy.interpolate.interp1d for those." },
                flagWhen: (c) => /interp1\s*\([^)]*,\s*['"](?:spline|pchip|cubic|nearest|makima|v5cubic)['"]/i.test(c) },
+
+  // ── Coverage-audit batch (systematic builtin sweep, 2026-07) ────────────
+  // custom-rewritten forms (branches live in 03_transform's custom dispatcher;
+  // bsxfun is handled earlier by convertBsxfun in preTransform)
+  isa: {
+    python: 'isa', args: 'custom', imports: [],
+    flag: { type: 'WARNING', message: "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review." },
+    flagWhen: (c) => !/isa\s*\([^)]*,\s*'(?:double|single|float|char|string|cell|struct|logical|numeric|function_handle|u?int(?:8|16|32|64))'/.test(c),
+  },
+  cellfun:   { python: 'cellfun',   args: 'custom', imports: [] },
+  arrayfun:  { python: 'arrayfun',  args: 'custom', imports: ['numpy'] },
+  strncmp:   { python: 'strncmp',   args: 'custom', imports: [] },
+  strncmpi:  { python: 'strncmpi',  args: 'custom', imports: [] },
+  circshift: { python: 'np.roll',   args: 'custom', imports: ['numpy'] },
+  ndgrid:    { python: 'np.meshgrid', args: 'custom', imports: ['numpy'] },
+  saveas:    { python: 'plt.savefig', args: 'custom', imports: ['matplotlib.pyplot'] },
+  etime:     { python: 'etime',     args: 'custom', imports: [] },
+
+  // Every entry below was a confirmed PASSTHROUGH in the 344-builtin e2e
+  // probe. Ordered by corpus frequency within each group.
+
+  // complex / elementwise math
+  real:      { python: 'np.real',    args: 'passthrough', imports: ['numpy'] },
+  imag:      { python: 'np.imag',    args: 'passthrough', imports: ['numpy'] },
+  conj:      { python: 'np.conj',    args: 'passthrough', imports: ['numpy'] },
+  angle:     { python: 'np.angle',   args: 'passthrough', imports: ['numpy'] },
+  power:     { python: 'np.power',   args: 'passthrough', imports: ['numpy'] },
+  hypot:     { python: 'np.hypot',   args: 'passthrough', imports: ['numpy'] },
+  gcd:       { python: 'np.gcd',     args: 'passthrough', imports: ['numpy'] },
+  lcm:       { python: 'np.lcm',     args: 'passthrough', imports: ['numpy'] },
+  complex:   { python: 'complex',    args: 'passthrough', imports: [] },
+  gamma:     { python: 'special.gamma', args: 'passthrough', imports: ['scipy.special'] },
+
+  // linear algebra
+  tril:      { python: 'np.tril',    args: 'passthrough', imports: ['numpy'] },
+  triu:      { python: 'np.triu',    args: 'passthrough', imports: ['numpy'] },
+  linsolve:  { python: 'np.linalg.solve', args: 'passthrough', imports: ['numpy'] },
+  null: {
+    python: 'linalg.null_space', args: 'passthrough', imports: ['scipy.linalg'],
+  },
+
+  // arrays
+  squeeze:   { python: 'np.squeeze', args: 'passthrough', imports: ['numpy'] },
+  flip:      { python: 'np.flip',    args: 'passthrough', imports: ['numpy'] },
+  cell2mat:  { python: 'np.block',   args: 'passthrough', imports: ['numpy'] },
+  num2cell:  { python: 'list',       args: 'passthrough', imports: [] },
+  histcounts: {
+    python: 'np.histogram', args: 'passthrough', imports: ['numpy'],
+    flag: { type: 'WARNING', message: 'histcounts → np.histogram returns (counts, edges); MATLAB returns counts first too, but bin defaults differ.' },
+  },
+  mode: {
+    python: 'stats.mode', args: 'passthrough', imports: ['scipy.stats'],
+    flag: { type: 'WARNING', message: 'mode → scipy.stats.mode returns a ModeResult — use `.mode` for the value.' },
+  },
+
+  // predicates (shape tests approximate MATLAB's everything-is-2D model)
+  isvector:  { python: '(np.ndim({}) == 1 or 1 in np.shape({}))', args: 'template', imports: ['numpy'] },
+  ismatrix:  { python: 'np.ndim({}) == 2', args: 'template', imports: ['numpy'] },
+  isrow:     { python: '(np.ndim({}) == 1 or np.shape({})[0] == 1)', args: 'template', imports: ['numpy'] },
+  iscolumn:  { python: '(np.ndim({}) == 2 and np.shape({})[1] == 1)', args: 'template', imports: ['numpy'] },
+  issorted:  { python: 'np.all(np.diff({}) >= 0)', args: 'template', imports: ['numpy'] },
+  iscellstr: { python: 'all(isinstance(_x, str) for _x in {})', args: 'template', imports: [] },
+  isspace:   { python: '{}.isspace()', args: 'template', imports: [] },
+  isletter:  { python: '{}.isalpha()', args: 'template', imports: [] },
+
+  // strings
+  replace:   { python: '{}.replace',  args: 'template', imports: [] },
+  str2double: {
+    python: 'float', args: 'passthrough', imports: [],
+    flag: { type: 'WARNING', message: 'str2double on an ARRAY of strings needs a comprehension: [float(s) for s in a]; float() covers the scalar case.' },
+  },
+  strfind: {
+    python: 'strfind', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "strfind(str, pat) returns ALL 1-based match positions — no one-line Python equivalent. Use: [m.start() + 1 for m in re.finditer(re.escape(pat), str)] (keep the +1 only if downstream code expects MATLAB indexing)." },
+  },
+  sscanf: {
+    python: 'sscanf', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'sscanf has no direct equivalent — use re groups or str.split() + float().' },
+  },
+
+  // io / os
+  fgetl:     { python: "{}.readline().rstrip('\\n')", args: 'template', imports: [] },
+  fgets:     { python: '{}.readline()', args: 'template', imports: [] },
+  copyfile:  { python: 'shutil.copy', args: 'passthrough', imports: ['shutil'] },
+  movefile:  { python: 'shutil.move', args: 'passthrough', imports: ['shutil'] },
+  getenv:    { python: 'os.getenv',   args: 'passthrough', imports: ['os'] },
+  system: {
+    python: 'os.system', args: 'passthrough', imports: ['os'],
+    flag: { type: 'WARNING', message: 'system → os.system returns only the exit status; to capture output use subprocess.run(cmd, shell=True, capture_output=True).' },
+  },
+  which: {
+    python: 'which', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules).' },
+  },
+  textscan: {
+    python: 'textscan', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'textscan has no direct equivalent — use csv module, np.loadtxt, or manual parsing.' },
+  },
+  datestr: {
+    python: 'datestr', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'datestr → datetime.strftime; MATLAB datenum/datestr formats need manual translation.' },
+  },
+  datenum: {
+    python: 'datenum', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'datenum → datetime.toordinal()-based math; offsets differ (MATLAB day 1 = Jan 1, 0000).' },
+  },
+  verLessThan: {
+    python: 'verLessThan', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'verLessThan is a MATLAB version check — usually deletable in Python; review the guarded branch.' },
+  },
+
+  // functional
+  func2str: {
+    python: 'str', args: 'passthrough', imports: [],
+    flag: { type: 'WARNING', message: 'func2str → str(f) gives a repr, not MATLAB source text; f.__name__ gives the bare name.' },
+  },
+  str2func: {
+    python: 'str2func', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval.' },
+  },
+  typecast: {
+    python: 'typecast', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'typecast reinterprets raw bytes — use ndarray.view(dtype) in NumPy.' },
+  },
+  ppval:     { python: '{}', args: 'template', imports: [] }, // pp(x): scipy spline objects are callable
+  string:    { python: 'str',        args: 'passthrough', imports: [] },
+  split:     { python: '{}.split',   args: 'template', imports: [] },
+  pad:       { python: '{}.ljust',   args: 'template', imports: [] },
+  regexpi: {
+    python: 're.search', args: 'custom', imports: ['re'],
+  },
+  orth:      { python: 'linalg.orth', args: 'passthrough', imports: ['scipy.linalg'] },
+  polyder:   { python: 'np.polyder', args: 'passthrough', imports: ['numpy'] },
+  polyint:   { python: 'np.polyint', args: 'passthrough', imports: ['numpy'] },
+  isprime:   { python: 'sp.isprime', args: 'passthrough', imports: ['sympy'] },
+  uint64:    { python: 'np.uint64',  args: 'passthrough', imports: ['numpy'] },
+  importdata: {
+    python: 'np.loadtxt', args: 'passthrough', imports: ['numpy'],
+    flag: { type: 'WARNING', message: 'importdata returns a struct with .data/.textdata in MATLAB — np.loadtxt returns just the numeric array.' },
+  },
+  dlmread:   { python: 'np.loadtxt', args: 'passthrough', imports: ['numpy'],
+    flag: { type: 'WARNING', message: 'dlmread → np.loadtxt: pass delimiter="," explicitly for comma-separated files.' } },
+  dlmwrite:  { python: 'np.savetxt', args: 'passthrough', imports: ['numpy'] },
+  readmatrix: { python: 'np.loadtxt', args: 'passthrough', imports: ['numpy'] },
+  cputime:   { python: 'time.process_time', args: 'passthrough', imports: ['time'] },
+  // flag-don't-guess tail — no clean one-line Python equivalent
+  primes: { python: 'primes', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'primes(n) → list(sympy.primerange(2, n + 1)) or a sieve.' } },
+  nthroot: { python: 'nthroot', args: 'custom', imports: ['numpy'] },
+  colon: { python: 'colon', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'colon(a, b) is just a:b → np.arange(a, b + 1).' } },
+  inputParser: { python: 'inputParser', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'inputParser has no direct equivalent — use keyword arguments with defaults, or argparse for scripts.' } },
+  builtin: { python: 'builtin', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "builtin('f', ...) bypasses overloads — in Python just call the intended function directly." } },
+  cast: { python: 'cast', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "cast(x, 'type') → ndarray.astype(dtype) in NumPy." } },
+  datetime: { python: 'datetime', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'datetime → Python datetime module; construction/format semantics differ.' } },
+  isdatetime: { python: 'isdatetime', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'isdatetime → isinstance(x, datetime.datetime).' } },
+  isduration: { python: 'isduration', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'isduration → isinstance(x, datetime.timedelta).' } },
+  structfun: { python: 'structfun', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'structfun(@f, s) → {k: f(v) for k, v in s.items()} (structs convert to dicts).' } },
+  mat2cell: { python: 'mat2cell', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'mat2cell partitions a matrix into blocks — use np.split / nested slicing.' } },
+  zlim: { python: 'zlim', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'zlim needs a 3-D axes: ax.set_zlim(...).' } },
+  randstream: { python: 'randstream', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'RandStream → np.random.Generator (np.random.default_rng(seed)).' } },
+  // custom branches (03_transform dispatcher)
+  strjoin:   { python: 'strjoin',   args: 'custom', imports: [] },
+  erase:     { python: 'erase',     args: 'custom', imports: [] },
+  permute:   { python: 'permute',   args: 'custom', imports: ['numpy'] },
+  rmfield:   { python: 'rmfield',   args: 'custom', imports: [] },
+  join:      { python: 'join',      args: 'custom', imports: [] },
+
+  // plotting
+  line:      { python: 'plt.plot',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  axes:      { python: 'plt.axes',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  hist:      { python: 'plt.hist',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  image:     { python: 'plt.imshow', args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  caxis:     { python: 'plt.clim',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  barh:      { python: 'plt.barh',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  quiver:    { python: 'plt.quiver', args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  stairs:    { python: 'plt.step',   args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  errorbar:  { python: 'plt.errorbar', args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  contourf:  { python: 'plt.contourf', args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  pcolor:    { python: 'plt.pcolormesh', args: 'passthrough', imports: ['matplotlib.pyplot'] },
+  patch: {
+    python: 'plt.fill', args: 'passthrough', imports: ['matplotlib.pyplot'],
+    flag: { type: 'WARNING', message: 'patch → plt.fill covers the x,y[,color] form; property-pair patch(...) calls need manual conversion.' },
+  },
+  get: {
+    python: 'plt.getp', args: 'passthrough', imports: ['matplotlib.pyplot'],
+    flag: { type: 'WARNING', message: "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's." },
+  },
+  plot3: {
+    python: 'plot3', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)." },
+  },
+  scatter3: {
+    python: 'scatter3', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "scatter3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.scatter(x, y, z)." },
+  },
+  fill3: {
+    python: 'fill3', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "fill3 needs a 3-D axes (mpl_toolkits.mplot3d.art3d.Poly3DCollection)." },
+  },
+  zlabel: {
+    python: 'zlabel', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "zlabel needs a 3-D axes: ax.set_zlabel(...)." },
+  },
+  view: {
+    python: 'view', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: 'view(az, el) sets the 3-D camera — matplotlib equivalent: ax.view_init(elev=el, azim=az) (note the swapped order).' },
+  },
+  rectangle: {
+    python: 'rectangle', args: 'passthrough', imports: [],
+    flag: { type: 'TODO', message: "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)." },
+  },
 }
