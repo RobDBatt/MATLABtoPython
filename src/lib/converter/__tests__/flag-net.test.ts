@@ -13,12 +13,19 @@ describe('flag net — unmapped higher-order functions get flagged', () => {
     expect(msgs.toLowerCase()).toContain('arrayfun')
   })
 
-  it('flags accumarray and cellfun', () => {
-    for (const fn of ['accumarray', 'cellfun']) {
-      const r: any = convert(`z = ${fn}(a, b);`)
-      const msgs = (r.report.flags as any[]).map(f => f.message).join(' ')
-      expect(msgs).toContain(fn)
-    }
+  it('flags accumarray', () => {
+    const r: any = convert('z = accumarray(a, b);')
+    const msgs = (r.report.flags as any[]).map(f => f.message).join(' ')
+    expect(msgs).toContain('accumarray')
+  })
+
+  it('flags a multi-array cellfun (the form the comprehension rewrite skips)', () => {
+    // Simple `cellfun(@f, c)` now CONVERTS to a comprehension (coverage-audit
+    // batch); only the lambda/multi-array forms survive — those must flag.
+    const r: any = convert('z = cellfun(@(x, y) x + y, a, b);')
+    const msgs = (r.report.flags as any[]).map(f => f.message).join(' ')
+    expect(msgs).toContain('cellfun')
+    expect(r.python).toContain('cellfun(')
   })
 })
 
