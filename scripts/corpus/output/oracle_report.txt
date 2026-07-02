@@ -18,15 +18,15 @@ Numerically comparable: 22
 
 --- PY_CRASH files ---
   PRMLT\demo\ch01\info_demo.m  ValueError: too many values to unpack (expected 3)
-  PRMLT\demo\ch06\knCenter_demo.m  TypeError: knCenter() missing 1 required positional argument: 'X2'
-  PRMLT\demo\ch06\knReg_demo.m  TypeError: knCenter() missing 2 required positional arguments: 'X1' and 'X2'
-  PRMLT\demo\ch07\rvmRegEm_demo.m  TypeError: rvmRegEm() missing 2 required positional arguments: 'alpha' and 'beta'
+  PRMLT\demo\ch06\knCenter_demo.m  ValueError: operands could not be broadcast together with shapes (100,2) (2,100)
+  PRMLT\demo\ch06\knReg_demo.m  TypeError: unsupported operand type(s) for /: 'NoneType' and 'int'
+  PRMLT\demo\ch07\rvmRegEm_demo.m  ValueError: not enough values to unpack (expected 2, got 1)
   PRMLT\demo\ch07\rvmRegEm_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
-  PRMLT\demo\ch07\rvmRegFp_demo.m  TypeError: rvmRegFp() missing 2 required positional arguments: 'alpha' and 'beta'
+  PRMLT\demo\ch07\rvmRegFp_demo.m  ValueError: not enough values to unpack (expected 2, got 1)
   PRMLT\demo\ch07\rvmRegFp_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
   PRMLT\demo\ch07\rvmRegSeq_demo.m  ValueError: not enough values to unpack (expected 2, got 1)
   PRMLT\demo\ch07\rvmRegSeq_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
-  PRMLT\demo\ch10\rvmRegVb_demo.m  TypeError: linRegVb() missing 1 required positional argument: 'prior'
+  PRMLT\demo\ch10\rvmRegVb_demo.m  ValueError: not enough values to unpack (expected 2, got 1)
   PRMLT\demo\ch10\rvmRegVb_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
   PRMLT\demo\ch11\gauss_demo.m  numpy.exceptions.AxisError: axis 2 is out of bounds for array of dimension 2
   probabilistic_matlab\example_inference_calls\run_branching.m  SyntaxError: invalid syntax
@@ -36,16 +36,16 @@ Numerically comparable: 22
   ypea\src\ypea\doc\publish_all.m  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
 
 --- PY_CRASH causes (top) ---
+    4  ValueError: not enough values to unpack (expected 2, got 1)
     4  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
     2  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
     1  ValueError: too many values to unpack (expected 3)
-    1  TypeError: knCenter() missing 1 required positional argument: 'X2'
-    1  TypeError: knCenter() missing 2 required positional arguments: 'X1' and 'X2'
-    1  TypeError: rvmRegEm() missing 2 required positional arguments: 'alpha' and 'beta'
-    1  TypeError: rvmRegFp() missing 2 required positional arguments: 'alpha' and 'beta'
-    1  ValueError: not enough values to unpack (expected 2, got 1)
-    1  TypeError: linRegVb() missing 1 required positional argument: 'prior'
+    1  ValueError: operands could not be broadcast together with shapes (100,2) (2,100)
+    1  TypeError: unsupported operand type(s) for /: 'NoneType' and 'int'
     1  numpy.exceptions.AxisError: axis 2 is out of bounds for array of dimension 2
+    1  SyntaxError: invalid syntax
+    1  NameError: name 'ypea_problem' is not defined
+    1  NameError: name 'which' is not defined
 
 --- OCTAVE_ERR causes (top) ---
    20  error: 'histcounts' undefined near line 12, column 11

@@ -1,8 +1,8 @@
 # Corpus Analysis Report
 
 Total files analyzed: **923**
-- **Clean** (py_compile passes, zero flags): **521** (56.4%)
-- PASS with flags (needs human review): 338 (36.6%)
+- **Clean** (py_compile passes, zero flags): **525** (56.9%)
+- PASS with flags (needs human review): 334 (36.2%)
 - py_compile fail: 64 (6.9%)
 - converter threw: 0 (0.0%)
 
@@ -51,7 +51,7 @@ Total files analyzed: **923**
 
 - `export_fig\export_fig.m`
 
-### 6. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_tfzvaz1fizi.py, line N  —  1 files
+### 6. Sorry: IndentationError: expected an indented block after 'except' statement on line N (_check_nd2vcp7ielf.py, line N  —  1 files
 
 - `export_fig\xkcdify.m`
 
@@ -63,11 +63,11 @@ Total files analyzed: **923**
 
 - `matlab2tikz\src\m2tInputParser.m`
 
-### 9. Sorry: IndentationError: unexpected indent (_check_visau39j3em.py, line N)  —  1 files
+### 9. Sorry: IndentationError: unexpected indent (_check_4zbz5n88prb.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 
-### 10. Sorry: IndentationError: unexpected indent (_check_7bwuxrtxvn.py, line N)  —  1 files
+### 10. Sorry: IndentationError: unexpected indent (_check_tvrf49gjt2j.py, line N)  —  1 files
 
 - `vbmc\gplite\private\slicesamplebnd.m`
 
@@ -75,15 +75,15 @@ Total files analyzed: **923**
 
 - `vbmc\misc\setupoptions_vbmc.m`
 
-### 12. Sorry: IndentationError: unindent does not match any outer indentation level (_check_wnytxn1r9m.py, line N)  —  1 files
+### 12. Sorry: IndentationError: unindent does not match any outer indentation level (_check_ea91qvb6csf.py, line N)  —  1 files
 
 - `vbmc\utils\evalbool.m`
 
-### 13. Sorry: IndentationError: unexpected indent (_check_09gsp0odtk0i.py, line N)  —  1 files
+### 13. Sorry: IndentationError: unexpected indent (_check_e2rvp3ifyk.py, line N)  —  1 files
 
 - `vbmc\utils\slicesamplebnd.m`
 
-### 14. Sorry: IndentationError: unexpected indent (_check_ghym8ccbo34.py, line N)  —  1 files
+### 14. Sorry: IndentationError: unexpected indent (_check_rthgpih96j.py, line N)  —  1 files
 
 - `vbmc\utils\slicesample_vbmc.m`
 

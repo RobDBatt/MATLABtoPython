@@ -52,6 +52,17 @@ export function shiftIndices(
     const provenArrays = buildProvenArrays(lines)
     for (const p of provenArrays) knownArrays.add(p)
 
+    // Call-shaped params must not become arrays via the variables union
+    // above either — `kn(X, X1)` is a function-handle call, not indexing.
+    // Proven arrays (an existing `p[` use) win over the shape heuristic.
+    const { params: allParams, counters } = collectParamsAndCounters(lines)
+    const { callShaped } = classifyParamUsage(lines, allParams, counters)
+    for (const p of callShaped) {
+      if (provenArrays.has(p)) continue
+      knownArrays.delete(p)
+      knownFunctions.add(p)
+    }
+
     // `buildKnownArrays` uses slice-heuristic pattern matching that can
     // wrongly add built-in functions like `all(x, 2)` (args happen to
     // contain colons or commas) to knownArrays. Remove any name that
@@ -192,6 +203,8 @@ const ARRAY_QUERY_FUNCTIONS = new Set([
  * Pre-scan all lines to build a Set of identifiers that are definitely arrays.
  */
 function buildKnownArrays(lines: StructuredLine[]): Set<string> {
+  const paramCandidates = new Set<string>()
+  const forCounters = new Set<string>()
   const arrays = new Set<string>()
 
   for (const line of lines) {
@@ -255,21 +268,87 @@ function buildKnownArrays(lines: StructuredLine[]): Set<string> {
       arrays.add(transposeMatch[1])
     }
 
-    // Pattern 6: Function parameters — if used with () later, likely arrays
-    // Extract parameter names from def lines
+    // Pattern 6 (collection): function parameters are array CANDIDATES —
+    // resolved after the scan by usage evidence (see below). Blindly adding
+    // every param indexed function-HANDLE params (`kn(X, X1)` → `kn[X-1,
+    // X1-1]`, a TypeError on a callable — the PRMLT kernel-demo crash class).
     const defMatch = content.match(/^def\s+\w+\(([^)]+)\)/)
     if (defMatch) {
-      const params = defMatch[1].split(',').map(s => s.trim()).filter(Boolean)
-      for (const p of params) {
-        // Add all params as potential arrays — better to convert () to []
-        // on a scalar (minor cosmetic issue) than to leave array indexing as ()
-        // (which is a syntax error)
-        arrays.add(p)
+      for (const p of defMatch[1].split(',').map(s => s.trim().replace(/=.*$/, '').trim()).filter(Boolean)) {
+        if (p !== 'args' && !p.startsWith('*')) paramCandidates.add(p)
       }
     }
+
+    // Track loop counters — `v(i)` inside a loop is array evidence.
+    const forM = content.match(/^\s*for\s+(\w+)\s+in\b/)
+    if (forM) forCounters.add(forM[1])
   }
 
+  // Pattern 6 (resolution): a param is a known array only with ARRAY EVIDENCE
+  // (see classifyParamUsage). Call-shaped params (`kn(X, X1)` — commonly
+  // function handles) stay calls.
+  const { evidenced } = classifyParamUsage(lines, paramCandidates, forCounters)
+  for (const p of evidenced) arrays.add(p)
+
   return arrays
+}
+
+/**
+ * Split function-parameter names by their usage shape. ARRAY EVIDENCE = a
+ * subscript containing a numeric literal, a colon/slice, `end`, or a loop
+ * counter; a subscripted WRITE; or cell indexing. A param whose only
+ * parenthesized uses have plain variable args is CALL-SHAPED — commonly a
+ * function handle (the PRMLT kernel-fn crash class). Both misreads fail
+ * loudly (callable-not-subscriptable vs ndarray-not-callable); the evidence
+ * rule picks the right one far more often on real code.
+ */
+function classifyParamUsage(
+  lines: StructuredLine[],
+  params: Set<string>,
+  forCounters: Set<string>,
+): { evidenced: Set<string>; callShaped: Set<string> } {
+  const evidenced = new Set<string>()
+  const callShaped = new Set<string>()
+  for (const p of params) {
+    let evidence = false
+    let parenUse = false
+    for (const line of lines) {
+      if (line.isComment || !line.content.includes(p)) continue
+      const c = line.content
+      for (const m of c.matchAll(new RegExp(`\\b${p}\\s*\\(([^()]*)\\)`, 'g'))) {
+        parenUse = true
+        const parts = m[1].split(',').map(s => s.trim())
+        if (parts.some(a => /^[+-]?\d/.test(a) || a.includes(':') || /\bend\b/.test(a) || forCounters.has(a))) {
+          evidence = true
+          break
+        }
+      }
+      if (!evidence && new RegExp(`\\b${p}\\s*\\([^()]*\\)\\s*=(?!=)`).test(c)) evidence = true
+      if (!evidence && new RegExp(`\\b${p}\\s*\\{`).test(c)) evidence = true
+      if (evidence) break
+    }
+    if (evidence) evidenced.add(p)
+    else if (parenUse) callShaped.add(p)
+  }
+  return { evidenced, callShaped }
+}
+
+/** Params + loop counters gathered for classifyParamUsage from converted lines. */
+function collectParamsAndCounters(lines: StructuredLine[]): { params: Set<string>; counters: Set<string> } {
+  const params = new Set<string>()
+  const counters = new Set<string>()
+  for (const line of lines) {
+    if (line.isComment) continue
+    const defMatch = line.content.match(/^def\s+\w+\(([^)]+)\)/)
+    if (defMatch) {
+      for (const p of defMatch[1].split(',').map(s => s.trim().replace(/=.*$/, '').trim()).filter(Boolean)) {
+        if (p !== 'args' && !p.startsWith('*')) params.add(p)
+      }
+    }
+    const forM = line.content.match(/^\s*for\s+(\w+)\s+in\b/)
+    if (forM) counters.add(forM[1])
+  }
+  return { params, counters }
 }
 
 /**
