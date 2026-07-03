@@ -20,6 +20,8 @@ export interface ServerEventArgs {
   sessionId?: unknown
   consent?: unknown
   target?: Target | null
+  /** Failure-reason ids from the closed catalog vocabulary (e.g. 'line_limit'). */
+  extraWarningIds?: readonly string[]
 }
 
 /**
@@ -48,6 +50,7 @@ export async function logServerEvent(args: ServerEventArgs): Promise<void> {
       flagTypes: args.flagTypes ?? [],
       lineCount: args.lineCount,
       target: args.target ?? null,
+      extraWarningIds: args.extraWarningIds,
     })
     if (!event) return
 

@@ -7,13 +7,21 @@ import type { Target } from '@/lib/telemetry/types'
 const FREE_LINE_LIMIT = 50
 
 export async function POST(req: NextRequest) {
+  // Hoisted so the catch block can emit convert_failure telemetry. When
+  // req.json() itself throws these stay at their defaults and logServerEvent's
+  // guards (consent !== true / empty code) skip the emission silently.
+  let code: unknown
+  let lineCount = 0
+  let telemetryConsent = false
+  let telemetrySession: string | undefined
+  let telemetryMode: Target = 'paste'
   try {
     const body = await req.json()
-    const { code } = body
+    code = body?.code
     // Optional, consent-gated anonymous telemetry fields (never required).
-    const telemetryConsent = body?.telemetry_consent === true
-    const telemetrySession = typeof body?.session_id === 'string' ? body.session_id : undefined
-    const telemetryMode = (body?.mode === 'upload' || body?.mode === 'batch' ? body.mode : 'paste') as Target
+    telemetryConsent = body?.telemetry_consent === true
+    telemetrySession = typeof body?.session_id === 'string' ? body.session_id : undefined
+    telemetryMode = (body?.mode === 'upload' || body?.mode === 'batch' ? body.mode : 'paste') as Target
 
     if (!code || typeof code !== 'string') {
       return NextResponse.json(
@@ -22,7 +30,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const lineCount = code.split('\n').filter((l: string) => l.trim() !== '').length
+    lineCount = code.split('\n').filter((l: string) => l.trim() !== '').length
+
+    // Every real attempt is logged (consent-gated), so Supabase shows true
+    // rates instead of survivorship bias — pairs with convert_success below.
+    scheduleTelemetry({
+      eventType: 'convert_attempt',
+      code,
+      flagTypes: [],
+      lineCount,
+      sessionId: telemetrySession,
+      consent: telemetryConsent,
+      target: telemetryMode,
+    })
 
     // Check auth and plan limits
     let lineLimit = FREE_LINE_LIMIT
@@ -41,6 +61,16 @@ export async function POST(req: NextRequest) {
     }
 
     if (lineCount > lineLimit) {
+      scheduleTelemetry({
+        eventType: 'convert_failure',
+        code,
+        flagTypes: [],
+        lineCount,
+        sessionId: telemetrySession,
+        consent: telemetryConsent,
+        target: telemetryMode,
+        extraWarningIds: ['line_limit'],
+      })
       return NextResponse.json(
         {
           error: 'line_limit_exceeded',
@@ -71,6 +101,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result)
   } catch (err) {
     console.error('Conversion error:', err)
+    // Failure telemetry — the survivorship-bias fix. If req.json() itself
+    // threw, code/consent are still defaults and logServerEvent's guards skip
+    // this silently; scheduleTelemetry can never throw into the response path.
+    scheduleTelemetry({
+      eventType: 'convert_failure',
+      code: typeof code === 'string' ? code : '',
+      flagTypes: [],
+      lineCount,
+      sessionId: telemetrySession,
+      consent: telemetryConsent,
+      target: telemetryMode,
+      extraWarningIds: ['internal_error'],
+    })
     return NextResponse.json(
       { error: 'internal_error', message: 'Conversion failed unexpectedly' },
       { status: 500 },

@@ -102,6 +102,9 @@ export function buildEvent(args: {
   flagTypes: readonly FlagType[]
   lineCount: number
   target?: Target | null
+  /** Failure-reason ids (closed vocabulary, e.g. 'line_limit') — merged into
+   *  warnings; anything not in the catalog is dropped by sanitizeEvent. */
+  extraWarningIds?: readonly string[]
 }): UsageEvent | null {
   return sanitizeEvent({
     session_id: args.sessionId,
@@ -109,7 +112,10 @@ export function buildEvent(args: {
     target: args.target ?? null,
     lines_bucket: linesBucket(args.lineCount),
     features_hit: scanFeatures(args.code),
-    warnings_emitted: tallyWarnings(args.flagTypes),
+    warnings_emitted: [
+      ...tallyWarnings(args.flagTypes),
+      ...(args.extraWarningIds ?? []).map((id) => ({ id, count: 1 })),
+    ],
     consent_version: CONSENT_VERSION,
   })
 }
