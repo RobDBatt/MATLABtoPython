@@ -9,6 +9,7 @@ import { BatchWidget } from './batch-widget'
 import { ConsentToggle } from '@/components/ConsentToggle'
 import { EmailCapture } from '@/components/email-capture'
 import { telemetryFields } from '@/lib/telemetry/client'
+import { CONSENT_VERSION } from '@/lib/telemetry/types'
 
 const FREE_LINE_LIMIT = 50
 
@@ -64,6 +65,27 @@ export function ConverterWidget({ exampleCode }: Props) {
     } catch {
       setError('Network error — please try again')
       track('conversion_failed', { lines, reason: 'network' })
+      // Network failures never reach the server-side telemetry mirror — post
+      // the failure to the standalone sink so Supabase sees them too.
+      // Consent-gated; vocabulary-only payload; failures here are swallowed.
+      const tf = telemetryFields(!!isSignedIn)
+      if (tf.telemetry_consent) {
+        const lines_bucket =
+          lines <= 100 ? '1-100' : lines <= 500 ? '101-500' : lines <= 2000 ? '501-2000' : lines <= 5000 ? '2001-5000' : '5000+'
+        fetch('/api/telemetry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: tf.session_id,
+            event_type: 'convert_failure',
+            target: mode,
+            lines_bucket,
+            features_hit: [],
+            warnings_emitted: [{ id: 'network', count: 1 }],
+            consent_version: CONSENT_VERSION,
+          }),
+        }).catch(() => { /* telemetry is never load-bearing */ })
+      }
     } finally {
       setLoading(false)
     }

@@ -12,7 +12,7 @@
 
 export const SITE = 'matlab' as const
 
-export const EVENT_TYPES = ['preflight', 'convert_success', 'convert_failure'] as const
+export const EVENT_TYPES = ['preflight', 'convert_attempt', 'convert_success', 'convert_failure'] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 
 /** Repurposes the shared table's `target` column as the conversion mode. */

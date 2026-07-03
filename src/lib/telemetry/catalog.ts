@@ -46,11 +46,15 @@ const FUNCTION_IDS: ReadonlySet<string> = new Set([
   ...Object.keys(TOOLBOX_MAP),
 ])
 
+/** Failure-reason warning ids that don't come from converter flags. */
+export const FAILURE_WARNING_IDS = ['line_limit', 'internal_error', 'network'] as const
+
 /** The full allowed vocabulary: functions + language constructs + flag types. */
 export const KNOWN_FEATURE_IDS: ReadonlySet<string> = new Set<string>([
   ...FUNCTION_IDS,
   ...LANGUAGE_CONSTRUCTS.map((c) => c.id),
   ...Object.values(FLAG_WARNING_ID),
+  ...FAILURE_WARNING_IDS,
 ])
 
 const MAX_IDS = 200
