@@ -18,8 +18,8 @@ def findpeaks_demo(signal_, fs, threshold):
     for i in range(2, N-1 + 1):
         if filtered[i - 1] > filtered[i-1] and filtered[i - 1] > filtered[i+1]:
             if filtered[i - 1] > threshold:
-                peaks.append(filtered[i - 1])
-                locs.append(t[i - 1])
+                peaks = np.append(peaks, filtered[i - 1])
+                locs = np.append(locs, t[i - 1])
 
     # Plot the result
     plt.figure()

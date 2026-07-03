@@ -569,7 +569,7 @@ describe('disp command syntax → print', () => {
 describe('struct field assignment → dict (init + subscript)', () => {
   it('initializes s = {} and uses subscript access', () => {
     const out = py("s.x = 1;\ns.y = 2;\nv = s.x;")
-    expect(out).toContain('s = {}')
+    expect(out).toContain('s = Struct()')
     expect(out).toContain("s['x'] = 1")
     expect(out).toContain("v = s['x']")
   })

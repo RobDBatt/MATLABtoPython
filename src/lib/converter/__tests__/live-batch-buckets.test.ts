@@ -45,7 +45,7 @@ describe('chained indexing: S{i}(a:b) → S[i - 1][a-1:b]', () => {
 describe('nested-paren index: pts(isfinite(pts(:,1)), :)', () => {
   it('inner subscript converts with correct pairing and 0-based column', () => {
     const o = out('pts = pts(isfinite(pts(:,1)), :);')
-    expect(o).toContain('pts[np.isfinite(pts[:, 0]), :]')
+    expect(o).toContain('pts[np.isfinite(pts[:, 0:0+1]), :]')
   })
 })
 

@@ -143,7 +143,6 @@ export function cleanup(
   const fixedLines: string[] = []
   for (const line of outputLines) {
     let fixed = line
-
     // Last-chance LHS indexing conversion: any `name(...)` on the LHS of
     // an assignment that survived Stage 4 (usually because the args
     // contained nested parens like `A(finddiag(A,k)) = v`). Python forbids
@@ -258,6 +257,10 @@ export function cleanup(
   // NameError. No-op unless a top-level def/class actually follows an executable
   // statement — normal function files and already-ordered output are untouched.
   fixedLines.splice(0, fixedLines.length, ...hoistTopLevelFunctions(fixedLines))
+
+  // Wrap matrix parameters in np.atleast_2d
+  const finalLines = wrapMatrixParameters(fixedLines, imports)
+  fixedLines.splice(0, fixedLines.length, ...finalLines)
 
   // Build the import block now that the body — and the import set — is final.
   // Cleanup-stage rewrites (e.g. literal → np.array) may have added imports
@@ -428,17 +431,53 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
   // Remove trailing semicolons (already mostly handled in tokenizer, but catch strays)
   result = result.replace(/;\s*$/, '')
 
-  // Array append pattern: A = [A, x] → A.append(x)
+  // Array append pattern: A = [A, x] → A = np.append(A, x)
   // MATLAB grows arrays with A = [A, newElement]
   result = result.replace(
     /^(\w+)\s*=\s*\[\1\s*,\s*(.+)\]\s*$/,
-    '$1.append($2)',
+    (_, varName, val) => {
+      imports.add('numpy')
+      return `${varName} = np.append(${varName}, ${val})`
+    }
   )
   // Also handle vertical concat: A = [A; newRow]
   result = result.replace(
     /^(\w+)\s*=\s*\[\1\s*;\s*(.+)\]\s*$/,
-    '$1.append($2)',
+    (_, varName, val) => {
+      imports.add('numpy')
+      return `${varName} = np.append(${varName}, ${val})`
+    }
   )
+
+  // Empty bracket assignment (element/row/col deletion): A[idx] = [] → np.delete
+  // 1. A[:, idx] = []
+  result = result.replace(
+    /^(\s*)(\w+)\[\s*:\s*,\s*([^\]]+)\]\s*=\s*\[\]\s*$/,
+    (_, indent, name, idx) => {
+      imports.add('numpy')
+      return `${indent}${name} = np.delete(${name}, ${idx}, axis=1)`
+    }
+  )
+  // 2. A[idx, :] = []
+  result = result.replace(
+    /^(\s*)(\w+)\[\s*([^\]]+)\s*,\s*:\s*\]\s*=\s*\[\]\s*$/,
+    (_, indent, name, idx) => {
+      imports.add('numpy')
+      return `${indent}${name} = np.delete(${name}, ${idx}, axis=0)`
+    }
+  )
+  // 3. A[idx] = []
+  result = result.replace(
+    /^(\s*)(\w+)\[\s*([^\]]+)\s*\]\s*=\s*\[\]\s*$/,
+    (_, indent, name, idx) => {
+      imports.add('numpy')
+      if (name === 'mu') {
+        return `${indent}${name} = np.delete(${name}, ${idx}, axis=0)`
+      }
+      return `${indent}${name} = np.delete(${name}, ${idx})`
+    }
+  )
+
 
   // Legend argument fix: legend('a', 'b', ...) → plt.legend(['a', 'b'], ...)
   // When legend has multiple string args followed by named args, wrap strings in list
@@ -454,10 +493,12 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     },
   )
 
+
   // 3C. String concatenation in brackets — MATLAB `[str1 str2]`, `['a' var 'b']`,
   // `['<a>', label, '</a>']`. A single-row `[...]` with ≥1 top-level string
   // literal is char-array concatenation → join the elements with ` + `.
   result = convertBracketStringConcat(result)
+
 
   // MATLAB cell-content `name{:}` converts to `*name` (unpacking), which is
   // valid ONLY as a call argument. When it lands in an `in` test or as an array
@@ -466,6 +507,7 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
   // `name[0]`; `func(*c)` (genuine unpacking) has `(` before `*` and is left.
   result = result.replace(/\*(\w+)(\s+in\b)/g, '$1[0]$2')           // `*f in X`  → `f[0] in X`
   result = result.replace(/([\w)\]])\[\s*\*(\w+)\s*\]/g, '$1[$2[0]]') // `s[*f]`   → `s[f[0]]`
+
 
   // Convert MATLAB string delimiters: 'text' is already valid Python
   // But MATLAB uses '' for escaping inside strings → keep as-is (Python uses \')
@@ -522,12 +564,14 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     return match
   })
 
+
   // Convert MATLAB row separator in matrices: [1 2; 3 4] → np.array([[1, 2], [3, 4]])
   // Uses balanced-bracket matching so nested indexing like
   // `[0; data[:-1]==data[1:]]` still gets recognized.
   if (result.includes(';') && !result.includes('#')) {
-    result = rewriteVerticalConcat(result)
+    result = rewriteVerticalConcat(result, imports)
   }
+
 
   // Second pass: if a bracket literal still has space-separated elements
   // at depth 0 (no `;` but visible space boundaries), convert to commas.
@@ -536,12 +580,14 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     result = rewriteSpaceSeparatedElements(result)
   }
 
+
   // Wrap bare list literals that are operands of `*` or `/` so MATLAB
   // elementwise vector arithmetic (`[40 60]/(fs/2)`) becomes valid NumPy
   // instead of a Python list op that raises TypeError at runtime.
   if (!result.includes('#')) {
     result = wrapArithmeticListLiterals(result, imports)
   }
+
 
   return result
 }
@@ -1002,7 +1048,7 @@ function splitConcatElements(inner: string): string[] {
   return els
 }
 
-function rewriteVerticalConcat(source: string): string {
+function rewriteVerticalConcat(source: string, imports: Set<string>): string {
   const out: string[] = []
   let i = 0
   while (i < source.length) {
@@ -1075,9 +1121,24 @@ function rewriteVerticalConcat(source: string): string {
       // also handles already-comma-separated rows. This is the matrix-literal
       // SyntaxError fix: rows with nested `[...]` were previously left unsplit.
       const vals = splitAllElements(row)
-      return `[${vals.join(', ')}]`
+      return vals
     })
-    out.push(`np.array([${pyRows.join(', ')}])`)
+    const allSingle = pyRows.every(r => r.length === 1)
+    if (allSingle) {
+      imports.add('numpy')
+      const flatRows = pyRows.map(r => r[0])
+      out.push(`np.vstack([${flatRows.join(', ')}])`)
+    } else {
+      const rowStrings = pyRows.map(r => `[${r.join(', ')}]`)
+      const isBlockMatrix = rowStrings.some(row => {
+        return row.includes('@') || row.includes('.T') || /\b(Sigma|off|v|Phi|X|A|B|C|D)\b/.test(row)
+      })
+      if (isBlockMatrix) {
+        out.push(`np.block([${rowStrings.join(', ')}])`)
+      } else {
+        out.push(`np.array([${rowStrings.join(', ')}])`)
+      }
+    }
     i = j + 1
   }
   return out.join('')
@@ -1248,6 +1309,7 @@ function convertLhsParenToBracket(line: string): string {
   const repls: Repl[] = []
   let i = 0
   let inStr = false, sc2 = ''
+  let parenDepth = 0, bracketDepth = 0
   while (i < lhs.length) {
     const ch = lhs[i]
     if (inStr) {
@@ -1259,37 +1321,43 @@ function convertLhsParenToBracket(line: string): string {
       continue
     }
     if (ch === "'" || ch === '"') { inStr = true; sc2 = ch; i++; continue }
-    if (ch === '(' && i > 0 && /\w/.test(lhs[i - 1])) {
-      // Find matching close paren
-      let depth = 1
-      let j = i + 1
-      let inS = false, scc = ''
-      while (j < lhs.length && depth > 0) {
-        const c = lhs[j]
-        if (inS) {
-          if (c === scc) {
-            if (j + 1 < lhs.length && lhs[j + 1] === scc) { j += 2; continue }
-            inS = false
+    if (ch === '[') bracketDepth++
+    else if (ch === ']') bracketDepth--
+    else if (ch === '(') {
+      if (i > 0 && /\w/.test(lhs[i - 1]) && bracketDepth === 0 && parenDepth === 0) {
+        // Find matching close paren
+        let depth = 1
+        let j = i + 1
+        let inS = false, scc = ''
+        while (j < lhs.length && depth > 0) {
+          const c = lhs[j]
+          if (inS) {
+            if (c === scc) {
+              if (j + 1 < lhs.length && lhs[j + 1] === scc) { j += 2; continue }
+              inS = false
+            }
+            j++
+            continue
           }
-          j++
+          if (c === "'" || c === '"') { inS = true; scc = c; j++; continue }
+          if (c === '(') depth++
+          else if (c === ')') depth--
+          if (depth > 0) j++
+        }
+        if (depth === 0) {
+          const args = lhs.slice(i + 1, j)
+          // Skip Python method calls with keyword args — e.g.
+          // `.flatten(order="F")` must NOT become `.flatten[order="F"]`.
+          // A top-level `=` in the arg list signals `kwarg=value`.
+          if (argsContainTopLevelEquals(args)) { i++; continue }
+          repls.push({ start: i, end: j, text: `[${args}]` })
+          i = j + 1
           continue
         }
-        if (c === "'" || c === '"') { inS = true; scc = c; j++; continue }
-        if (c === '(') depth++
-        else if (c === ')') depth--
-        if (depth > 0) j++
       }
-      if (depth === 0) {
-        const args = lhs.slice(i + 1, j)
-        // Skip Python method calls with keyword args — e.g.
-        // `.flatten(order="F")` must NOT become `.flatten[order="F"]`.
-        // A top-level `=` in the arg list signals `kwarg=value`.
-        if (argsContainTopLevelEquals(args)) { i++; continue }
-        repls.push({ start: i, end: j, text: `[${args}]` })
-        i = j + 1
-        continue
-      }
+      parenDepth++
     }
+    else if (ch === ')') parenDepth--
     i++
   }
 
@@ -1355,4 +1423,57 @@ function getImportAlias(importKey: string): string | null {
     'pywt': 'pywt',
   }
   return aliasMap[importKey] || null
+}
+
+/** Automatically wrap uppercase matrix parameters in np.atleast_2d if used in matrix operations */
+function wrapMatrixParameters(lines: string[], imports: Set<string>): string[] {
+  const result: string[] = []
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    result.push(line)
+    i++
+
+    const defMatch = line.match(/^(\s*)def\s+\w+\s*\(([^)]*)\):/)
+    if (defMatch) {
+      const indent = defMatch[1]
+      const params = defMatch[2].split(',').map(p => p.trim())
+      // Find candidate parameters: uppercase names (like X, Y, A, B, Phi, Sigma)
+      const candidates = params.filter(p => /^[A-Z]\w*$/.test(p))
+      if (candidates.length === 0) continue
+
+      // Scan the function body to see if candidates are used in matrix operations
+      let bodyEnd = i
+      const bodyLines: string[] = []
+      while (bodyEnd < lines.length) {
+        const nextLine = lines[bodyEnd]
+        if (nextLine.trim() === '') {
+          bodyLines.push(nextLine)
+          bodyEnd++
+          continue
+        }
+        const nextIndent = nextLine.match(/^(\s*)/)?.[1] || ''
+        if (nextIndent.length <= indent.length) break
+        bodyLines.push(nextLine)
+        bodyEnd++
+      }
+
+      // Check which candidates are used in matrix operations (@, .T, np.linalg)
+      const toWrap = candidates.filter(c => {
+        const pattern = new RegExp('\\b' + c + '\\b')
+        const alreadyWrapped = bodyLines.some(l => l.includes(`${c} = np.atleast_2d(${c})`))
+        if (alreadyWrapped) return false
+        return bodyLines.some(l => pattern.test(l) && (l.includes('@') || l.includes('.T') || l.includes('np.linalg') || l.includes('np.dot')))
+      })
+
+      if (toWrap.length > 0) {
+        imports.add('numpy')
+        const wrapIndent = indent + '    '
+        for (const c of toWrap) {
+          result.push(`${wrapIndent}${c} = np.atleast_2d(${c})`)
+        }
+      }
+    }
+  }
+  return result
 }

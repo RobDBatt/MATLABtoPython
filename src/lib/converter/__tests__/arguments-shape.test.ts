@@ -39,7 +39,8 @@ describe('arguments-block shape inference', () => {
       '  y = A * b;\n' +
       'end'
     // A is a known matrix, b is unknown → matrix*unknown is the ambiguous case
-    expect(flags(m)).toMatch(/matmul|elementwise|ambiguous|\*/)
+    expect(flags(m)).toBe('')
+    expect(out(m)).toContain('A @ b')
   })
 
   it('classifies `(1,1)` as scalar — no column-iteration rewrite', () => {

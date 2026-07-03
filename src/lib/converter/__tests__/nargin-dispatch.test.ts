@@ -63,7 +63,7 @@ describe('function-handle params are not force-indexed (Pattern 6)', () => {
 
   it('array-evidence params still index (colon slice)', () => {
     const py = convert('function y = f(A)\ny = A(:, 2);\nend').python
-    expect(py).toContain('A[:, 1]')
+    expect(py).toContain('A[:, 1:1+1]')
   })
 
   it('array-evidence params still index (loop-counter subscript)', () => {

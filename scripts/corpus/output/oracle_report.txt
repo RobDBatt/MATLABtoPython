@@ -1,6 +1,6 @@
 
-=== OCTAVE NUMERIC ORACLE — 176 inputs ===
- 124  OCTAVE_ERR (env/incompat)
+=== OCTAVE NUMERIC ORACLE — 177 inputs ===
+ 125  OCTAVE_ERR (env/incompat)
   20  MATCH ✅
   17  PY_CRASH (converter)
   13  INCONCLUSIVE (no shared vars)
@@ -18,16 +18,16 @@ Numerically comparable: 22
 
 --- PY_CRASH files ---
   PRMLT\demo\ch01\info_demo.m  ValueError: too many values to unpack (expected 3)
-  PRMLT\demo\ch06\knCenter_demo.m  ValueError: operands could not be broadcast together with shapes (100,2) (2,100)
-  PRMLT\demo\ch06\knReg_demo.m  IndexError: tuple index out of range
+  PRMLT\demo\ch06\knCenter_demo.m  ValueError: operands could not be broadcast together with shapes (100,) (10,)
+  PRMLT\demo\ch06\knReg_demo.m  numpy.linalg.LinAlgError: Matrix is not positive definite
   PRMLT\demo\ch07\rvmRegEm_demo.m  TypeError: 'numpy.ndarray' object is not callable
-  PRMLT\demo\ch07\rvmRegEm_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch07\rvmRegEm_spSignal_demo.m  ValueError: setting an array element with a sequence. The requested array has an inhomogen
   PRMLT\demo\ch07\rvmRegFp_demo.m  TypeError: 'numpy.ndarray' object is not callable
-  PRMLT\demo\ch07\rvmRegFp_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
-  PRMLT\demo\ch07\rvmRegSeq_demo.m  numpy.exceptions.AxisError: axis 1 is out of bounds for array of dimension 1
-  PRMLT\demo\ch07\rvmRegSeq_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch07\rvmRegFp_spSignal_demo.m  ValueError: setting an array element with a sequence. The requested array has an inhomogen
+  PRMLT\demo\ch07\rvmRegSeq_demo.m  ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc si
+  PRMLT\demo\ch07\rvmRegSeq_spSignal_demo.m  ValueError: setting an array element with a sequence. The requested array has an inhomogen
   PRMLT\demo\ch10\rvmRegVb_demo.m  ValueError: Input must be 1- or 2-d.
-  PRMLT\demo\ch10\rvmRegVb_spSignal_demo.m  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+  PRMLT\demo\ch10\rvmRegVb_spSignal_demo.m  ValueError: setting an array element with a sequence. The requested array has an inhomogen
   PRMLT\demo\ch11\gauss_demo.m  ValueError: operands could not be broadcast together with shapes (2,100) (2,)
   probabilistic_matlab\example_inference_calls\run_branching.m  SyntaxError: invalid syntax
   ypea\src\ypea\doc\doc_publish_all.m  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
@@ -36,13 +36,13 @@ Numerically comparable: 22
   ypea\src\ypea\doc\publish_all.m  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
 
 --- PY_CRASH causes (top) ---
-    4  ValueError: shape mismatch: value array of shape (20,) could not be broadcast to indexing 
+    4  ValueError: setting an array element with a sequence. The requested array has an inhomogen
     2  TypeError: 'numpy.ndarray' object is not callable
     2  OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect:
     1  ValueError: too many values to unpack (expected 3)
-    1  ValueError: operands could not be broadcast together with shapes (100,2) (2,100)
-    1  IndexError: tuple index out of range
-    1  numpy.exceptions.AxisError: axis 1 is out of bounds for array of dimension 1
+    1  ValueError: operands could not be broadcast together with shapes (100,) (10,)
+    1  numpy.linalg.LinAlgError: Matrix is not positive definite
+    1  ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc si
     1  ValueError: Input must be 1- or 2-d.
     1  ValueError: operands could not be broadcast together with shapes (2,100) (2,)
     1  SyntaxError: invalid syntax

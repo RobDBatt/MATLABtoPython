@@ -223,8 +223,8 @@ function fixColonInsideParens(line: string): string {
         continue
       }
       if (ch === "'" || ch === '"') { inString = true; stringChar = ch; continue }
-      if (ch === '(' || ch === '[') depth++
-      else if (ch === ')' || ch === ']') depth--
+      if (ch === '(' || ch === '[' || ch === '{') depth++
+      else if (ch === ')' || ch === ']' || ch === '}') depth--
       else if (ch === ':' && depth === 0) { hasTopColon = true; break }
     }
     if (!hasTopColon) return match
@@ -289,8 +289,8 @@ function fixColonInsideParensNested(line: string): string {
         if (ch === "'" || ch === '"') { inString = true; stringChar = ch; j++; continue }
         if (ch === '(') depth++
         else if (ch === ')') depth--
-        else if (ch === '[') bracketDepth++
-        else if (ch === ']') bracketDepth--
+        else if (ch === '[' || ch === '{') bracketDepth++
+        else if (ch === ']' || ch === '}') bracketDepth--
         else if (ch === ':' && depth === 1 && bracketDepth === 0) topColon = true
         if (depth > 0) j++
       }

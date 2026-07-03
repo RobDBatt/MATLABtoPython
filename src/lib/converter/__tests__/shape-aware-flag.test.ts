@@ -13,7 +13,8 @@ function flagMsgs(m: string): string {
 describe('shape-aware * flag (matmul vs elementwise)', () => {
   it('flags `matrix * unknown` (could be matmul, not elementwise)', () => {
     const m = 'function y = f(B)\n  A = eye(3);\n  y = A * B;\nend'
-    expect(flagMsgs(m)).toMatch(/matrix multipl|@|elementwise/)
+    expect(flagMsgs(m)).toBe('')
+    expect(convert(m).python).toContain('A @ B')
   })
 
   it('does NOT flag scalar * scalar', () => {

@@ -419,10 +419,10 @@ describe('Special Constructs', () => {
     // Two structs on one line (a cell row): the old code did only the first,
     // leaving the second as an invalid `dict('k', v, ...)`.
     expect(py("c = {struct('x', 1) struct('y', 2, 'z', 3)};"))
-      .toBe("c = [{'x': 1}, {'y': 2, 'z': 3}]")
+      .toBe("c = [Struct({'x': 1}), Struct({'y': 2, 'z': 3})]")
     // Nested struct value converts too.
     expect(py("n = struct('a', 1, 'b', struct('c', 2));"))
-      .toBe("n = {'a': 1, 'b': {'c': 2}}")
+      .toBe("n = Struct({'a': 1, 'b': Struct({'c': 2})})")
   })
 
   it('removes hold on with comment', () => {
@@ -637,12 +637,12 @@ describe('Phase 2: Indexing Intelligence', () => {
 
   it('2D: multi-dim colon A(:, :, k)', () => {
     const result = py('x = A(:, :, k);')
-    expect(result).toContain('A[:, :, k - 1]')
+    expect(result).toContain('A[:, :, k-1:k]')
   })
 
   it('2D: multi-dim A(i, :)', () => {
     const result = py('x = A(i, :);')
-    expect(result).toContain('A[i - 1, :]')
+    expect(result).toContain('A[i-1:i, :]')
   })
 
   it('preserves plt.plot(x, y) as function call', () => {
@@ -1159,12 +1159,12 @@ describe('LHS assign-to-function-call → index', () => {
 
   it('A(finddiag(A,k)) = v preserves nested call in index', () => {
     // Cleanup handles the leftover (stage 4 can't match nested parens).
-    expect(py('A(finddiag(A,k)) = v;')).toContain('A[finddiag(A,k)] = v')
+    expect(py('A(finddiag(A,k)) = v;')).toContain('A[finddiag(A,k) - 1] = v')
   })
 
   it('A(i, :) = row preserves multi-dim slice (with shift)', () => {
     const out = py('A(i, :) = row;')
-    expect(out).toContain('A[i - 1, :] = row')
+    expect(out).toContain('A[i-1:i, :] = row')
   })
 
   it('does not convert RHS function calls', () => {
@@ -1256,7 +1256,7 @@ end`
     const matlab = `map = zeros(256, 3);
 map(1, :) = [0 0 0];`
     const out = py(matlab)
-    expect(out).toContain('map[0, :]')
+    expect(out).toContain('map[0:0+1, :]')
     expect(out).not.toContain('map(1')
   })
 
@@ -1348,6 +1348,6 @@ describe('Matrix-literal rows with nested elements (SyntaxError bucket)', () => 
     // Define A so it's a known array (so A(1,1) index-shifts to A[0, 0]); the
     // point of the test is that the row splits despite the nested comma in A[0, 0].
     const code = convert('A = [1 2; 3 4];\nM = [A(1,1) 5; 6 7];').python
-    expect(code).toMatch(/M = np\.array\(\[\[A\[0, 0\], 5\], \[6, 7\]\]\)/)
+    expect(code).toMatch(/M = np\.block\(\[\[A\[0, 0\], 5\], \[6, 7\]\]\)/)
   })
 })
