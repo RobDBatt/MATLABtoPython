@@ -6,7 +6,7 @@ import { shiftIndices } from '../src/lib/converter/stages/04_index'
 import { cleanup } from '../src/lib/converter/stages/05_cleanup'
 import { buildSymbolTable } from '../src/lib/converter/analysis/scope'
 
-const input = `t = '\\\\';`
+const input = `t = w'*X+b+beta*randn(1,d);`
 console.log('IN:        ' + JSON.stringify(input))
 
 const rq = resolveQuotes(input)

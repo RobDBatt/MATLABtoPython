@@ -76,11 +76,11 @@ export function convert(matlabCode: string, options?: ConvertOptions): Conversio
 
   // Desugar struct variables to dicts: a var that gets a field assignment
   // (`s.f = ...`) or is built with `struct(...)` is a MATLAB struct, which the
-  // engine models as a Python dict. Initialize it (`s = {}`) before its first
+  // engine models as a Python dict. Initialize it (`s = Struct()`) before its first
   // field write — MATLAB auto-vivifies, Python doesn't — and rewrite that var's
   // `s.f` accesses to `s['f']`. Scoped to detected struct names, so real object
   // attributes (`A.shape`, module access) are untouched.
-  const desugared = desugarStructs(logicalLines)
+  const { desugared, hasStructs } = desugarStructs(logicalLines)
 
   // Stage 2: Detect block structure and indentation
   const structured = detectStructure(desugared)
@@ -105,9 +105,12 @@ export function convert(matlabCode: string, options?: ConvertOptions): Conversio
 
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)
   const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable, shadowed, symbols.variables)
+  if (hasStructs) {
+    imports.add('compat:Struct')
+  }
 
   // Stage 4: Index shifting (1-based → 0-based) — dedicated separate pass
-  const { shifted, flags: indexFlags } = shiftIndices(transformed, symbols, imports)
+  const { shifted, flags: indexFlags } = shiftIndices(transformed, symbols, imports, shapeTable)
 
   // Stage 5: Cleanup (inject imports, apply indentation, remove `end` lines)
   const { python, flags: cleanupFlags } = cleanup(shifted, imports)
@@ -144,7 +147,9 @@ export function convert(matlabCode: string, options?: ConvertOptions): Conversio
  * identifier-boundary-aware, so real attribute access (`A.shape`, module calls)
  * and struct names appearing inside string literals are left untouched.
  */
-function desugarStructs<T extends { content: string; isComment?: boolean }>(lines: T[]): T[] {
+function desugarStructs<T extends { content: string; isComment?: boolean }>(
+  lines: T[],
+): { desugared: T[]; hasStructs: boolean } {
   const fieldAssign = /^\s*([A-Za-z_]\w*)\.[A-Za-z_]\w*\s*=(?!=)/
   const structCtor = /^\s*([A-Za-z_]\w*)\s*=\s*struct\s*\(/
 
@@ -154,26 +159,26 @@ function desugarStructs<T extends { content: string; isComment?: boolean }>(line
     const a = l.content.match(fieldAssign); if (a) structVars.add(a[1])
     const c = l.content.match(structCtor); if (c) structVars.add(c[1])
   }
-  if (structVars.size === 0) return lines
+  if (structVars.size === 0) return { desugared: lines, hasStructs: false }
 
   const inited = new Set<string>()
-  const out: T[] = []
+  const desugared: T[] = []
   for (const l of lines) {
-    if (l.isComment) { out.push(l); continue }
+    if (l.isComment) { desugared.push(l); continue }
     const content = l.content
     // `s = struct(...)` whole-assigns the var → already initialized.
     const ctor = content.match(structCtor)
     if (ctor && structVars.has(ctor[1])) inited.add(ctor[1])
-    // First field write on a not-yet-initialized struct var → `s = {}` first.
+    // First field write on a not-yet-initialized struct var → `s = Struct()` first.
     const fw = content.match(fieldAssign)
     if (fw && structVars.has(fw[1]) && !inited.has(fw[1])) {
       inited.add(fw[1])
       const indent = content.match(/^\s*/)![0]
-      out.push({ ...l, content: `${indent}${fw[1]} = {}` })
+      desugared.push({ ...l, content: `${indent}${fw[1]} = Struct()` })
     }
-    out.push({ ...l, content: rewriteStructFields(content, structVars) })
+    desugared.push({ ...l, content: rewriteStructFields(content, structVars) })
   }
-  return out
+  return { desugared, hasStructs: true }
 }
 
 /** Rewrite `<structvar>.<field>` → `<structvar>['<field>']` outside string

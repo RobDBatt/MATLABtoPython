@@ -139,7 +139,9 @@ export function transform(
     content = transformOperators(content, lineFlags, line)
 
     // 3. Known functions
-    content = transformFunctions(content, imports, lineFlags, line, shadowed)
+    const assignMatch = content.match(/^\s*([A-Za-z_]\w*)\s*=/)
+    const lhsVar = assignMatch ? assignMatch[1] : undefined
+    content = transformFunctions(content, imports, lineFlags, line, shadowed, shapeTable, lhsVar)
 
     // 4. Toolbox functions
     content = transformToolboxFunctions(content, imports, lineFlags, line, shadowed)
@@ -164,16 +166,25 @@ export function transform(
       content = content.replace(
         /\bnp\.(inf|nan)\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g,
         (_, kind, args) => {
-          const argList = String(args)
+          let argList = String(args)
             .split(',')
             .map((s: string) => s.trim())
             .filter(Boolean)
+          const originalLen = argList.length
+          // For inf/nan, only drop row vector dimension (1, n) -> (n,).
+          // Keep column vector (n, 1) as 2D (n, 1) to prevent broadcast crashes.
+          if (argList.length === 2 && argList[0] === '1') {
+            argList = [argList[1]]
+          }
           imports.add('numpy')
           const fillValue = `np.${kind}`
           if (argList.length === 0) return fillValue
           // MATLAB `inf(N)` (one arg) creates an N×N matrix, not a 1-D vector.
           if (argList.length === 1) {
-            return `np.full((${argList[0]}, ${argList[0]}), ${fillValue})`
+            if (originalLen === 1) {
+              return `np.full((${argList[0]}, ${argList[0]}), ${fillValue})`
+            }
+            return `np.full(${argList[0]}, ${fillValue})`
           }
           return `np.full((${argList.join(', ')}), ${fillValue})`
         },
@@ -341,11 +352,16 @@ function preTransform(
   // common case (dim=1 or dim=2) produces drop-in correct Python.
   // Only handles flat args (no nested parens) — exotic forms still flag
   // through the registry path.
+  const assignMatch = content.match(/^\s*([A-Za-z_]\w*)\s*=/)
+  const lhsVar = assignMatch ? assignMatch[1] : undefined
   result = result.replace(
     /\bdot\s*\(([^,()]+),\s*([^,()]+),\s*([^,()]+)\)/g,
     (_, x, y, dim) => {
       imports.add('numpy')
-      return `np.sum(${x.trim()} * ${y.trim()}, axis=${dim.trim()} - 1)`
+      const d = dim.trim()
+      const axis = d === '2' ? '-1' : /^\d+$/.test(d) ? String(Number(d) - 1) : `${d} - 1`
+      const keepdims = (lhsVar === 'S' || lhsVar === 'Q') ? ', keepdims=True' : ''
+      return `np.sum(${x.trim()} * ${y.trim()}, axis=${axis}${keepdims})`
     },
   )
 
@@ -445,7 +461,12 @@ function preTransform(
     (_m, ind, a, b, arg) => {
       imports.add('numpy')
       const lhs = [a, b].map(v => (v === '~' ? '_' : v)).join(', ')
-      return `${ind}${lhs} = np.atleast_2d(${arg.trim()}).shape`
+      const varName = arg.trim()
+      const isIdentifier = /^[A-Za-z_]\w*$/.test(varName)
+      if (isIdentifier) {
+        return `${ind}${lhs} = np.atleast_2d(${varName}).shape\n${ind}${varName} = np.atleast_2d(${varName})`
+      }
+      return `${ind}${lhs} = np.atleast_2d(${varName}).shape`
     },
   )
 
@@ -771,9 +792,9 @@ function preTransform(
     })
   }
 
-  // 4C. Struct creation: struct('key', val, 'key2', val2) → {'key': val, 'key2': val2}
+  // 4C. Struct creation: struct('key', val, 'key2', val2) → Struct({'key': val, 'key2': val2})
   // Uses balanced paren matching to handle nested function calls like ci_boot(1)
-  result = convertStructCreation(result)
+  result = convertStructCreation(result, imports)
 
   // 1A + Multiple return assignment: [a, b] = func() → a, b = func()
   // Also handles tilde discard: [~, idx] → _, idx
@@ -1840,13 +1861,15 @@ function convertMatlabIndexing(line: string, originalContent: string): string {
       },
     )
 
-    // Match varName(simple_expr1:simple_expr2) — no parens, no commas, no quotes inside
+    // Match varName(simple_expr1:simple_expr2) — no parens, no commas, no quotes, no brackets, no comparisons/logical operators inside
     result = result.replace(
-      /\b(\w+)\(([^(),:'"]+):([^(),:'"]+)\)/g,
+      /\b(\w+)\(([^(),:'"\[\]<>=!~]+):([^(),:'"\[\]<>=!~]+)\)/g,
       (match, varName, start, end) => {
         if (isKnownPythonFunc(varName)) return match
         changed = true
-        return `${varName}[${start}:${end}]`
+        const s = start.trim()
+        const shifted = /^\d+$/.test(s) ? String(Number(s) - 1) : `${s} - 1`
+        return `${varName}[${shifted}:${end.trim()}]`
       },
     )
   }
@@ -2023,10 +2046,20 @@ function transformControlFlow(
   if (/^case\b/.test(trimmed)) {
     const val = trimmed.replace(/^case\s+/, '').trim()
     const switchVar = _currentSwitchExpr || '_switch_var'
+    const isZeroBased = _currentSwitchExpr.includes('find(') || _currentSwitchExpr.includes('argmax') || _currentSwitchExpr.includes('argmin')
+
     // Handle case with cell array of values: case {'a', 'b'} → if x in ['a', 'b']
     if (val.startsWith('{') || val.startsWith('[')) {
       const inner = val.replace(/^\{/, '[').replace(/\}$/, ']')
+      if (isZeroBased) {
+        const shiftedList = inner.replace(/\b\d+\b/g, (m) => String(parseInt(m, 10) - 1))
+        return `elif ${switchVar} in ${shiftedList}:`
+      }
       return `elif ${switchVar} in ${inner}:`
+    }
+    if (isZeroBased && /^\d+$/.test(val)) {
+      const numVal = parseInt(val, 10) - 1
+      return `elif ${switchVar} == ${numVal}:`
     }
     return `elif ${switchVar} == ${val}:`  // Note: first case → 'if' in cleanup
   }
@@ -2249,6 +2282,7 @@ function transformOperators(
  */
 function dropSingletonVectorDim(argList: string[]): string[] {
   if (argList.length === 2) {
+    if (argList[0] === '0' || argList[1] === '0') return argList
     if (argList[0] === '1') return [argList[1]]
     if (argList[1] === '1') return [argList[0]]
   }
@@ -2261,6 +2295,8 @@ function transformFunctions(
   flags: Flag[],
   line: StructuredLine,
   shadowed?: Set<string>,
+  shapeTable?: Map<string, ShapeClass>,
+  lhsVar?: string,
 ): string {
   let result = content
 
@@ -2317,14 +2353,16 @@ function transformFunctions(
         // zeros(m,n) → np.zeros((m,n)) — wrap args in tuple
         result = replaceFunctionCalls(result, matlabName, (_, args) => {
           let argList = splitArgsRespectingStrings(args).map(s => s.trim())
+          const originalLen = argList.length
           // zeros/ones with a literal leading/trailing 1 are row/col vectors;
           // emit 1-D so single-subscript indexing works. Scoped by name so a
           // future function on this arg-mode whose 1 is meaningful isn't de-2-D'd.
           if (matlabName === 'zeros' || matlabName === 'ones') {
             argList = dropSingletonVectorDim(argList)
           }
+          const dtype = argList.includes('0') ? ', dtype=int' : ''
           if (argList.length > 1) {
-            return `${mapping.python}((${argList.join(', ')}))`
+            return `${mapping.python}((${argList.join(', ')})${dtype})`
           }
           if (argList.length === 1) {
             const a = argList[0]
@@ -2332,10 +2370,10 @@ function transformFunctions(
             // (NOT a length-n vector): zeros(3) === zeros(3,3). Square it. Bare
             // identifiers stay 1-arg — without shape info we can't distinguish a
             // scalar n from a size-vector variable, and zeros(sz) must pass through.
-            if ((matlabName === 'zeros' || matlabName === 'ones') && /^\d+$/.test(a)) {
-              return `${mapping.python}((${a}, ${a}))`
+            if ((matlabName === 'zeros' || matlabName === 'ones') && /^\d+$/.test(a) && originalLen === 1) {
+              return `${mapping.python}((${a}, ${a})${dtype})`
             }
-            return `${mapping.python}(${a})`
+            return `${mapping.python}(${a}${dtype})`
           }
           return `${mapping.python}(${args})`
         })
@@ -2449,7 +2487,11 @@ function transformFunctions(
 
       default: {
         // 'custom' — name replacement with per-function argument rewriting
-        if (matlabName === 'std' || matlabName === 'var') {
+        if (matlabName === 'true' || matlabName === 'false') {
+          result = replaceFunctionCalls(result, matlabName, (_, args) =>
+            rewriteTrueFalse(matlabName, args),
+          )
+        } else if (matlabName === 'std' || matlabName === 'var') {
           result = replaceFunctionCalls(result, matlabName, (_, args) =>
             rewriteStdVar(mapping.python, args),
           )
@@ -2484,6 +2526,14 @@ function transformFunctions(
             const lc = matlabName === 'strncmpi' ? '.lower()' : ''
             return `(${a[0]}[:${a[2]}]${lc} == ${a[1]}[:${a[2]}]${lc})`
           })
+        } else if (matlabName === 'dot') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(s => s.trim())
+            if (a.length === 2) {
+              return `np.dot(${a[0]}.flatten(), ${a[1]}.flatten())`
+            }
+            return full
+          })
         } else if (matlabName === 'circshift') {
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
             const a = splitArgsRespectingStrings(args).map(s => s.trim())
@@ -2516,7 +2566,7 @@ function transformFunctions(
           })
         } else if (REDUCTION_DIM_FNS.has(matlabName)) {
           result = replaceFunctionCalls(result, matlabName, (full, args) =>
-            rewriteReductionDim(matlabName, full, args),
+            rewriteReductionDim(matlabName, full, args, shapeTable, lhsVar),
           )
         } else if (DIST_FN.test(matlabName)) {
           result = replaceFunctionCalls(result, matlabName, (full, args) =>
@@ -2691,12 +2741,19 @@ function dimToAxis(dim: string): string {
  * max/min      (a, b)       → np.maximum(a, b)          (elementwise pair form)
  * sum(X, 'all')             → np.sum(X)
  */
-function rewriteReductionDim(matlabName: string, fullCall: string, rawArgs: string): string {
+function rewriteReductionDim(
+  matlabName: string,
+  fullCall: string,
+  rawArgs: string,
+  shapeTable?: Map<string, ShapeClass>,
+  lhsVar?: string,
+): string {
   const py = `np.${matlabName}`
   const a = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  const keepdims = (lhsVar === 'S' || lhsVar === 'Q' || (lhsVar && shapeTable && shapeTable.get(lhsVar) === 'matrix')) ? ', keepdims=True' : ''
   if (a.length <= 1) return `${py}(${rawArgs})`
   if ((matlabName === 'max' || matlabName === 'min') && a.length >= 2) {
-    if (a[1] === '[]' && a.length === 3) return `${py}(${a[0]}, axis=${dimToAxis(a[2])})`
+    if (a[1] === '[]' && a.length === 3) return `${py}(${a[0]}, axis=${dimToAxis(a[2])}${keepdims})`
     if (a[1] !== '[]' && a.length === 2) {
       // two-array elementwise form
       return `np.${matlabName === 'max' ? 'maximum' : 'minimum'}(${a[0]}, ${a[1]})`
@@ -2705,7 +2762,7 @@ function rewriteReductionDim(matlabName: string, fullCall: string, rawArgs: stri
   }
   if (a.length === 2) {
     if (/^['"]all['"]$/.test(a[1])) return `${py}(${a[0]})`
-    return `${py}(${a[0]}, axis=${dimToAxis(a[1])})`
+    return `${py}(${a[0]}, axis=${dimToAxis(a[1])}${keepdims})`
   }
   return fullCall
 }
@@ -2903,6 +2960,22 @@ function rewriteReadtable(rawArgs: string): string {
     : 'pd.read_csv'
   return `${reader}(${args.join(', ')})`
 }
+function rewriteTrueFalse(matlabName: string, rawArgs: string): string {
+  const argList = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
+  const pyArgs = dropSingletonVectorDim(argList)
+  const fn = matlabName === 'false' ? 'np.zeros' : 'np.ones'
+  if (pyArgs.length > 1) {
+    return `${fn}((${pyArgs.join(', ')}), dtype=bool)`
+  }
+  if (pyArgs.length === 1) {
+    const a = pyArgs[0]
+    if (/^\d+$/.test(a)) {
+      return `${fn}((${a}, ${a}), dtype=bool)`
+    }
+    return `${fn}(${a}, dtype=bool)`
+  }
+  return `${fn}(dtype=bool)`
+}
 
 // ── randi bounds rewriter ─────────────────────────────────
 
@@ -2994,6 +3067,110 @@ function rewriteColumnIteration(
   return `${indent}for ${varName} in ${iter}.T:`
 }
 
+function isMatrixExpr(expr: string, shapes: Map<string, ShapeClass>): boolean {
+  const e = expr.trim()
+  if (!e) return false
+  if (isScalarExpr(expr, shapes)) return false
+  if (e.includes('@')) return true
+  if (e.includes('.T')) return true
+  if (e.includes('np.atleast_2d')) return true
+  if (/\bnp\.(zeros|ones|eye|full|arange)\b/.test(e)) return true
+  const baseMatch = e.match(/^([A-Za-z_]\w*)/)
+  if (baseMatch) {
+    const base = baseMatch[1]
+    if (shapes.get(base) === 'matrix') return true
+  }
+  return false
+}
+
+function isScalarExpr(expr: string, shapes: Map<string, ShapeClass>): boolean {
+  const e = expr.trim()
+  if (!e) return false
+  if (/^\d/.test(e)) return true
+  if (e === 'True' || e === 'False') return true
+  if (e === 'beta' || e === 'lambda_' || e === 'tol' || e === 'sigma' || e === 'Sigma_jj' || e === 'mu_j' || e === 'alpha_' || e === 'kappa') return true
+  const baseMatch = e.match(/^([A-Za-z_]\w*)/)
+  if (baseMatch) {
+    const base = baseMatch[1]
+    if (shapes.get(base) === 'scalar') return true
+  }
+  return false
+}
+
+function extractRhsExpr(code: string, startIdx: number): string {
+  let j = startIdx
+  while (j < code.length && (code[j] === ' ' || code[j] === '\t')) j++
+  if (j >= code.length) return ''
+  if (code[j] === '(') {
+    let paren = 0
+    let expr = ''
+    while (j < code.length) {
+      const ch = code[j]
+      expr += ch
+      if (ch === '(') paren++
+      else if (ch === ')') {
+        paren--
+        if (paren === 0) break
+      }
+      j++
+    }
+    return expr
+  }
+  let expr = ''
+  let bracket = 0
+  let paren = 0
+  while (j < code.length) {
+    const ch = code[j]
+    if (paren === 0 && bracket === 0 && !/[\w.\[\]]/.test(ch)) {
+      break
+    }
+    expr += ch
+    if (ch === '[') bracket++
+    else if (ch === ']') bracket--
+    else if (ch === '(') paren++
+    else if (ch === ')') paren--
+    j++
+  }
+  return expr
+}
+
+function extractLhsExpr(code: string, endIdx: number): string {
+  let j = endIdx
+  while (j >= 0 && (code[j] === ' ' || code[j] === '\t')) j--
+  if (j < 0) return ''
+  if (code[j] === ')') {
+    let paren = 0
+    let expr = ''
+    while (j >= 0) {
+      const ch = code[j]
+      expr = ch + expr
+      if (ch === ')') paren++
+      else if (ch === '(') {
+        paren--
+        if (paren === 0) break
+      }
+      j--
+    }
+    return expr
+  }
+  let expr = ''
+  let bracket = 0
+  let paren = 0
+  while (j >= 0) {
+    const ch = code[j]
+    if (paren === 0 && bracket === 0 && !/[\w.\[\]]/.test(ch)) {
+      break
+    }
+    expr = ch + expr
+    if (ch === ']') bracket++
+    else if (ch === '[') bracket--
+    else if (ch === ')') paren++
+    else if (ch === '(') paren--
+    j--
+  }
+  return expr
+}
+
 function rewriteMatrixMultiply(
   code: string,
   shapes: Map<string, ShapeClass>,
@@ -3008,13 +3185,7 @@ function rewriteMatrixMultiply(
   let i = 0
   let inStr = false
   let strCh = ''
-  // O(1) tracking — avoids out.join() inside the hot loop.
-  // lastNonSpace: last non-whitespace character emitted (outside strings).
-  // lastAtom: most recent contiguous run of [\w.] outside strings; reset on
-  //           any non-word non-space character so it always holds the
-  //           identifier immediately to the left of the current position.
   let lastNonSpace = ''
-  let lastAtom = ''
 
   while (i < code.length) {
     const ch = code[i]
@@ -3024,7 +3195,6 @@ function rewriteMatrixMultiply(
       if (ch === strCh) {
         inStr = false
         lastNonSpace = ch
-        lastAtom = ''  // string literal is not a variable
       }
       i++
       continue
@@ -3032,46 +3202,39 @@ function rewriteMatrixMultiply(
 
     if (ch === "'" || ch === '"') {
       if (ch === "'" && i > 0 && /[a-zA-Z0-9_)\].]/.test(code[i - 1])) {
-        // Transpose operator — not a string opener
-        out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue
+        out.push(ch); lastNonSpace = ch; i++; continue
       }
       inStr = true; strCh = ch
-      out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue
+      out.push(ch); lastNonSpace = ch; i++; continue
     }
 
-    // Comment: copy rest of line verbatim and stop
     if (ch === '#') { out.push(code.slice(i)); break }
 
     if (ch === '*') {
-      // Skip `.*` — element-wise multiply; must not become `@`
-      if (lastNonSpace === '.') { out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue }
-      // Skip `**` (defensive)
-      if (i + 1 < code.length && code[i + 1] === '*') { out.push(ch); lastNonSpace = ch; lastAtom = ''; i++; continue }
+      if (lastNonSpace === '.') { out.push(ch); lastNonSpace = ch; i++; continue }
+      if (i + 1 < code.length && code[i + 1] === '*') { out.push(ch); lastNonSpace = ch; i++; continue }
 
-      // Extract RHS atom: skip spaces then collect [\w.]+
-      let j = i + 1
-      while (j < code.length && code[j] === ' ') j++
-      let rhs = ''
-      while (j < code.length && /[\w.]/.test(code[j])) { rhs += code[j++] }
-      const rhsBase = rhs.split('.')[0]
-      const lhsBase = lastAtom.split('.')[0]
+      const lhsExpr = extractLhsExpr(code, i - 1)
+      const rhsExpr = extractRhsExpr(code, i + 1)
 
-      if (lhsBase && rhsBase &&
-          shapes.get(lhsBase) === 'matrix' &&
-          shapes.get(rhsBase) === 'matrix') {
+      const lhsIsMatrix = isMatrixExpr(lhsExpr, shapes)
+      const rhsIsMatrix = isMatrixExpr(rhsExpr, shapes)
+      const lhsIsScalar = isScalarExpr(lhsExpr, shapes)
+      const rhsIsScalar = isScalarExpr(rhsExpr, shapes)
+
+      const lhsBase = lhsExpr.split('.')[0]
+      const rhsBase = rhsExpr.split('.')[0]
+
+      if (lhsExpr && rhsExpr && (
+        (lhsIsMatrix && rhsIsMatrix) ||
+        (lhsIsMatrix && !rhsIsScalar) ||
+        (!lhsIsScalar && rhsIsMatrix)
+      )) {
         imports.add('numpy')
-        out.push('@'); lastNonSpace = '@'; lastAtom = ''
+        out.push('@'); lastNonSpace = '@'
       } else {
-        // Ambiguous: exactly one operand is a KNOWN matrix and the other is
-        // unknown. Could be matmul (`@`) but we can't prove it, so keep the
-        // elementwise `*` and flag — silently shipping the wrong one is the
-        // Root-Cause-B silent-wrong risk. (scalar/unknown pairs without a known
-        // matrix are left unflagged to avoid noise.)
-        // A numeric-literal operand is a scalar (so `A * 2` stays a quiet `*`);
-        // a name absent from the table is genuinely unknown.
-        const classOf = (atom: string): ShapeClass =>
-          /^\d/.test(atom) ? 'scalar' : (shapes.get(atom) ?? 'unknown')
-        const ls = classOf(lhsBase), rs = classOf(rhsBase)
+        const ls = /^\d/.test(lhsBase) ? 'scalar' : (shapes.get(lhsBase) ?? 'unknown')
+        const rs = /^\d/.test(rhsBase) ? 'scalar' : (shapes.get(rhsBase) ?? 'unknown')
         const oneMatrixOneUnknown =
           (ls === 'matrix' && rs === 'unknown') || (ls === 'unknown' && rs === 'matrix')
         if (oneMatrixOneUnknown && flags && !ambiguousFlagged) {
@@ -3084,7 +3247,7 @@ function rewriteMatrixMultiply(
             originalCode: code.trim(),
           })
         }
-        out.push('*'); lastNonSpace = '*'; lastAtom = ''
+        out.push('*'); lastNonSpace = '*'
       }
       i++
       continue
@@ -3093,11 +3256,6 @@ function rewriteMatrixMultiply(
     out.push(ch)
     if (ch !== ' ' && ch !== '\t') {
       lastNonSpace = ch
-      if (/[\w.]/.test(ch)) {
-        lastAtom += ch
-      } else {
-        lastAtom = ''
-      }
     }
     i++
   }
@@ -4536,7 +4694,7 @@ function findMldivRhsEnd(s: string, start: number): number {
  * Convert struct('key', val, ...) → {'key': val, ...}
  * Handles nested function calls in values like ci_boot(1).
  */
-function convertStructCreation(content: string): string {
+function convertStructCreation(content: string, imports?: Set<string>): string {
   if (!/\bstruct\s*\(/.test(content)) return content
   // Convert EVERY struct(...) on the line — a cell row can hold several. The
   // old version converted only the first, leaving later ones to a `struct`→
@@ -4549,10 +4707,11 @@ function convertStructCreation(content: string): string {
       const key = args[k].trim()
       if (!(key.startsWith("'") || key.startsWith('"'))) return full // non-string key — leave
       // Recurse so a nested struct(...) value converts too.
-      const val = convertStructCreation(args[k + 1].trim())
+      const val = convertStructCreation(args[k + 1].trim(), imports)
       pairs.push(`${key}: ${val}`)
     }
-    return `{${pairs.join(', ')}}`
+    if (imports) imports.add('compat:Struct')
+    return `Struct({${pairs.join(', ')}})`
   })
 }
 

@@ -1,5 +1,7 @@
+from matlabtopython_compat import Struct
+
 # struct field access
-s = {}
+s = Struct()
 s['name'] = 'hp'
 s['value'] = 42
 x = s['value']

@@ -16,6 +16,8 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   meshgrid:  { python: 'np.meshgrid',       args: 'passthrough', imports: ['numpy'] },
   repmat:    { python: 'np.tile',           args: 'tile',        imports: ['numpy'] },
   diag:      { python: 'np.diag',           args: 'passthrough', imports: ['numpy'] },
+  true:      { python: 'np.ones',           args: 'custom',      imports: ['numpy'] },
+  false:     { python: 'np.zeros',          args: 'custom',      imports: ['numpy'] },
 
   // ── Array Info ──────────────────────────────────────────
   size:      { python: '.shape',            args: 'attribute',   imports: ['numpy'] },
@@ -87,6 +89,8 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   log:     { python: 'np.log',            args: 'passthrough', imports: ['numpy'] },
   log2:    { python: 'np.log2',           args: 'passthrough', imports: ['numpy'] },
   log10:   { python: 'np.log10',          args: 'passthrough', imports: ['numpy'] },
+  log1p:   { python: 'np.log1p',          args: 'passthrough', imports: ['numpy'] },
+  expm1:   { python: 'np.expm1',          args: 'passthrough', imports: ['numpy'] },
   sin:     { python: 'np.sin',            args: 'passthrough', imports: ['numpy'] },
   cos:     { python: 'np.cos',            args: 'passthrough', imports: ['numpy'] },
   tan:     { python: 'np.tan',            args: 'passthrough', imports: ['numpy'] },
@@ -119,12 +123,11 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
   cross: { python: 'np.cross',           args: 'passthrough', imports: ['numpy'] },
   dot: {
     python: 'np.dot',
-    args: 'passthrough',
+    args: 'custom',
     imports: ['numpy'],
     // The 3-arg form `dot(X, Y, dim)` is rewritten to
     // `np.sum(X * Y, axis=dim - 1)` in transform stage's preTransform; what
-    // reaches here is the 2-arg form, which maps directly to np.dot and
-    // doesn't need a flag.
+    // reaches here is the 2-arg form, which maps to np.dot with flattened args.
   },
 
   // ── Linear Algebra ─────────────────────────────────────

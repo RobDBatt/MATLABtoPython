@@ -48,10 +48,10 @@ describe('matrix multiply: * → @ with shape inference', () => {
     expect(out).toContain('B = s * A')
   })
 
-  it('unknown * matrix stays *', () => {
+  it('unknown * matrix is matrix multiply', () => {
     // x is a parameter (unknown shape), A is matrix
     const out = py('function y = f(x)\nA = eye(3);\ny = x * A;\nend')
-    expect(out).toContain('x * A')
+    expect(out).toContain('x @ A')
   })
 
   it('element-wise .* stays * (never becomes @)', () => {
@@ -68,10 +68,9 @@ describe('matrix multiply: * → @ with shape inference', () => {
     expect(out).not.toContain('A @ 2')
   })
 
-  it('complex LHS expression stays *', () => {
+  it('complex LHS expression gets classified as matrix', () => {
     const out = py('A = zeros(3,3);\nB = ones(3,3);\nC = (A + B) * B;')
-    // LHS is a parenthesised expression — cannot classify → keep *
-    expect(out).toContain('* B')
+    expect(out).toContain('(A + B) @ B')
   })
 })
 

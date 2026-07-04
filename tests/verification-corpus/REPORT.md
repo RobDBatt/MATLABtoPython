@@ -6,33 +6,56 @@ Tier A = golden/snapshot (regression) · Tier B = executes under numpy/scipy · 
 
 | Case | Features | A | B | C | Notes |
 |------|----------|:-:|:-:|:-:|-------|
-| 01_linspace_colon | linspace, colon-range, fprintf | ✅ | ✅ | ✅ |  |
-| 02_zeros_ones_size | zeros, ones, size, fprintf | ✅ | ✅ | ✅ |  |
-| 03_sum_max | sum, max | ✅ | ✅ | ✅ |  |
-| 04_abs_sign_ceil | abs, sign, ceil | ✅ | ✅ | ✅ |  |
-| 05_log2_nextpow2 | log2, nextpow2 | ✅ | ✅ | ✅ |  |
-| 06_transpose | transpose | ✅ | ✅ | ✅ |  |
-| 07_struct_fields | struct-field | ✅ | ✅ | ✅ |  |
-| 08_any_all_isfinite | any, all, isfinite | ✅ | ✅ | ✅ |  |
-| 09_length_class | length, class, colon-range | ✅ | ✅ | ✅ |  |
-| 10_fprintf_format | fprintf | ✅ | ✅ | ✅ |  |
-| 11_startswith | startsWith | ✅ | ✅ | ✅ |  |
-| 12_fullfile | fullfile | ✅ | ✅ | — |  |
-| 13_sin_linspace | sin, linspace | ✅ | ✅ | ✅ |  |
-| 14_randn_shape | randn | ✅ | ✅ | — |  |
-| 15_command_syntax | command-syntax, disp | ✅ | ✅ | — |  |
-| 16_fft_mag | fft, abs, linspace, sin | ✅ | ✅ | — |  |
-| 17_signal_processing | butter, filter, fft, findpeaks, linspace, sin | ✅ | ✅ | — |  |
-| 18_nargin_default | nargin | ✅ | ✅ | ✅ |  |
-| 19_filter_moving_average | filter | ✅ | ✅ | ✅ |  |
-| 20_findpeaks_values | findpeaks | ✅ | ✅ | ✅ |  |
-| 21_matrix_mult | matrix-mult | ✅ | ✅ | ✅ |  |
-| 22_elementwise | elementwise | ✅ | ✅ | ✅ |  |
-| 23_logical_index | logical-index | ✅ | ✅ | ✅ |  |
-| 24_end_reverse | colon-range, end-keyword | ✅ | ✅ | ✅ |  |
+| 01_linspace_colon | linspace, colon-range, fprintf | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 02_zeros_ones_size | zeros, ones, size, fprintf | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 03_sum_max | sum, max | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 04_abs_sign_ceil | abs, sign, ceil | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 05_log2_nextpow2 | log2, nextpow2 | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 06_transpose | transpose | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 07_struct_fields | struct-field | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 08_any_all_isfinite | any, all, isfinite | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 09_length_class | length, class, colon-range | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 10_fprintf_format | fprintf | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 11_startswith | startsWith | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 12_fullfile | fullfile | ❌ | ✅ | — | golden drift — output changed vs committed expected.py (regression) |
+| 13_sin_linspace | sin, linspace | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 14_randn_shape | randn | ❌ | ✅ | — | golden drift — output changed vs committed expected.py (regression) |
+| 15_command_syntax | command-syntax, disp | ❌ | ✅ | — | golden drift — output changed vs committed expected.py (regression) |
+| 16_fft_mag | fft, abs, linspace, sin | ❌ | ✅ | — | golden drift — output changed vs committed expected.py (regression) |
+| 17_signal_processing | butter, filter, fft, findpeaks, linspace, sin | ❌ | ✅ | — | golden drift — output changed vs committed expected.py (regression) |
+| 18_nargin_default | nargin | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 19_filter_moving_average | filter | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 20_findpeaks_values | findpeaks | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 21_matrix_mult | matrix-mult | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 22_elementwise | elementwise | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 23_logical_index | logical-index | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
+| 24_end_reverse | colon-range, end-keyword | ❌ | ✅ | ✅ | golden drift — output changed vs committed expected.py (regression) |
 
-## Real failures (0)
+## Real failures (24)
 
-_None._
+- **01_linspace_colon** — golden drift — output changed vs committed expected.py (regression)
+- **02_zeros_ones_size** — golden drift — output changed vs committed expected.py (regression)
+- **03_sum_max** — golden drift — output changed vs committed expected.py (regression)
+- **04_abs_sign_ceil** — golden drift — output changed vs committed expected.py (regression)
+- **05_log2_nextpow2** — golden drift — output changed vs committed expected.py (regression)
+- **06_transpose** — golden drift — output changed vs committed expected.py (regression)
+- **07_struct_fields** — golden drift — output changed vs committed expected.py (regression)
+- **08_any_all_isfinite** — golden drift — output changed vs committed expected.py (regression)
+- **09_length_class** — golden drift — output changed vs committed expected.py (regression)
+- **10_fprintf_format** — golden drift — output changed vs committed expected.py (regression)
+- **11_startswith** — golden drift — output changed vs committed expected.py (regression)
+- **12_fullfile** — golden drift — output changed vs committed expected.py (regression)
+- **13_sin_linspace** — golden drift — output changed vs committed expected.py (regression)
+- **14_randn_shape** — golden drift — output changed vs committed expected.py (regression)
+- **15_command_syntax** — golden drift — output changed vs committed expected.py (regression)
+- **16_fft_mag** — golden drift — output changed vs committed expected.py (regression)
+- **17_signal_processing** — golden drift — output changed vs committed expected.py (regression)
+- **18_nargin_default** — golden drift — output changed vs committed expected.py (regression)
+- **19_filter_moving_average** — golden drift — output changed vs committed expected.py (regression)
+- **20_findpeaks_values** — golden drift — output changed vs committed expected.py (regression)
+- **21_matrix_mult** — golden drift — output changed vs committed expected.py (regression)
+- **22_elementwise** — golden drift — output changed vs committed expected.py (regression)
+- **23_logical_index** — golden drift — output changed vs committed expected.py (regression)
+- **24_end_reverse** — golden drift — output changed vs committed expected.py (regression)
 
 Legend: ✅ pass · ❌ fail · 🌱 golden bootstrapped (first run) · ⏭️ skipped (no Python) · — n/a

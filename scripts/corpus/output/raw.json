@@ -389,13 +389,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `net` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "DeepLearnToolbox\\CNN\\cnnnumgradcheck.m",
@@ -1419,11 +1414,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 663: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 664: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 2247: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 2248: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1613,16 +1608,11 @@
   },
   {
     "rel": "export_fig\\pdf2eps.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "TODO",
-        "message": "A MATLAB range `a:b` remained inside a call/subscript — replace with a Python slice or np.arange."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "export_fig\\pdftops.m",
@@ -1848,7 +1838,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 297 (_check_tjcejad46.py, line 300)",
+    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 298 (_check_b9fovyhcja.py, line 301",
     "snippet": "",
     "flagCount": 25,
     "flags": [
@@ -1946,7 +1936,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 365: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 366: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -2126,13 +2116,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `U` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\cols.m",
@@ -2434,7 +2419,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 57: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 58: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -2568,26 +2553,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `unitC` or `r` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\graphics\\draw_ellipse.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `r` or `unitC` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\graphics\\draw_ellipse_axes.m",
@@ -2706,8 +2681,8 @@
   },
   {
     "rel": "lightspeed\\graphics\\move_obj.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 22,
     "flags": [
@@ -3117,7 +3092,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 156: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 157: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -3252,7 +3227,7 @@
   {
     "rel": "lightspeed\\mexcompiler.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_adcn27wmtzj.py:38: SyntaxWarning: \"\\P\" is an invalid ",
+    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_k90oi719v1j.py:39: SyntaxWarning: \"\\P\" is an invalid ",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -3274,7 +3249,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 38: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 39: unterminated string literal — converter output may be corrupted"
       }
     ]
   },
@@ -3291,13 +3266,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `iS` or `dx` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\mysqueeze.m",
@@ -3412,13 +3382,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `S` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "lightspeed\\randomseed.m",
@@ -3653,20 +3618,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `B` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "matlab2tikz\\src\\cleanfigure.m",
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 73,
+    "flagCount": 70,
     "flags": [
       {
         "type": "TODO",
@@ -3810,14 +3770,6 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `Rotate` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `Rotate` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
@@ -3863,10 +3815,6 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `P` or `corners` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -4137,13 +4085,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 9: bare `end` keyword remained after conversion — not a Python identifier"
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter01\\condEntropy.m",
@@ -4325,12 +4268,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `E` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
       {
         "type": "WARNING",
         "message": "eig → np.linalg.eig — MATLAB eig returns eigenvalues in ascending order for symmetric matrices; NumPy does not sort. If your code depends on eigenvalue order, add: idx = np.argsort(eigenvalues); V = V[:, idx]."
@@ -4342,19 +4281,11 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 1,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -4363,56 +4294,23 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter04\\logitMn.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 2,
     "flags": [
       {
         "type": "INDEX",
         "message": "sub2ind indices shifted to 0-based — verify"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `r` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "INDEX",
         "message": "sub2ind indices shifted to 0-based — verify"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -4421,13 +4319,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter04\\sigmoid.m",
@@ -4516,30 +4409,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `K` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `E` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter06\\knKmeansPred.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `kn` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter06\\knLin.m",
@@ -4602,31 +4481,11 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 1,
     "flags": [
       {
         "type": "INDEX",
         "message": "sub2ind indices shifted to 0-based — verify"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -4635,13 +4494,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter07\\rvmRegFp.m",
@@ -4664,25 +4518,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Phi` or `Sigma_j` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `beta` or `Sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `v` or `Phi` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Phi` or `Sigma_j` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter08\\MRF\\mrfBethe.m",
@@ -4774,13 +4611,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `spdiags` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter08\\NaiveBayes\\nbGaussPred.m",
@@ -4811,13 +4643,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `mu` or `E` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter09\\kmedoids.m",
@@ -4853,17 +4680,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `log` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `R` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter09\\mixBernRnd.m",
@@ -4894,44 +4712,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `beta0` or `Sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter09\\rvmBinEm.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 1,
     "flags": [
       {
         "type": "INDEX",
         "message": "sub2ind indices shifted to 0-based — verify"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `w` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -4953,8 +4746,8 @@
   },
   {
     "rel": "PRMLT\\chapter10\\mixGaussEvidence.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid decimal literal",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -5111,21 +4904,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `lambda_` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `XEz` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter12\\pca.m",
@@ -5140,55 +4920,24 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `Z` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter12\\pcaEmC.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `Z` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter12\\ppcaEm.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `s` or `I` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `U` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter12\\ppcaRnd.m",
@@ -5203,51 +4952,24 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `EW` or `Xo` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `EW` or `EZ` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\HMM\\hmmEm.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `gamma` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\HMM\\hmmFilter.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `At` or `alpha` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\HMM\\hmmRnd.m",
@@ -5262,76 +4984,32 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `E` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `At` or `alpha` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\HMM\\hmmViterbi.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `model` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\LDS\\kalmanFilter.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `A` or `V` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `A` or `mu` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\LDS\\kalmanSmoother.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 5,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `nu` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `P` or `C` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `C` or `Amu` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `P` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `V` or `A` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter13\\LDS\\ldsEm.m",
@@ -5354,34 +5032,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `C` or `Z` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `A` or `Z` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `C` or `Z` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\adaboostBin.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `T` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\adaboostBinPred.m",
@@ -5396,30 +5056,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\mixLinReg.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `y` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\mixLinRnd.m",
@@ -5434,34 +5080,16 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `A` or `h` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `v` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X` or `s` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\chapter14\\mixLogitBinPred.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `W` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\common\\besseliLn.m",
@@ -5476,17 +5104,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Q` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Q` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\common\\invpd.m",
@@ -5530,17 +5149,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `v` or `Q` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `Q` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\common\\log1mexp.m",
@@ -5603,17 +5213,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `Q` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Q` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\common\\normalize.m",
@@ -5901,13 +5502,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `x` or `A` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegFp_demo.m",
@@ -5922,13 +5518,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `x` or `A` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch07\\rvmRegSeq_demo.m",
@@ -5943,13 +5534,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `x` or `A` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch08\\mrf_demo.m",
@@ -5994,7 +5580,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 8,
     "flags": [
       {
         "type": "TOOLBOX",
@@ -6027,10 +5613,6 @@
       {
         "type": "WARNING",
         "message": "kmeans returns [idx, C]; cluster.vq.kmeans2 returns (centroid, label) — SWAPPED order."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `mu` or `X` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -6114,13 +5696,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `x` or `A` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "PRMLT\\demo\\ch11\\gauss_demo.m",
@@ -6462,12 +6039,8 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 2,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `edges` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
       {
         "type": "WARNING",
         "message": "histc → np.histogram — return format differs"
@@ -6826,8 +6399,8 @@
   {
     "rel": "probabilistic_matlab\\generic_toolbox\\process_final_samples.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: starred assignment target must be in a list or tuple",
-    "snippet": "*rw_cell = samples_array.flatten(order=\"F\").relative_particle_weights",
+    "error": "SyntaxError: invalid syntax",
+    "snippet": "",
     "flagCount": 3,
     "flags": [
       {
@@ -7319,7 +6892,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `phis` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+        "message": "Ambiguous `*`: `phis` or `obj['chol_sigma']` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "TOOLBOX",
@@ -7623,7 +7196,7 @@
     "flags": [
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 65: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 66: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -7636,11 +7209,11 @@
     "flags": [
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 34: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 35: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 49: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 50: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -7679,8 +7252,8 @@
   },
   {
     "rel": "rcnn\\rcnn_config.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid syntax",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -8451,19 +8024,19 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 145: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 146: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 155: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 156: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 160: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 161: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 166: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 167: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -8474,9 +8047,9 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_n0pvjqoari.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_mg8b5cnp6zn.py, line 365)",
     "snippet": "",
-    "flagCount": 62,
+    "flagCount": 56,
     "flags": [
       {
         "type": "WARNING",
@@ -8531,10 +8104,6 @@
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `q` or `diag` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "TODO",
         "message": "plot3 needs a 3-D axes: ax = plt.axes(projection='3d'); ax.plot(x, y, z)."
       },
@@ -8564,27 +8133,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `r` or `cos` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `r` or `sin` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `dar` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `Ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `x` or `ar` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -8712,19 +8261,19 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 828: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
         "message": "Output may contain syntax errors on line 832: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 835: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 836: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 846: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 839: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 850: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -9022,15 +8571,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 249: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
         "message": "Output may contain syntax errors on line 250: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 640: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 251: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -9038,7 +8583,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 643: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 642: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -9054,7 +8599,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 649: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 647: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -9067,6 +8612,10 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 652: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 653: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -9139,43 +8688,23 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 11,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
         "message": "mesh — use mpl_toolkits.mplot3d for 3D wireframe plots"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `I` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+        "type": "TODO",
+        "message": "mesh — use mpl_toolkits.mplot3d for 3D wireframe plots"
       },
       {
         "type": "TODO",
         "message": "mesh — use mpl_toolkits.mplot3d for 3D wireframe plots"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `I` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "TODO",
         "message": "mesh — use mpl_toolkits.mplot3d for 3D wireframe plots"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `I` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "TODO",
-        "message": "mesh — use mpl_toolkits.mplot3d for 3D wireframe plots"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `pc` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `centre` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "TODO",
@@ -9547,7 +9076,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 42,
+    "flagCount": 35,
     "flags": [
       {
         "type": "TODO",
@@ -9639,39 +9168,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `obj` or `a` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -9724,7 +9225,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 26,
+    "flagCount": 25,
     "flags": [
       {
         "type": "TODO",
@@ -9781,10 +9282,6 @@
       {
         "type": "TOOLBOX",
         "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -9837,7 +9334,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 24,
+    "flagCount": 22,
     "flags": [
       {
         "type": "TODO",
@@ -9885,10 +9382,6 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
       },
       {
@@ -9910,10 +9403,6 @@
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `obj` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -10265,7 +9754,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 4,
     "flags": [
       {
         "type": "TODO",
@@ -10281,15 +9770,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `vcross` or `other` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `vcross` or `other` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -10542,7 +10023,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 7,
     "flags": [
       {
         "type": "WARNING",
@@ -10567,30 +10048,6 @@
       {
         "type": "UNSUPPORTED",
         "message": "assignin/evalin — workspace manipulation has no Python equivalent"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `trotx` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `troty` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `trotz` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `transl` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `transl` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `transl` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -10603,7 +10060,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 10,
+    "flagCount": 7,
     "flags": [
       {
         "type": "WARNING",
@@ -10628,18 +10085,6 @@
       {
         "type": "UNSUPPORTED",
         "message": "assignin/evalin — workspace manipulation has no Python equivalent"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `trot2` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `transl2` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `T` or `transl2` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -10660,13 +10105,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `S` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "spatialmath-matlab\\trinterp.m",
@@ -10694,7 +10134,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 4,
     "flags": [
       {
         "type": "WARNING",
@@ -10711,14 +10151,6 @@
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `skw` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Ginv` or `t` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -10961,7 +10393,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 25,
+    "flagCount": 24,
     "flags": [
       {
         "type": "TODO",
@@ -11046,10 +10478,6 @@
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `u` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -11511,7 +10939,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 2,
     "flags": [
       {
         "type": "WARNING",
@@ -11520,22 +10948,6 @@
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `L` or `M` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `L` or `M` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `M` or `L` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `M` or `L` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -11938,13 +11350,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `Xa` or `diag` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\acq\\acqus_vbmc.m",
@@ -11975,55 +11382,24 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma_grad` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\ent\\entmc_vbmc.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `epsilon` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `lambda_grad` or `lambda_` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma_grad` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `J_w` or `w_grad` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\ent\\entub_vbmc.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `S_k` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma_grad` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_clean.m",
@@ -12060,8 +11436,8 @@
   },
   {
     "rel": "vbmc\\gplite\\gplite_fmin.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -12190,13 +11566,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `b_true` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\gplite\\gplite_train.m",
@@ -12241,15 +11612,11 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "TODO",
         "message": "str2func builds a function from a NAME string — in Python use a dict dispatch {name: fn} instead of eval."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `k` or `y` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -12287,7 +11654,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 15,
+    "flagCount": 14,
     "flags": [
       {
         "type": "TODO",
@@ -12330,10 +11697,6 @@
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `uvec` or `cholsigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
@@ -12343,7 +11706,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 562: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 565: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "TODO",
@@ -12356,12 +11719,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `S` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
       {
         "type": "TOOLBOX",
         "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
@@ -12435,7 +11794,7 @@
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_decrqw4x8om.py, line 300)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_ejwg9zie27j.py, line 304)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -12465,11 +11824,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 419: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 423: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 526: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 530: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -12637,52 +11996,19 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 6,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma_grad` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `lambda_grad` or `lambda_` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `J_w` or `w_grad` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma_vargrad` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `lambda_vargrad` or `lambda_` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `J_w` or `w_vargrad` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\misc\\gplogjoint_weights.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 1,
     "flags": [
       {
         "type": "WARNING",
         "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `J_w` or `w_grad` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `J_w` or `w_vargrad` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -12822,21 +12148,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `xi` or `w` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `w` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma` or `bsxfun` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\misc\\vbmc_gphyp.m",
@@ -12885,8 +12198,8 @@
   },
   {
     "rel": "vbmc\\misc\\vpoptimize_vbmc.m",
-    "status": "PASS",
-    "error": "",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -12945,31 +12258,15 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 6,
+    "flagCount": 2,
     "flags": [
       {
         "type": "TOOLBOX",
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `X_old` or `scale_old` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "TOOLBOX",
         "message": "cov → np.cov — MATLAB cov(X) normalizes by N-1 (unbiased). np.cov(X) also uses N-1 by default, but MATLAB treats rows as observations while NumPy treats rows as variables. You may need np.cov(X.T) or np.cov(X, rowvar=False)."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `R_mat_old` or `` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `vp_Sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `vp_Sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -12986,15 +12283,11 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 2,
+    "flagCount": 1,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `L` or `Kax_mat` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -13003,7 +12296,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 11,
+    "flagCount": 10,
     "flags": [
       {
         "type": "TODO",
@@ -13044,10 +12337,6 @@
       {
         "type": "TOOLBOX",
         "message": "mvnrnd → np.random.multivariate_normal (Statistics Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 193: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -13215,21 +12504,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 3,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `a` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `b` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `sigma` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\shared\\msmoothboxpdf.m",
@@ -13252,25 +12528,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `a` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `b` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `c` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `d` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\shared\\msplinetrapezpdf.m",
@@ -13293,25 +12552,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 4,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `a` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `u` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `v` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `b` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\shared\\mtrapezpdf.m",
@@ -13334,17 +12576,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 2,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `a` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `b` or `ones` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\shared\\munifboxpdf.m",
@@ -13471,19 +12704,19 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 477: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 478: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 514: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 515: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 567: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 568: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 672: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 673: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -13500,7 +12733,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 78,
+    "flagCount": 57,
     "flags": [
       {
         "type": "TODO",
@@ -13531,64 +12764,12 @@
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `BD` or `randn` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `diagD` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `BD` or `randn` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `weights` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `weights` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `ps` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `pc` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `diagC` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `BD` or `arzneg` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `BD` or `arzneg` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `C` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `C` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `ps` or `sqrt` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "UNSUPPORTED",
@@ -13639,24 +12820,12 @@
         "message": "assignin/evalin — workspace manipulation has no Python equivalent"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "INDEX",
         "message": "for loop with variable step — sign of step affects whether the end value is included. Verify range bounds."
       },
       {
         "type": "WARNING",
         "message": "global variable — Python global scoping differs from MATLAB"
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `scale_G` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -13693,26 +12862,6 @@
       {
         "type": "WARNING",
         "message": "Ambiguous `*`: `` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `y` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `pi` or `x` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       },
       {
         "type": "WARNING",
@@ -13854,20 +13003,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `weights` or `topx` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\utils\\eissample_lite.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 15,
+    "flagCount": 14,
     "flags": [
       {
         "type": "TODO",
@@ -13910,10 +13054,6 @@
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `uvec` or `cholsigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
@@ -13923,7 +13063,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 562: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 565: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "TODO",
@@ -13934,7 +13074,7 @@
   {
     "rel": "vbmc\\utils\\evalbool.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_zpdg19cnz7d.py, line 18)",
+    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_jhv59ycwlp.py, line 18)",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -13970,12 +13110,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 14,
+    "flagCount": 13,
     "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `S` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
       {
         "type": "TOOLBOX",
         "message": "normcdf → stats.norm.cdf — Same interface: stats.norm.cdf(x, mu, sigma)."
@@ -14097,15 +13233,15 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 5,
     "flags": [
       {
         "type": "UNSUPPORTED",
         "message": "eval/feval cannot be converted deterministically"
       },
       {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `tau` or `widths` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
       },
       {
         "type": "UNSUPPORTED",
@@ -14113,19 +13249,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Ambiguous `*`: `tau` or `widths` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "UNSUPPORTED",
-        "message": "eval/feval cannot be converted deterministically"
+        "message": "Output may contain syntax errors on line 381: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 377: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 467: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 471: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -14173,7 +13301,7 @@
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_lwq4k4v3chf.py, line 288)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_h5uyykkl0uo.py, line 292)",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -14199,18 +13327,18 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 397: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 401: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 478: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 482: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_9w73lvou6m7.py, line 308)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_0t2gtdj80pyo.py, line 312)",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -14240,11 +13368,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 427: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 431: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 534: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 538: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -14274,13 +13402,8 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 1,
-    "flags": [
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `sigma` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      }
-    ]
+    "flagCount": 0,
+    "flags": []
   },
   {
     "rel": "vbmc\\vbmc.m",
@@ -14299,7 +13422,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 417: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 418: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -14316,18 +13439,18 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 186: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 187: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 189: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 190: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "vbmc\\vbmc_examples.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 40,
     "flags": [
@@ -14469,27 +13592,27 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 191: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 36: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 237: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 192: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 373: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 238: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 493: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 374: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 494: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
         "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
-      },
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
       }
     ]
   },
@@ -15080,7 +14203,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 12,
+    "flagCount": 8,
     "flags": [
       {
         "type": "TODO",
@@ -15113,22 +14236,6 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor set.beta → def set_beta. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `this` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `culture` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `culture` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
-      },
-      {
-        "type": "WARNING",
-        "message": "Ambiguous `*`: `` or `culture` is a matrix and the other's shape is unknown. MATLAB `*` is matrix-multiply but this emitted numpy elementwise `*` — if both are matrices use `@` (np.matmul); if elementwise was intended, it's correct."
       }
     ]
   },
@@ -15254,7 +14361,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 87: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 88: unterminated string literal — converter output may be corrupted"
       }
     ]
   },

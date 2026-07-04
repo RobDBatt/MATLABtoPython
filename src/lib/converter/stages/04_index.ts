@@ -2,6 +2,7 @@ import type { StructuredLine, Flag, IndexShiftResult } from '../types'
 import { FUNCTION_MAP } from '../registry/functions'
 import { TOOLBOX_MAP } from '../registry/toolboxes'
 import type { SymbolTable } from '../analysis/scope'
+import type { ShapeClass } from '../analysis/shape-table'
 
 /**
  * Stage 4: Index Shifting
@@ -24,6 +25,7 @@ export function shiftIndices(
   lines: StructuredLine[],
   symbols?: SymbolTable,
   imports?: Set<string>,
+  shapeTable?: Map<string, ShapeClass>,
 ): IndexShiftResult {
   const flags: Flag[] = []
   const shifted: StructuredLine[] = []
@@ -69,8 +71,8 @@ export function shiftIndices(
     // the symbol table definitively classifies as a function and that
     // was NOT also assigned as a variable. Functions win in that case —
     // unless the name was proven to be an array above.
-    for (const f of symbols.functions) {
-      if (!symbols.variables.has(f) && !provenArrays.has(f)) knownArrays.delete(f)
+    for (const k of Array.from(knownArrays)) {
+      if (!symbols.variables.has(k) && !provenArrays.has(k)) knownArrays.delete(k)
     }
   }
 
@@ -131,7 +133,7 @@ export function shiftIndices(
     content = transformDictRead(content, dictNames)
 
     // Specific unambiguous patterns (end, :, slicing)
-    content = transformUnambiguousIndexing(content, lineFlags, line, knownArrays, knownFunctions)
+    content = transformUnambiguousIndexing(content, zeroBased, lineFlags, line, knownArrays, knownFunctions, shapeTable)
 
     // 2B. General A(i) → A[i-1] using identifier tracker. Iterate to a fixed
     // point so an expression subscript like `v(idx(1))` resolves both layers:
@@ -141,6 +143,42 @@ export function shiftIndices(
       const next = transformGeneralIndexing(content, knownArrays, zeroBased, lineFlags, line, knownFunctions)
       if (next === content) break
       content = next
+    }
+
+    // Convert known arrays with nested parentheses (e.g. below(np.r_[1:len(below), 0]))
+    for (const varName of knownArrays) {
+      const pattern = new RegExp(`\\b${varName}\\(`, 'g')
+      let m: RegExpExecArray | null
+      while ((m = pattern.exec(content)) !== null) {
+        const startIdx = m.index + varName.length // index of (
+        let depth = 1
+        let j = startIdx + 1
+        let inString = false
+        let sc = ''
+        while (j < content.length && depth > 0) {
+          const ch = content[j]
+          if (inString) {
+            if (ch === sc && content[j - 1] !== '\\') inString = false
+            j++
+            continue
+          }
+          if (ch === "'" || ch === '"') { inString = true; sc = ch; j++; continue }
+          if (ch === '(') depth++
+          else if (ch === ')') depth--
+          if (depth > 0) j++
+        }
+        if (depth === 0) {
+          const argsStr = content.slice(startIdx + 1, j)
+          const args = splitArgs(argsStr)
+          const pyArgs = args.map(a => {
+            const trimmed = a.trim()
+            if (zeroBased.has(trimmed)) return trimmed
+            return shiftSingleIndex(trimmed)
+          })
+          content = content.slice(0, startIdx) + '[' + pyArgs.join(', ') + ']' + content.slice(j + 1)
+          pattern.lastIndex = startIdx + 1
+        }
+      }
     }
 
     // 2E. Chained subscript: ](args) and )(args) → ][shifted_args]
@@ -257,9 +295,15 @@ function buildKnownArrays(lines: StructuredLine[]): Set<string> {
     // Without this, lines like `Xo = bsxfun(minus, X, mu(:, i))` capture
     // `bsxfun` (the outermost callable) as a "sliced array" because the
     // colon inside the nested `mu(:, i)` falls within `bsxfun(...)`.
-    const sliceMatch = content.match(/\b(\w+)\([^()]*:[^()]*\)/)
+    const sliceMatch = content.match(/\b(\w+)\([^(){}[\]]*:[^(){}[\]]*\)/)
     if (sliceMatch && !isKnownFunction(sliceMatch[1])) {
       arrays.add(sliceMatch[1])
+    }
+
+    // Pattern 7: Used with range vectors like np.r_ or np.arange inside parens
+    const rangeVectorMatch = content.match(/\b(\w+)\(\s*np\.(?:r_|arange)\b/)
+    if (rangeVectorMatch && !isKnownFunction(rangeVectorMatch[1])) {
+      arrays.add(rangeVectorMatch[1])
     }
 
     // Pattern 5: Used with dot-transpose: A' or A.' — definitely a matrix
@@ -368,9 +412,13 @@ function collectParamsAndCounters(lines: StructuredLine[]): { params: Set<string
 function buildProvenArrays(lines: StructuredLine[]): Set<string> {
   const proven = new Set<string>()
   const subscriptPattern = /\b(\w+)\[/g
+  const rangeVectorPattern = /\b(\w+)\(\s*np\.(?:r_|arange)\b/g
   for (const line of lines) {
     if (line.isComment || line.content.trim() === '') continue
     for (const m of line.content.matchAll(subscriptPattern)) {
+      if (!isKnownFunction(m[1])) proven.add(m[1])
+    }
+    for (const m of line.content.matchAll(rangeVectorPattern)) {
       if (!isKnownFunction(m[1])) proven.add(m[1])
     }
   }
@@ -507,10 +555,12 @@ function transformLogicalIndexing(
 
 function transformUnambiguousIndexing(
   content: string,
+  zeroBased: Set<string>,
   flags: Flag[],
   line: StructuredLine,
   knownArrays?: Set<string>,
   knownFunctions?: Set<string>,
+  shapeTable?: Map<string, ShapeClass>,
 ): string {
   let result = content
 
@@ -569,7 +619,7 @@ function transformUnambiguousIndexing(
   // consumed span), so re-scan until nothing changes; the second pass then
   // converts the inner one with proper shifting. Capped defensively.
   for (let pass = 0; pass < 5; pass++) {
-    const next = rewriteMultiDimIndexing(result, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>())
+    const next = rewriteMultiDimIndexing(result, zeroBased, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>(), shapeTable)
     if (next === result) break
     result = next
   }
@@ -579,7 +629,8 @@ function transformUnambiguousIndexing(
     /\b(\w+)\(\s*(\w+)\s*:\s*(\w+)\s*\)/g,
     (match, varName, start, end) => {
       if (isKnownFunction(varName, knownArrays, knownFunctions)) return match
-      return `${varName}[${shiftSingleIndex(start)}:${end}]`
+      const shiftedStart = zeroBased.has(start) ? start : shiftSingleIndex(start)
+      return `${varName}[${shiftedStart}:${end}]`
     },
   )
 
@@ -630,8 +681,8 @@ function transformGeneralIndexing(
       if (match.includes('[') && !knownArrays.has(varName)) return match
       // Skip known functions — but variables always shadow functions
       if (isKnownFunction(varName, knownArrays, knownFunctions)) return match
-      // Skip if args contain colon (handled by unambiguous patterns)
-      if (argsStr.includes(':')) return match
+      // Skip if args contain colon at depth 0 (handled by unambiguous patterns)
+      if (hasDepth0Colon(argsStr)) return match
       // Skip if args contain comparison operators (handled by logical indexing)
       if (/[><=!]/.test(argsStr)) return match
       // Skip if args contain string literals
@@ -758,8 +809,10 @@ function rewriteChainedSubscript(
  */
 function rewriteMultiDimIndexing(
   source: string,
+  zeroBased: Set<string>,
   knownArrays: Set<string>,
   knownFunctions: Set<string>,
+  shapeTable?: Map<string, ShapeClass>,
 ): string {
   const matches: Array<{ start: number; end: number; name: string; args: string }> = []
   let i = 0
@@ -793,8 +846,8 @@ function rewriteMultiDimIndexing(
         continue
       }
       if (c === "'" || c === '"') { inString = true; sc = c; j++; continue }
-      if (c === '(') depth++
-      else if (c === ')') { depth--; if (depth === 0) break }
+      if (c === '(' || c === '[' || c === '{') depth++
+      else if (c === ')' || c === ']' || c === '}') { depth--; if (depth === 0) break }
       else if (c === ':' && depth === 1) hasTopColon = true
       else if (c === ',' && depth === 1) hasTopComma = true
       j++
@@ -822,10 +875,30 @@ function rewriteMultiDimIndexing(
   for (let k = matches.length - 1; k >= 0; k--) {
     const mm = matches[k]
     const args = splitArgs(mm.args)
+    const hasColon = args.some(a => a.trim() === ':')
     const pyArgs = args.map(a => {
       const trimmed = a.trim()
       if (trimmed === ':') return ':'
       if (trimmed.includes(':')) return sliceifyDim(trimmed)
+
+      if (hasColon) {
+        const containsArray = Array.from(knownArrays).some(arr => new RegExp('\\b' + arr + '\\b').test(trimmed))
+        const isKnownScalar = (shapeTable && shapeTable.get(trimmed) === 'scalar') || trimmed === 'j'
+        if (!containsArray || isKnownScalar) {
+          if (zeroBased.has(trimmed)) {
+            return `${trimmed}:${trimmed}+1`
+          } else {
+            const shifted = shiftSingleIndex(trimmed)
+            if (shifted.endsWith(' - 1')) {
+              const base = shifted.slice(0, -4)
+              return `${base}-1:${base}`
+            }
+            return `${shifted}:${shifted}+1`
+          }
+        }
+      }
+
+      if (zeroBased.has(trimmed)) return trimmed
       return shiftSingleIndex(trimmed)
     })
     result = result.slice(0, mm.start) + `${mm.name}[${pyArgs.join(', ')}]` + result.slice(mm.end + 1)
@@ -1030,6 +1103,7 @@ function shiftSingleIndex(idx: string): string {
   const trimmed = idx.trim()
   if (trimmed === ':') return ':'
   if (trimmed === '') return ''
+  if (trimmed.startsWith('np.r_[') || trimmed.startsWith('np.arange(')) return trimmed
   // A string literal is never a 1-based subscript — shifting it produces
   // `'fun' - 1` garbage (seen when a method call is misread as indexing).
   if (/^['"]/.test(trimmed)) return trimmed
@@ -1096,4 +1170,22 @@ function findTopLevelAssign(line: string): number {
     }
   }
   return -1
+}
+
+function hasDepth0Colon(s: string): boolean {
+  let depth = 0
+  let inString = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      if (ch === sc && s[i - 1] !== '\\') inString = false
+      continue
+    }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') depth--
+    else if (ch === ':' && depth === 0) return true
+  }
+  return false
 }

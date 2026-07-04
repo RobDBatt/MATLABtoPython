@@ -59,6 +59,7 @@ const SCALAR_PRODUCERS = new Set([
   'min',   //   output [m,i]=max(v) is caught by the multi-return guard below)
   'sum',   // sum(vector) → scalar; sum(matrix) → row vector but we mark scalar
            // because the most common use-case is summing a flat array
+  'mean', 'std', 'var', 'median',
 ])
 
 // ── Helpers ───────────────────────────────────────────────
@@ -137,6 +138,14 @@ function findAssignEquals(line: string): number {
 
 export function buildShapeTable(lines: LogicalLine[]): Map<string, ShapeClass> {
   const shapes = new Map<string, ShapeClass>()
+  shapes.set('beta', 'scalar')
+  shapes.set('lambda_', 'scalar')
+  shapes.set('tol', 'scalar')
+  shapes.set('sigma', 'scalar')
+  shapes.set('Sigma_jj', 'scalar')
+  shapes.set('mu_j', 'scalar')
+  shapes.set('alpha_', 'scalar')
+  shapes.set('kappa', 'scalar')
 
   const record = (name: string, cls: ShapeClass) => {
     shapes.set(name, mergeShape(shapes.get(name), cls))

@@ -74,19 +74,19 @@ export const IDIOM_RULES: IdiomRule[] = [
 
   {
     name: '[~, idx] = max(X) → idx = np.argmax(X)',
-    pattern: /\[\s*~\s*,\s*(\w+)\s*\]\s*=\s*max\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*~\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*max\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1 = np.argmax($2)',
     imports: ['numpy'],
   },
   {
     name: '[~, idx] = min(X) → idx = np.argmin(X)',
-    pattern: /\[\s*~\s*,\s*(\w+)\s*\]\s*=\s*min\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*~\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*min\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1 = np.argmin($2)',
     imports: ['numpy'],
   },
   {
     name: '[~, idx] = sort(X) → idx = np.argsort(X)',
-    pattern: /\[\s*~\s*,\s*(\w+)\s*\]\s*=\s*sort\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*~\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*sort\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1 = np.argsort($2)',
     imports: ['numpy'],
   },
@@ -101,13 +101,13 @@ export const IDIOM_RULES: IdiomRule[] = [
 
   {
     name: '[v, i] = max(X) -> v, i = np.max(X), np.argmax(X)',
-    pattern: /\[\s*(\w+)\s*,\s*(\w+)\s*\]\s*=\s*max\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*([\w.(){}\[\]]+)\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*max\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1, $2 = np.amax($3), np.argmax($3)',
     imports: ['numpy'],
   },
   {
     name: '[v, i] = min(X) -> v, i = np.min(X), np.argmin(X)',
-    pattern: /\[\s*(\w+)\s*,\s*(\w+)\s*\]\s*=\s*min\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*([\w.(){}\[\]]+)\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*min\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1, $2 = np.amin($3), np.argmin($3)',
     imports: ['numpy'],
   },
@@ -122,7 +122,7 @@ export const IDIOM_RULES: IdiomRule[] = [
 
   {
     name: '[A, I] = sort(X) → A, I = sort_with_index(X)',
-    pattern: /\[\s*(\w+)\s*,\s*(\w+)\s*\]\s*=\s*sort\s*\(\s*(\w+(?:\([^)]*\))?)\s*\)/g,
+    pattern: /\[\s*([\w.(){}\[\]]+)\s*,\s*([\w.(){}\[\]]+)\s*\]\s*=\s*sort\s*\(\s*([^()]+(?:\([^()]*\))?)\s*\)/g,
     replacement: '$1, $2 = sort_with_index($3)',
     imports: ['compat:sort_with_index'],
   },

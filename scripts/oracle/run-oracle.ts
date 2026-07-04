@@ -97,7 +97,8 @@ function run(set: string): Result[] {
     }
     const pyFile = join(TMP, 'case.py')
     writeFileSync(pyFile, PREAMBLE + py)
-    const r = spawnSync('python3', [pyFile], { encoding: 'utf8', timeout: 8000, env: { ...process.env, MPLBACKEND: 'Agg' } })
+    const COMPAT = join(REPO, 'packages', 'matlabtopython-compat', 'src')
+    const r = spawnSync('python3', [pyFile], { encoding: 'utf8', timeout: 8000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: COMPAT } })
     if (r.status === 0) {
       results.push({ rel, status: 'RUNS', bucket: 'ok', detail: '' })
       continue
