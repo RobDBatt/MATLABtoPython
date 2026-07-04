@@ -2384,10 +2384,27 @@ function transformFunctions(
         // rand/randn take SEPARATE dim args (not a tuple): rand(2,3) →
         // np.random.rand(2, 3). A literal leading/trailing 1 in the 2-arg
         // form is a row/col vector → emit 1-D (np.random.rand(n)).
+        //
+        // Special case: randn(size(X)) — size(X) returns a tuple in Python
+        // (via .shape). np.random.randn() requires separate integer args, not
+        // a tuple. We detect the single-arg `size(...)` form here (before the
+        // attribute rewrite turns it into X.shape) and emit randn(*X.shape).
         result = replaceFunctionCalls(result, matlabName, (_, args) => {
           const argList = dropSingletonVectorDim(
             splitArgsRespectingStrings(args).map(s => s.trim()),
           )
+          // Single arg that is `size(...)` → will become X.shape (a tuple).
+          // Unpack so randn(*X.shape) works instead of randn(X.shape).
+          if (argList.length === 1) {
+            const sizeMatch = argList[0].match(/^size\((.+)\)$/)
+            if (sizeMatch) {
+              return `${mapping.python}(*${sizeMatch[1]}.shape)`
+            }
+            // Already rewritten to X.shape (e.g. in a second-pass scenario)
+            if (/\.shape(?:\[\d+\])?$/.test(argList[0])) {
+              return `${mapping.python}(*${argList[0]})`
+            }
+          }
           return `${mapping.python}(${argList.join(', ')})`
         })
         break
