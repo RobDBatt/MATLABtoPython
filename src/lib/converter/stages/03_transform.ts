@@ -2750,7 +2750,7 @@ function rewriteReductionDim(
 ): string {
   const py = `np.${matlabName}`
   const a = splitArgsRespectingStrings(rawArgs).map(s => s.trim())
-  const keepdims = (lhsVar === 'S' || lhsVar === 'Q' || (shapeTable && shapeTable.get(lhsVar) === 'matrix')) ? ', keepdims=True' : ''
+  const keepdims = (lhsVar === 'S' || lhsVar === 'Q' || (lhsVar && shapeTable && shapeTable.get(lhsVar) === 'matrix')) ? ', keepdims=True' : ''
   if (a.length <= 1) return `${py}(${rawArgs})`
   if ((matlabName === 'max' || matlabName === 'min') && a.length >= 2) {
     if (a[1] === '[]' && a.length === 3) return `${py}(${a[0]}, axis=${dimToAxis(a[2])}${keepdims})`
