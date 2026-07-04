@@ -189,7 +189,8 @@ beforeAll(() => {
     const script = 'import os\nos.environ.setdefault("MPLBACKEND", "Agg")\n' + python + probeEpilogue(meta.probe)
     const pyFile = join(tmpDir, `${meta.id}.py`)
     writeFileSync(pyFile, script, 'utf8')
-    const run = spawnSync(PY, [pyFile], { encoding: 'utf8', timeout: 15000, env: { ...process.env, MPLBACKEND: 'Agg' } })
+    const compatPath = join(repoRoot, 'packages', 'matlabtopython-compat', 'src')
+    const run = spawnSync(PY, [pyFile], { encoding: 'utf8', timeout: 15000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: compatPath } })
 
     if (run.status !== 0) {
       const err = (run.stderr || '').trim().split('\n').filter(Boolean).pop() || run.signal || 'nonzero exit'
