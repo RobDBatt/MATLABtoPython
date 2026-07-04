@@ -663,6 +663,34 @@ export const TOOLBOX_MAP: Record<string, ToolboxMapping> = {
     python: 'waveinfo', args: 'passthrough', imports: [], toolbox: 'Wavelet',
     flag: { type: 'TODO', message: "waveinfo('db') → print(pywt.Wavelet('db4')) / pywt.wavelist('db')." },
   },
+  
+  // Instrument Control / Data Acquisition
+  serial: {
+    python: 'serial', args: 'passthrough', imports: [], toolbox: 'Instrument Control',
+    flag: { type: 'UNSUPPORTED', message: 'serial communication is unsupported by default. Use the Python pyserial package (serial.Serial) to interact with serial ports.' },
+  },
+  gpib: {
+    python: 'gpib', args: 'passthrough', imports: [], toolbox: 'Instrument Control',
+    flag: { type: 'UNSUPPORTED', message: 'gpib control is unsupported. Install pyvisa (pip install pyvisa) to interact with GPIB/VISA instruments.' },
+  },
+  daq: {
+    python: 'daq', args: 'passthrough', imports: [], toolbox: 'Data Acquisition',
+    flag: { type: 'UNSUPPORTED', message: 'daq is unsupported. Use NI-DAQmx Python bindings (nidaqmx) or PyDAQmx to interact with data acquisition hardware.' },
+  },
+
+  // App Designer / GUI
+  uifigure: {
+    python: 'uifigure', args: 'passthrough', imports: [], toolbox: 'GUI',
+    flag: { type: 'UNSUPPORTED', message: 'uifigure creates a MATLAB App Designer UI window — no Python equivalent. Reimplement using a Python GUI toolkit like PyQt6/PySide6 (QMainWindow) or tkinter.' },
+  },
+  uicontrol: {
+    python: 'uicontrol', args: 'passthrough', imports: [], toolbox: 'GUI',
+    flag: { type: 'UNSUPPORTED', message: 'uicontrol creates legacy MATLAB UI controls — no Python equivalent. Reimplement using widgets in PyQt6/PySide6 (QPushButton, etc.) or tkinter.' },
+  },
+  msgbox: {
+    python: 'msgbox', args: 'passthrough', imports: [], toolbox: 'GUI',
+    flag: { type: 'TODO', message: 'msgbox displays a popup dialog — use tkinter.messagebox.showinfo() or PyQt QMessageBox.' },
+  },
 }
 
 /** Get all unique toolbox names detected from a set of function names */

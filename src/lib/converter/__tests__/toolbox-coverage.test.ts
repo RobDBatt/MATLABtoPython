@@ -124,6 +124,19 @@ describe('Financial toolbox — flagged with formula hints', () => {
   })
 })
 
+describe('New unsupported toolboxes — flagged with recommendations', () => {
+  it('serial/gpib/daq are flagged as unsupported with libraries', () => {
+    expect(flags("s = serial('COM1');")).toMatch(/pyserial/)
+    expect(flags('g = gpib(vendor, board, address);')).toMatch(/pyvisa/)
+    expect(flags('d = daq(vendor);')).toMatch(/nidaqmx|pydaqmx/)
+  })
+  it('uifigure/uicontrol/msgbox are flagged', () => {
+    expect(flags('fig = uifigure();')).toMatch(/pyqt6|pyside6|tkinter/)
+    expect(flags('btn = uicontrol();')).toMatch(/pyqt6|pyside6|tkinter/)
+    expect(flags("msgbox('Done');")).toMatch(/tkinter.messagebox|qmessagebox/)
+  })
+})
+
 describe('toolbox conversions never fire inside strings', () => {
   it('lqr mentioned in a disp string survives', () => {
     const o = out("disp('running lqr(A, B) design step');")
