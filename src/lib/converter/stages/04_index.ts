@@ -126,6 +126,12 @@ export function shiftIndices(
     // 1E. Cell array {} indexing (unambiguous)
     content = transformCellIndexing(content)
 
+    // Chained cell-index-then-expand (`varargin{2}{:}` → `args[1]{:}` after
+    // the line above, then here → `*args[1]`) — Stage 3's bracket-subscript
+    // cell-unpack regex can't see this shape because the `{i}` → `[i-1]`
+    // conversion above hasn't happened yet when Stage 3 runs.
+    content = content.replace(/\b(\w+(?:\[[^\[\]]*\])+)\{:\}/g, '*$1')
+
     // 2C. Logical indexing: A(A > 5) → A[A > 5] (unambiguous)
     content = transformLogicalIndexing(content, knownArrays, knownFunctions)
 
@@ -169,6 +175,13 @@ export function shiftIndices(
         }
         if (depth === 0) {
           const argsStr = content.slice(startIdx + 1, j)
+          // Zero-arg call (`x()`) on a known variable — MATLAB's no-arg deref,
+          // not indexing. `x[]` is always a Python SyntaxError, so leave it as
+          // a call instead of guessing at contents that were never there.
+          if (argsStr.trim() === '') {
+            pattern.lastIndex = startIdx + 1
+            continue
+          }
           const args = splitArgs(argsStr)
           const pyArgs = args.map(a => {
             const trimmed = a.trim()

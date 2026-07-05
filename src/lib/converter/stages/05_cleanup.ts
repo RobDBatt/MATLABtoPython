@@ -3,6 +3,51 @@ import { buildImportBlock } from '../registry/imports'
 import { validateAndFix } from '../validator/syntax-check'
 
 /**
+ * Stage 4's shape-preserving index math widens a single scalar subscript
+ * sitting next to a sibling `:` into a degenerate slice (`0` → `0:0+1`) so a
+ * 2D read keeps its shape. That's fine for reads, but the deletion idiom
+ * below passes the captured index straight into `np.delete(...)` as a plain
+ * argument, where a bare `a:b` is never valid Python. Collapse it back to
+ * the scalar it represents.
+ */
+function simplifyDegenerateSlice(idx: string): string {
+  const trimmed = idx.trim()
+  // `N:N+1` (zero-based var, or a shift that resolved to a plain literal/expr)
+  let m = trimmed.match(/^(.+):\1\+1$/)
+  if (m) return m[1]
+  // `base-1:base` (a shift landing on `base - 1`, condensed to a slice)
+  m = trimmed.match(/^(.+)-1:\1$/)
+  if (m) return `${m[1]}-1`
+  return idx
+}
+
+/**
+ * Turn a deletion index into something valid as np.delete's `obj` argument.
+ * A degenerate slice collapses to its scalar (above); a GENUINE range
+ * (`r+1:end` shifted to `r+1:`) is a bare `a:b` — never valid as a plain
+ * function argument, only inside subscript brackets. np.delete's `obj`
+ * accepts an actual `slice` object directly, so wrap it as one instead of
+ * pasting MATLAB-shaped colon syntax where Python requires a value.
+ */
+function toDeleteObjArg(idx: string): string {
+  const simplified = simplifyDegenerateSlice(idx)
+  if (!simplified.includes(':')) return simplified
+  const [start, stop] = simplified.split(':').map((s) => s.trim())
+  return `slice(${start || 'None'}, ${stop || 'None'})`
+}
+
+/**
+ * True when the captured idx contains a comma-separated segment that is a
+ * bare `:` — evidence of a 3rd+ dimension leaking into what this regex
+ * assumed was a single 2D index (see the two callers below). Only 2D
+ * deletions are supported here; matching a 3D+ pattern would otherwise pass
+ * a literal `:` into `np.delete(...)`, which is never valid syntax there.
+ */
+function hasLeakedDimension(idx: string): boolean {
+  return idx.split(',').some((part) => part.trim() === ':')
+}
+
+/**
  * Stage 5: Cleanup
  *
  * Final pass before output:
@@ -450,26 +495,39 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
   )
 
   // Empty bracket assignment (element/row/col deletion): A[idx] = [] → np.delete
+  // Only true 2D deletions are handled here — a 3rd (or 4th) dimension shows
+  // up as an extra bare `:` segment inside the captured idx, which would
+  // leak a literal `:` into the np.delete(...) call (never valid as a plain
+  // argument, and a downstream heuristic mangles it further into
+  // `np.delete[...]`). Bail out and leave those unconverted rather than
+  // emit guaranteed-broken output.
   // 1. A[:, idx] = []
   result = result.replace(
     /^(\s*)(\w+)\[\s*:\s*,\s*([^\]]+)\]\s*=\s*\[\]\s*$/,
-    (_, indent, name, idx) => {
+    (full, indent, name, idx) => {
+      if (hasLeakedDimension(idx)) return full
       imports.add('numpy')
-      return `${indent}${name} = np.delete(${name}, ${idx}, axis=1)`
+      return `${indent}${name} = np.delete(${name}, ${toDeleteObjArg(idx)}, axis=1)`
     }
   )
   // 2. A[idx, :] = []
   result = result.replace(
     /^(\s*)(\w+)\[\s*([^\]]+)\s*,\s*:\s*\]\s*=\s*\[\]\s*$/,
-    (_, indent, name, idx) => {
+    (full, indent, name, idx) => {
+      if (hasLeakedDimension(idx)) return full
       imports.add('numpy')
-      return `${indent}${name} = np.delete(${name}, ${idx}, axis=0)`
+      return `${indent}${name} = np.delete(${name}, ${toDeleteObjArg(idx)}, axis=0)`
     }
   )
   // 3. A[idx] = []
   result = result.replace(
     /^(\s*)(\w+)\[\s*([^\]]+)\s*\]\s*=\s*\[\]\s*$/,
-    (_, indent, name, idx) => {
+    (full, indent, name, rawIdx) => {
+      // This is the catch-all single-bracket case — it must reject the same
+      // leaked-dimension shape #1/#2 reject, or a 3D+ pattern neither of
+      // them matched falls through to here and gets converted anyway.
+      if (hasLeakedDimension(rawIdx)) return full
+      const idx = toDeleteObjArg(rawIdx)
       imports.add('numpy')
       if (name === 'mu') {
         return `${indent}${name} = np.delete(${name}, ${idx}, axis=0)`
@@ -588,8 +646,201 @@ function cleanupSyntax(content: string, imports: Set<string>): string {
     result = wrapArithmeticListLiterals(result, imports)
   }
 
+  // fprintf/sprintf emit `'fmt' % (v1, v2, ...)` (Stage 3) — rewrite to an
+  // f-string now that index shifting has already resolved the value
+  // expressions. See rewritePercentFormatToFString for why this can't
+  // happen earlier.
+  if (result.includes('%') && result.includes('(')) {
+    result = rewritePercentFormatToFString(result)
+  }
 
   return result
+}
+
+/**
+ * Rewrite the `'fmt' % (v1, v2, ...)` calls Stage 3's fprintf/sprintf
+ * handling produces into f-strings — the project's style standard is
+ * f-strings, never `%`/`.format()`. Done here, after Stage 4's index
+ * shifting has already run on the value expressions, rather than at the
+ * point fprintf is first rewritten: embedding those expressions inside
+ * string braces at that earlier point would hide them from every later
+ * text-based transform that treats quoted spans as opaque. By this stage
+ * the tuple's contents are already fully correct code — this only
+ * relocates them into the string.
+ *
+ * Bails per-occurrence (leaves that one `'fmt' % (...)` untouched) on any
+ * specifier it can't translate 1:1 without guessing — %c (ambiguous
+ * char-vs-string), a `*` dynamic width/precision, or the `#`/space flags —
+ * so the already-correct % form survives rather than risk subtly wrong
+ * output.
+ */
+function rewritePercentFormatToFString(line: string): string {
+  let result = ''
+  let i = 0
+  while (i < line.length) {
+    const ch = line[i]
+    if (ch !== "'" && ch !== '"') {
+      result += ch
+      i++
+      continue
+    }
+    const quote = ch
+    const strStart = i
+    let j = i + 1
+    while (j < line.length) {
+      if (line[j] === '\\') { j += 2; continue }
+      if (line[j] === quote) break
+      j++
+    }
+    if (j >= line.length) { result += line.slice(i); break } // unterminated — bail on the rest of the line
+    const strEnd = j // index of the closing quote
+
+    let k = strEnd + 1
+    while (line[k] === ' ') k++
+    if (line[k] !== '%' || line[k + 1] === '%') { result += line.slice(strStart, strEnd + 1); i = strEnd + 1; continue }
+    k++
+    while (line[k] === ' ') k++
+    if (line[k] !== '(') { result += line.slice(strStart, strEnd + 1); i = strEnd + 1; continue }
+
+    // Walk balanced parens from the `(` at k to find the matching `)`.
+    let depth = 1
+    let m = k + 1
+    let inStr = false
+    let sc = ''
+    while (m < line.length && depth > 0) {
+      const c = line[m]
+      if (inStr) {
+        if (c === '\\') { m += 2; continue }
+        if (c === sc) inStr = false
+        m++
+        continue
+      }
+      if (c === "'" || c === '"') { inStr = true; sc = c; m++; continue }
+      if (c === '(') depth++
+      else if (c === ')') depth--
+      m++
+    }
+    if (depth !== 0) { result += line.slice(strStart, strEnd + 1); i = strEnd + 1; continue }
+    const tupleEnd = m // index just past the matching `)`
+
+    const tupleInner = line.slice(k + 1, m - 1)
+    const valueArgs = splitTopLevelCommaArgs(tupleInner)
+      .map((s) => s.trim())
+      .filter((s) => s !== '')
+    // A cell-expand value (`gs_options{:}` → `*gs_options`) is valid inside
+    // a `%`-operator tuple (`(*gs_options,)`) but Python forbids a bare
+    // starred expression inside f-string braces (`{*gs_options}` is a
+    // SyntaxError). Bail rather than break a call that already works.
+    const hasStarredArg = valueArgs.some((v) => v.startsWith('*'))
+    const inner = line.slice(strStart + 1, strEnd)
+    const fstr = hasStarredArg ? null : buildFString(quote, inner, valueArgs)
+
+    if (fstr === null) {
+      result += line.slice(strStart, tupleEnd)
+    } else {
+      result += fstr
+    }
+    i = tupleEnd
+  }
+  return result
+}
+
+/** Split a tuple's inner text on top-level commas (respects nested (), [], strings). */
+function splitTopLevelCommaArgs(s: string): string[] {
+  const parts: string[] = []
+  let current = ''
+  let depth = 0
+  let inStr = false
+  let sc = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (inStr) {
+      current += ch
+      if (ch === '\\') { current += s[i + 1] ?? ''; i++; continue }
+      if (ch === sc) inStr = false
+      continue
+    }
+    if (ch === "'" || ch === '"') { inStr = true; sc = ch; current += ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') { depth++; current += ch; continue }
+    if (ch === ')' || ch === ']' || ch === '}') { depth--; current += ch; continue }
+    if (ch === ',' && depth === 0) { parts.push(current); current = ''; continue }
+    current += ch
+  }
+  parts.push(current)
+  return parts
+}
+
+/**
+ * Build `f'...'`/`f"..."` from a MATLAB-derived format string's inner text
+ * (already stripped of its outer quotes) + its resolved value expressions.
+ * Returns null if any specifier can't be translated without guessing.
+ */
+function buildFString(quote: string, inner: string, valueArgs: string[]): string | null {
+  let body = inner
+  let hadTrailingNewline = false
+  if (body.endsWith('\\n')) {
+    body = body.slice(0, -2)
+    hadTrailingNewline = true
+  }
+
+  const SPEC_RE = /%([-+ 0#]*)(\d+|\*)?(?:\.(\d+|\*))?([diouxXeEfFgGcs%])/g
+  let rebuilt = ''
+  let lastIndex = 0
+  let argIdx = 0
+  let m: RegExpExecArray | null
+  while ((m = SPEC_RE.exec(body)) !== null) {
+    rebuilt += body.slice(lastIndex, m.index).replace(/[{}]/g, (c) => c + c)
+    const [, flags, width, precision, type] = m
+    if (type === '%') {
+      rebuilt += '%'
+    } else {
+      if (argIdx >= valueArgs.length) return null // more specifiers than values
+      const spec = matlabSpecToFString(flags, width, precision, type)
+      if (spec === null) return null
+      const value = valueArgs[argIdx++]
+      rebuilt += spec ? `{${value}:${spec}}` : `{${value}}`
+    }
+    lastIndex = SPEC_RE.lastIndex
+  }
+  rebuilt += body.slice(lastIndex).replace(/[{}]/g, (c) => c + c)
+
+  // Leftover values — MATLAB would recycle the format string over them,
+  // which an f-string can't represent (same limitation the % form already
+  // had; bail rather than silently drop data).
+  if (argIdx < valueArgs.length) return null
+
+  const suffix = hadTrailingNewline ? '\\n' : ''
+  return `f${quote}${rebuilt}${suffix}${quote}`
+}
+
+/**
+ * Translate one MATLAB/C printf conversion spec into an f-string
+ * format-spec fragment (the part after `:`), or null when it uses a
+ * feature that can't be mapped 1:1 without guessing.
+ */
+function matlabSpecToFString(
+  flags: string,
+  width: string | undefined,
+  precision: string | undefined,
+  type: string,
+): string | null {
+  if (type === 'c') return null // char-vs-string ambiguity — no type info to resolve it
+  if (flags.includes('#') || flags.includes(' ')) return null // rare alternate-form / space flags
+  if (width === '*' || precision === '*') return null // dynamic width/precision consumes an extra arg
+
+  const pyType = type === 'i' || type === 'u' ? 'd' : type
+  const align = flags.includes('-') ? '<' : ''
+  const sign = flags.includes('+') ? '+' : ''
+  // C/MATLAB ignore the '0' flag when left-justified; drop it rather than
+  // emit a contradictory Python spec.
+  const zero = !align && flags.includes('0') ? '0' : ''
+  const precisionPart = precision !== undefined ? `.${precision}` : ''
+  // %s: omit the trailing 's' type char so a non-str value (MATLAB has no
+  // static types) still formats instead of raising — str's default
+  // alignment/precision behavior is identical with or without it.
+  const typeSuffix = pyType === 's' ? '' : pyType
+
+  return `${align}${sign}${zero}${width ?? ''}${precisionPart}${typeSuffix}`
 }
 
 /**
@@ -1195,13 +1446,19 @@ function injectPassIntoEmptyBlocks(lines: string[]): void {
     const match = lines[i].match(BLOCK_OPEN)
     if (!match) continue
     const indent = match[1]
-    // Scan forward: skip blank lines AND comment-only lines that are inside
-    // the block (deeper-indented). Track where to insert `pass` if needed.
+    // Scan forward: skip blank lines, comment-only lines that are inside
+    // the block (deeper-indented), and a stray bare `end` (leftover MATLAB
+    // block-closer — e.g. the terse `try X; catch, end` idiom leaves `end`
+    // as its own line here; `validateAndFix`'s fixBareEndLine blanks it out
+    // later, but that runs AFTER this pass, so an un-skipped `end` reads as
+    // a real statement and this scanner wrongly concludes the block isn't
+    // empty). Track where to insert `pass` if needed.
     let j = i + 1
     let insertAfter = i  // default: right after the opener
     while (j < lines.length) {
       const trimmed = lines[j].trim()
       if (trimmed === '') { j++; continue }
+      if (/^end\s*;?$/.test(trimmed)) { j++; continue }
       if (trimmed.startsWith('#')) {
         const lineIndent = lines[j].match(/^(\s*)/)?.[1] ?? ''
         if (lineIndent.length > indent.length) {

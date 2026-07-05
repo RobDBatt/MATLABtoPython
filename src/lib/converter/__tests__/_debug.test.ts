@@ -232,7 +232,7 @@ describe('Issue probes (failing = needs fix)', () => {
   })
   it('string + %-format does NOT split at the operator (regression)', () => {
     const out = py("ps = [ps sprintf('%5.2f', v)];")
-    expect(out).toContain("ps + '%5.2f' % (v,)")
+    expect(out).toBe("ps = ps + f'{v:5.2f}'")
     expect(out).not.toContain('+ %')
   })
   it('numeric array untouched', () => {
@@ -258,8 +258,8 @@ describe('Issue probes (failing = needs fix)', () => {
   it('assert(cond) single arg', () => {
     expect(py('assert(isempty(y));')).toBe('assert len(y) == 0')
   })
-  it('assert with format args → % formatting', () => {
-    expect(py("assert(n > 0, 'n=%d', n);")).toBe("assert n > 0, 'n=%d' % (n,)")
+  it('assert with format args → f-string', () => {
+    expect(py("assert(n > 0, 'n=%d', n);")).toBe("assert n > 0, f'n={n:d}'")
   })
 
   // ── classdef attributes / inheritance ─────────────────────

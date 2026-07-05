@@ -321,6 +321,80 @@ function convertBsxfun(
   })
 }
 
+/**
+ * Swap a Fortran-style `D`/`d` exponent marker (`1.D0`, `2.5D-3`) for
+ * Python's `e`/`E`, skipping string-literal content so a stray `D0` inside
+ * actual text is never touched. Requires a digit immediately before `D` (no
+ * word char before the digit run either) so it can't misfire on an
+ * identifier like `myD0`.
+ */
+function fixFortranExponent(line: string): string {
+  const FORTRAN_EXP = /(?<![\w.])(\d+\.\d*|\.\d+|\d+)[Dd]([+-]?\d+)(?!\w)/g
+  let result = ''
+  let i = 0
+  let inString = false
+  let stringChar = ''
+  let segStart = 0
+  while (i < line.length) {
+    const ch = line[i]
+    if (inString) {
+      if (ch === stringChar) {
+        // Closing quote: flush the string's own content VERBATIM (never
+        // regex it), then resume normal scanning right after it.
+        result += line.slice(segStart, i) + ch
+        inString = false
+        segStart = i + 1
+      }
+      i++
+      continue
+    }
+    if (ch === "'" || ch === '"') {
+      result += line.slice(segStart, i).replace(FORTRAN_EXP, (_, mantissa, exp) => `${mantissa}e${exp}`)
+      result += ch
+      inString = true
+      stringChar = ch
+      segStart = i + 1
+      i++
+      continue
+    }
+    if (ch === '#' || ch === '%') break // rest of line is a comment
+    i++
+  }
+  result += line.slice(segStart, i).replace(FORTRAN_EXP, (_, mantissa, exp) => `${mantissa}e${exp}`)
+  result += line.slice(i)
+  return result
+}
+
+/**
+ * Build safe replacement text for a line flagged as an unsupported
+ * construct (eval/feval, assignin/evalin). Two shapes reach here:
+ *
+ * 1. A plain statement — comment out the whole thing (existing behavior).
+ * 2. A collapsed `header:\n    body` blob. MATLAB's inline `try STMT; catch`
+ *    idiom bakes the try-header and its first body statement into ONE
+ *    structured line's `content` (a multi-line string, indentation already
+ *    baked in). Blindly commenting out the WHOLE blob only puts `#` on the
+ *    template's first line — the embedded `\n` means the body statement
+ *    resurfaces later as its own, un-commented output line (Stage 5 splits
+ *    multi-line content back into separate lines). Worse, fully commenting
+ *    a `try:` header would leave the `except:` that follows it with no
+ *    opener at all. Keep the header verbatim; only the body needs flagging,
+ *    and a `pass` keeps the block non-empty.
+ */
+function flagUnsupportedConstruct(content: string, message: string): string {
+  const nlIndex = content.indexOf('\n')
+  if (nlIndex === -1) {
+    return `# ❌ UNSUPPORTED: ${message}\n# Original: ${content}`
+  }
+  const header = content.slice(0, nlIndex)
+  const rest = content.slice(nlIndex + 1)
+  if (!/:\s*$/.test(header.trimEnd())) {
+    return `# ❌ UNSUPPORTED: ${message}\n# Original: ${content}`
+  }
+  const bodyIndent = rest.match(/^\s*/)?.[0] ?? ''
+  return `${header}\n${bodyIndent}# ❌ UNSUPPORTED: ${message} — original: ${rest.trim()}\n${bodyIndent}pass`
+}
+
 function preTransform(
   content: string,
   imports: Set<string>,
@@ -328,6 +402,11 @@ function preTransform(
   line: StructuredLine,
 ): string {
   let result = content
+
+  // Fortran-derived double-precision literal (`1.D0`, `2.5D-3`) — valid in
+  // Fortran, a SyntaxError in Python (`D` isn't a recognized exponent
+  // marker there, only `e`/`E`). Numerically identical either way.
+  result = fixFortranExponent(result)
 
   // Pattern-rewrite common multi-token idioms BEFORE the piecewise
   // transforms see them. Handles things like `zeros(size(X))` →
@@ -688,6 +767,10 @@ function preTransform(
   // avoid matching `strct.field{:}` and breaking other transforms; a
   // follow-up cleanup handles chained forms if needed.
   result = result.replace(/\b(\w+)\{:\}/g, '*$1')
+  // Same, but for a name already subscripted once (`ud['args']{:}`,
+  // `args[1]{:}`) — the bracket form structs/arrays desugar to. Bracket-only
+  // (never dotted) so it can't collide with the `strct.field{:}` risk above.
+  result = result.replace(/\b(\w+(?:\[[^\[\]]*\])+)\{:\}/g, '*$1')
   // length(varargin) → len(args) (before varargin→args rename, before length→np.max)
   result = result.replace(/\blength\(varargin\)/g, 'len(args)')
   result = result.replace(/\bnumel\(varargin\)/g, 'len(args)')
@@ -918,13 +1001,24 @@ function preTransform(
  * ambiguity zone); anything else bails and leaves the bracket as-is.
  */
 function rewriteBracketRangeVectors(source: string, imports: Set<string>): string {
-  // Split bracket innards on top-level commas/whitespace. Null = give up.
+  // Split bracket innards on top-level commas/whitespace, tracking string
+  // spans so a quoted subscript key (`this['pop_size']`) isn't split on its
+  // internal characters. `usable()` below still rejects any element that
+  // isn't a plain range/scalar, so a genuine string-array element (`'a'`)
+  // is safely filtered out rather than needing a blanket bail here.
   const splitTop = (inner: string): string[] | null => {
     const elems: string[] = []
     let cur = ''
     let depth = 0
+    let inStr = false
+    let strCh = ''
     for (const c of inner) {
-      if (c === "'" || c === '"') return null
+      if (inStr) {
+        cur += c
+        if (c === strCh) inStr = false
+        continue
+      }
+      if (c === "'" || c === '"') { inStr = true; strCh = c; cur += c; continue }
       if (c === '(' || c === '[' || c === '{') depth++
       else if (c === ')' || c === ']' || c === '}') depth--
       if (depth === 0 && /[\s,]/.test(c)) {
@@ -939,7 +1033,15 @@ function rewriteBracketRangeVectors(source: string, imports: Set<string>): strin
   }
 
   const SCALAR = /^(end(?:-\d+)?|\d+|[A-Za-z_]\w*)$/
-  const RANGE = /^(\d+|[A-Za-z_]\w*):((?:end(?:-\d+)?)|[\w+\-*/.]+)$/
+  // An identifier optionally subscripted once (`opt['n']`, `ind[0]`) and/or
+  // offset by a small integer (`i+1`, `ind[0]-1`) — covers the two common
+  // "skip this index" range shapes: a bare offset (`[1:i-1 i+1:N]`) and a
+  // struct/array-field bound (`[1:i-1 i+1:this['pop_size']]`).
+  const ATOM = String.raw`[A-Za-z_]\w*(?:\[[^\[\]]*\])?(?:[+-]\d+)?`
+  // Start allows a bare digit or the atom above. Without it, any range whose
+  // start isn't a bare atom fails `usable()` and the WHOLE bracket is left
+  // as literal MATLAB text (never valid inside a Python list/array display).
+  const RANGE = new RegExp(`^(\\d+|${ATOM}):((?:end(?:-\\d+)?)|${ATOM}|[\\w+\\-*/.]+)$`)
 
   // Classify a full element list: needs ≥2 elements, ≥1 range, all recognized.
   const usable = (elems: string[] | null): elems is string[] =>
@@ -1415,7 +1517,14 @@ function rewriteSetProperties(content: string, imports: Set<string>): string {
       if (!nameM) return full // not a clean property-set call — leave it
       const pyProp = PLOT_PROP_MAP[nameM[1].toLowerCase()] ?? nameM[1].toLowerCase()
       let val = args[i + 1]
-      if (val.startsWith("'") || val.startsWith('"')) {
+      // Only a value that's PURELY a quoted literal ('off', 'bold') gets
+      // lowercased and re-wrapped — not just anything that starts with a
+      // quote. sprintf(...) has already run by this point (Stage 3's
+      // registry loop precedes postTransform), so a value like
+      // `'time %g' % (x,)` also starts with `'`; blindly slicing off its
+      // first/last char strips the tuple's closing paren instead of a
+      // matching quote, corrupting the whole expression.
+      if (/^'[^']*'$/.test(val) || /^"[^"]*"$/.test(val)) {
         val = `'${val.slice(1, -1).toLowerCase()}'`
       }
       kwargs.push(`${pyProp}=${val}`)
@@ -2396,13 +2505,34 @@ function transformFunctions(
           // Single arg that is `size(...)` → will become X.shape (a tuple).
           // Unpack so randn(*X.shape) works instead of randn(X.shape).
           if (argList.length === 1) {
-            const sizeMatch = argList[0].match(/^size\((.+)\)$/)
+            const a = argList[0]
+            // size(X) — no dim arg — is the full-shape tuple form. Only
+            // matches when there's no top-level comma; size(X, dim) (a
+            // SCALAR dimension query, handled next) must not hit this.
+            const sizeMatch = a.match(/^size\(([^,()]+)\)$/)
             if (sizeMatch) {
               return `${mapping.python}(*${sizeMatch[1]}.shape)`
             }
-            // Already rewritten to X.shape (e.g. in a second-pass scenario)
-            if (/\.shape(?:\[\d+\])?$/.test(argList[0])) {
-              return `${mapping.python}(*${argList[0]})`
+            // size(X, dim) → a scalar (X.shape[dim-1]), not a tuple — no
+            // splat. Mirrors the `attribute` case's own size(A,dim) rewrite,
+            // for when this pass runs before size's (registry order isn't
+            // guaranteed either way).
+            const sizeDimMatch = a.match(/^size\(([^,()]+),\s*(.+)\)$/)
+            if (sizeDimMatch) {
+              const [, name, dimExpr] = sizeDimMatch
+              const dimNum = parseInt(dimExpr, 10)
+              const idx = !isNaN(dimNum) && String(dimNum) === dimExpr.trim()
+                ? String(dimNum - 1)
+                : `${dimExpr} - 1`
+              return `${mapping.python}(${name}.shape[${idx}])`
+            }
+            // Already rewritten by a prior pass: bare `X.shape` is still a
+            // tuple (splat it); `X.shape[N]` is already a scalar (don't).
+            if (/\.shape$/.test(a)) {
+              return `${mapping.python}(*${a})`
+            }
+            if (/\.shape\[\d+\]$/.test(a)) {
+              return `${mapping.python}(${a})`
             }
           }
           return `${mapping.python}(${argList.join(', ')})`
@@ -2490,14 +2620,14 @@ function transformFunctions(
 
       case 'format_convert': {
         if (matlabName === 'fprintf' || matlabName === 'sprintf') {
-          // Match fprintf('format', arg1, arg2) or fprintf(fid, 'format', arg1, arg2)
-          const fmtPattern = new RegExp(
-            `\\b${escapeRegex(matlabName)}\\((.+)\\)`,
-            'g',
+          // Match fprintf('format', arg1, arg2) or fprintf(fid, 'format', arg1, arg2).
+          // Balanced-paren aware (unlike a `name\((.+)\)` regex, which is
+          // greedy and swallows an ENCLOSING call's closing paren when this
+          // one is nested, e.g. `deblank(sprintf(...))` — corrupting the
+          // outer call and losing a tuple's trailing comma in the process).
+          result = replaceFunctionCalls(result, matlabName, (_, allArgs) =>
+            convertFormatCall(matlabName, allArgs),
           )
-          result = result.replace(fmtPattern, (match, allArgs) => {
-            return convertFormatCall(matlabName, allArgs)
-          })
         }
         break
       }
@@ -2547,7 +2677,11 @@ function transformFunctions(
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
             const a = splitArgsRespectingStrings(args).map(s => s.trim())
             if (a.length === 2) {
-              return `np.dot(${a[0]}.flatten(), ${a[1]}.flatten())`
+              // Parenthesize each operand before `.flatten()` — a bare compound
+              // expression (`alpha-1`) would otherwise bind `.flatten()` to only
+              // its last token (`1.flatten()`, a decimal-literal SyntaxError, or
+              // silently wrong for any non-atomic argument).
+              return `np.dot((${a[0]}).flatten(), (${a[1]}).flatten())`
             }
             return full
           })
@@ -3899,7 +4033,20 @@ function transformSpecialConstructs(
       outputLine: 0,
       originalCode: content,
     })
-    result = `# ❌ UNSUPPORTED: eval/feval cannot be converted deterministically\n# Original: ${content}`
+    // Stage 2 already decided this line opens a block (bumped the indent of
+    // everything under it) BEFORE this stage ever sees it — commenting out
+    // a `while`/`if` header entirely, as below, leaves that body indented
+    // with no compound statement to own it (IndentationError). Keep it a
+    // real block opener so the body stays valid Python; the comment makes
+    // clear the condition itself was never actually translated.
+    const blockMatch = content.match(/^(\s*)(if|elseif|while)\b/)
+    if (blockMatch) {
+      const [, indent, keyword] = blockMatch
+      const pyKeyword = keyword === 'elseif' ? 'elif' : keyword
+      result = `${indent}${pyKeyword} True:  # ❌ UNSUPPORTED: eval/feval cannot be converted deterministically — original: ${content.trim()}`
+    } else {
+      result = flagUnsupportedConstruct(content, 'eval/feval cannot be converted deterministically')
+    }
   }
 
   // assignin/evalin — unsupported
@@ -3911,7 +4058,7 @@ function transformSpecialConstructs(
       outputLine: 0,
       originalCode: content,
     })
-    result = `# ❌ UNSUPPORTED: assignin/evalin — no Python equivalent\n# Original: ${content}`
+    result = flagUnsupportedConstruct(content, 'assignin/evalin — no Python equivalent')
   }
 
   // 4A. nargin/nargout — convert to Python default parameter pattern

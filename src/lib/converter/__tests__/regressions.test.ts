@@ -407,7 +407,7 @@ describe('support sweep: string-concat v2 + cell {:}', () => {
   })
   it('does NOT split at a %-format operator after a string (v1 regression)', () => {
     const out = convert("ps = [ps sprintf('%5.2f', v)];").python
-    expect(out).toContain("ps + '%5.2f' % (v,)")
+    expect(out).toContain("ps = ps + f'{v:5.2f}'")
     expect(out).not.toContain('+ %')
   })
   it('numeric arrays are not treated as string concat', () => {
@@ -479,7 +479,7 @@ describe('Tier-1 registry breadth', () => {
   it('assert becomes a statement, not a tuple-asserting call', () => {
     expect(convert("assert(x > 0, 'must be positive');").python).toContain("assert x > 0, 'must be positive'")
     expect(convert('assert(isempty(y));').python).toContain('assert len(y) == 0')
-    expect(convert("assert(n > 0, 'n=%d', n);").python).toContain("assert n > 0, 'n=%d' % (n,)")
+    expect(convert("assert(n > 0, 'n=%d', n);").python).toContain("assert n > 0, f'n={n:d}'")
   })
   it('isscalar/isreal/isequal map to numpy', () => {
     expect(convert('b = isscalar(x);').python).toContain('np.isscalar(x)')
@@ -578,5 +578,264 @@ describe('struct field assignment → dict (init + subscript)', () => {
     const out = py("a.x = 1;\ndisp('a.b');")
     expect(out).toContain("a['x'] = 1")
     expect(out).toContain("print('a.b')")
+  })
+})
+
+// ── 2026-07-04: corpus regressions from commit b09d1fa1 ─────
+// Four real-world corpus files (PRMLT, rcnn, vbmc) started producing
+// Python that fails to compile. All four traced back to bugs that predate
+// that commit but were only exposed by it; none are regressions from it.
+
+// dot(alpha-1, Elogpi) → np.dot(alpha-1.flatten(), ...) — `.flatten()`
+// attached to a bare compound expression tokenized `1.` as a float literal
+// (SyntaxError: invalid decimal literal), and even when it parses, binds to
+// only the last operand instead of the whole expression.
+describe('dot() with a compound-expression operand', () => {
+  it('parenthesizes each operand before .flatten()', () => {
+    const out = py('Eqpi = dot(alpha-1,Elogpi)+logCalpha;')
+    expect(out).toBe('Eqpi = np.dot((alpha-1).flatten(), (Elogpi).flatten())+logCalpha')
+  })
+})
+
+// x() (zero-arg call on a known variable/global) → x[] — always a Python
+// SyntaxError. MATLAB's `x()` with no args is a no-arg deref (often a
+// function-handle call, as in RCNN_CONFIG_OVERRIDE = @() conf_override),
+// never indexing with an empty subscript.
+describe('zero-arg call on a known variable', () => {
+  it('leaves x() as a call, not x[]', () => {
+    const out = py('x = 1;\nconf = x();')
+    expect(out).toContain('conf = x()')
+  })
+})
+
+// X(1,:) = []  (single-row deletion) — Stage 4's shape-preserving index math
+// widens the scalar `0` into a degenerate slice `0:0+1` for normal reads;
+// passed straight into np.delete(...) that's a bare `a:b` in a function
+// argument position, which Python never allows there.
+describe('single-row/col deletion idiom (degenerate slice)', () => {
+  it('collapses 0:0+1 back to the scalar index', () => {
+    const out = py('X = zeros(3,4);\nX(1,:) = [];')
+    expect(out).toContain('X = np.delete(X, 0, axis=0)')
+  })
+})
+
+// J_sjk(:,:,idx) = []  (3D deletion) — the 2D-only deletion regexes
+// falsely matched this shape and leaked a bare `:` into np.delete(...),
+// which a downstream heuristic then mangled into np.delete[...]. Only 2D
+// deletion is supported; a 3rd dimension must fall through unconverted
+// (valid Python, if not full MATLAB-equivalent) rather than emit a
+// guaranteed SyntaxError.
+describe('3D deletion idiom (leaked dimension)', () => {
+  it('leaves a 3D delete unconverted instead of emitting np.delete[...]', () => {
+    const out = py('J_sjk = zeros(3,4,5);\nJ_sjk(:,:,idx) = [];')
+    expect(out).not.toContain('np.delete[')
+    expect(out).toContain('J_sjk[:, :, idx-1:idx] = []')
+  })
+})
+
+// randn(size(T,1), 1) — dropSingletonVectorDim correctly collapses the
+// trailing literal `1` (a column-vector hint), leaving the single arg
+// `size(T,1)`. But the old sizeMatch regex treated ANY `size(...)` as the
+// one-arg full-shape-tuple form, capturing "T,1" as one expression and
+// emitting `*T,1.shape` — a SyntaxError (`1.shape` misreads as a decimal
+// literal) even before considering it splats a scalar. size(X, dim) is a
+// scalar dimension query and must never be splatted.
+describe('randn(size(X, dim), n) — scalar dimension query, not a shape tuple', () => {
+  it('does not splat a two-arg size() query', () => {
+    const out = py("T = [1 2; 3 4];\nFstar = randn(size(T,1),1);")
+    expect(out).toContain('Fstar = np.random.randn(T.shape[0])')
+  })
+  it('still splats the one-arg size(X) full-shape form', () => {
+    const out = py('X = [1 2; 3 4];\nY = randn(size(X));')
+    expect(out).toContain('Y = np.random.randn(*X.shape)')
+  })
+  it('handles size(X, dim) with a non-literal dim expression', () => {
+    const out = py('X = [1 2; 3 4];\nY = randn(size(X,k),1);')
+    expect(out).toContain('Y = np.random.randn(X.shape[k - 1])')
+  })
+})
+
+// fprintf/sprintf emitted `%`-operator formatting (Stage 3 can't safely
+// build the f-string directly — the value expressions still need to pass
+// through Stage 4's index shifting, which treats quoted spans as opaque).
+// Stage 5 now rewrites the fully-resolved `'fmt' % (args)` into an
+// f-string, matching the project's style standard (f-strings, never
+// `%`/`.format()`).
+describe('fprintf/sprintf → f-string (Stage 5 rewrite)', () => {
+  it('rewrites a single-value fprintf into an f-string, index already shifted', () => {
+    const out = py("v = zeros(1,20);\nfprintf('value: %f\\n', v(10));")
+    expect(out).toContain("print(f'value: {v[9]:f}')")
+  })
+  it('rewrites a multi-value fprintf with mixed specs', () => {
+    expect(py("fprintf('x = %d, y = %.2f\\n', x, y);")).toBe("print(f'x = {x:d}, y = {y:.2f}')")
+  })
+  it('handles width/zero-pad/left-justify flags', () => {
+    expect(py("fprintf('%-10s|%05.2f\\n', name, val);")).toBe("print(f'{name:<10}|{val:05.2f}')")
+  })
+  it('preserves a literal %% alongside a real spec', () => {
+    expect(py("fprintf('100%% done: %d\\n', n);")).toBe("print(f'100% done: {n:d}')")
+  })
+  it('falls back to % formatting for %c (char/string ambiguity)', () => {
+    expect(py("fprintf('%c\\n', ch);")).toBe("print('%c' % (ch,))")
+  })
+  it('falls back to % formatting when values outnumber specifiers (MATLAB recycling)', () => {
+    expect(py("fprintf('%d %d\\n', a, b, c);")).toBe("print('%d %d' % (a, b, c))")
+  })
+  // 2026-07-04: corpus regression — `gs_options{:}` (cell-expand) becomes a
+  // splat `*gs_options` value arg, valid inside a % tuple `(*gs_options,)`
+  // but a Python SyntaxError inside f-string braces (`{*gs_options}`).
+  it('falls back to % formatting when a value arg is a cell-expand splat', () => {
+    expect(py("gs_options = sprintf(' %s',gs_options{:});")).toBe("gs_options = ' %s' % (*gs_options,)")
+  })
+})
+
+// 2026-07-04: corpus cluster — `[1:i-1 i+1:N]` (space-concat of ranges, the
+// "every index except this one" idiom) was never converted at all when a
+// range's start wasn't a bare digit/identifier (`i+1`, `ind[0]-1`) or a
+// bracket's content contained a quote (`this['pop_size']`) — the whole
+// bracket was left as literal MATLAB text, guaranteed invalid inside a
+// Python list/array display.
+describe('[range range] space-concat with offset starts / bracket atoms', () => {
+  it('converts an index-context range-concat with identifier±digit starts', () => {
+    const out = py('for i = 1:N\n  r1 = sum(abs(A([1:i-1 i+1:N] - 1, i)));\nend')
+    expect(out).toContain('np.r_[1:i-1 + 1, i+1:N + 1]')
+  })
+  it('converts a value-context range-concat assigned directly', () => {
+    expect(py('K = [1:i-1 i+1:pop_size];')).toContain('K = np.r_[1:i-1 + 1, i+1:pop_size + 1]')
+  })
+  it('handles a quoted struct-field bound without bailing on the quote', () => {
+    const out = py('this.pop_size = 10;\nK = [1:i-1 i+1:this.pop_size];')
+    expect(out).toContain("np.r_[1:i-1 + 1, i+1:this['pop_size'] + 1]")
+  })
+})
+
+// 2026-07-04: corpus cluster — cell-expand `{:}`.
+describe('cell-expand {:} on a subscripted/struct-field name', () => {
+  // Bracket-only `name['key']{:}` / `name[i]{:}` — struct/array desugaring
+  // already produces the bracket form by the time this runs; the existing
+  // bare-identifier `name{:}` rule can't see it (no `\w` directly before `{`).
+  it('splats a struct-field cell (bracket already established)', () => {
+    const out = py("ud.opt.retain = 1;\nud.args = 1;\nif ud.opt.retain\n  trplot(T, ud.args{:});\nend")
+    expect(out).toContain("trplot(T, *ud['args'])")
+  })
+  // `varargin{i}{:}` — chained cell-index-then-expand. The `{i}` → `[i-1]`
+  // conversion only happens in Stage 4, so a Stage-3-only rule can never see
+  // the bracket form; needs a follow-up pass right after Stage 4's own
+  // cell-indexing conversion.
+  it('splats a numerically cell-indexed-then-expanded varargin element', () => {
+    const out = py('function f(varargin)\n  varargin = {varargin{1} varargin{2}{:}};\nend')
+    expect(out).toContain('*args[1]')
+  })
+})
+
+// 2026-07-04: corpus regression — fprintf/sprintf's call-finder regex
+// (`name\((.+)\)`) is greedy and NOT balanced-paren-aware. Nested inside
+// another call (`deblank(sprintf(...))`), it swallows the ENCLOSING call's
+// closing paren into its own match, corrupting the surrounding code and
+// losing a single-value tuple's trailing comma (`(*x,)` → `(*x)`, which
+// then collides with the starred-expression guard).
+describe('fprintf/sprintf call-finder is balanced-paren aware', () => {
+  it('does not swallow an enclosing call\'s closing paren', () => {
+    expect(py("s = deblank(sprintf('%s and ',x));")).toBe("s = (f'{x} and ').rstrip()")
+  })
+  it('preserves the tuple comma when the value is a cell-expand splat', () => {
+    expect(py("s = deblank(sprintf('%s and ',x{:}));")).toBe("s = ('%s and ' % (*x,)).rstrip()")
+  })
+})
+
+// 2026-07-04: corpus cluster — `while (feval(@fn, ...) ...)` gets flagged
+// UNSUPPORTED and commented out entirely (eval/feval isn't deterministically
+// convertible), but Stage 2 already committed the loop body to an indented
+// block under it. A fully-commented header leaves that body with nothing to
+// open it (IndentationError). Same vendored slice-sampling utility appears
+// 3x in the real corpus (vbmc/utils and vbmc/gplite/private).
+describe('eval/feval flagged inside a while/if header keeps a valid block opener', () => {
+  it('while (feval(...) ...) → while True: with the flag in a trailing comment', () => {
+    const out = py('function y = f(x)\nwhile (feval(@g, x) > 0)\n    x = x - 1;\nend\ny = x;\nend')
+    expect(out).toContain('while True:  # ❌ UNSUPPORTED')
+    expect(out).toContain('x = x - 1')
+  })
+  it('if (feval(...)) → if True: with the flag in a trailing comment', () => {
+    const out = py('function y = f(x)\nif (feval(@g, x) > 0)\n    y = 1;\nend\nend')
+    expect(out).toContain('if True:  # ❌ UNSUPPORTED')
+    expect(out).toContain('y = 1')
+  })
+})
+
+// 2026-07-04: corpus cluster — `V(:,r+1:end) = [];` (a genuine RANGE
+// deletion, not the single-index-widened-to-a-degenerate-slice case
+// simplifyDegenerateSlice already collapsed). `r+1:` survives untouched and
+// gets pasted as a bare `a:b` into np.delete(...) — never valid as a plain
+// function argument. np.delete's `obj` param accepts an actual `slice`
+// object directly, so wrap the range as one instead.
+describe('np.delete with a genuine range index (not a degenerate slice)', () => {
+  it('wraps an open-ended range as slice(start, None)', () => {
+    const out = py('V = zeros(5,5);\nr = 2;\nV(:,r+1:end) = [];')
+    expect(out).toContain('V = np.delete(V, slice(r+1, None), axis=1)')
+  })
+})
+
+// 2026-07-04: corpus cluster — Fortran-derived double-precision literal
+// (`1.D0`, `2.5D-3`) — valid in Fortran (these ODE solver files look
+// translated from Fortran originals), a SyntaxError in Python since `D`
+// isn't a recognized exponent marker there.
+describe('Fortran-style D exponent literal → Python e', () => {
+  it('converts a bare D0 exponent', () => {
+    expect(py('if (Err < 1.D0)\n  x = 1;\nend')).toContain('if (Err < 1.e0):')
+  })
+  it('converts a signed exponent', () => {
+    expect(py('x = 2.5D-3;')).toBe('x = 2.5e-3')
+  })
+  it('does not touch D0-shaped text inside a string literal', () => {
+    expect(py("disp('value is 1.D0 exactly');")).toBe("print('value is 1.D0 exactly')")
+  })
+})
+
+// 2026-07-04: corpus residue — MATLAB's terse `try X; catch, end` idiom
+// leaves a bare `end` as its own output line (validateAndFix's
+// fixBareEndLine blanks it out, but only much later, on the whole
+// assembled file — after injectPassIntoEmptyBlocks already ran). The
+// un-skipped `end` reads as a real statement, so the empty `except:` never
+// gets its required `pass` — a guaranteed IndentationError.
+describe('empty catch (terse try/catch idiom) still gets its pass', () => {
+  it('injects pass into an except whose only "body" is a stray end line', () => {
+    const out = py('function cleanup(cmdfile)\n    try delete(cmdfile); catch, end\nend')
+    expect(out).toContain('except Exception:\n        pass')
+  })
+})
+
+// 2026-07-04: corpus cluster — `set(h, 'Prop', sprintf(...))` → the sprintf
+// value has already been converted (Stage 3's registry loop runs before
+// postTransform), so it's a value like `'time %g' % (x,)` that merely
+// STARTS with a quote. rewriteSetProperties treated "starts with a quote"
+// as "is a simple quoted literal" and blindly sliced off the first/last
+// char to lowercase it — stripping the tuple's closing paren instead of a
+// matching quote, corrupting the whole expression into an unclosed paren.
+describe('set(h, "Prop", sprintf(...)) — value is not a bare quoted literal', () => {
+  it('does not mangle an already-converted sprintf value', () => {
+    const out = py("set(ud.htime, 'String', sprintf('time %g', ud.opt.time(i)));")
+    expect(out).toBe("plt.setp(ud.htime, string=f'time {ud.opt.time(i):g}')")
+  })
+  it('still lowercases a genuinely bare quoted literal value', () => {
+    expect(py("set(h, 'Visible', 'Off');")).toBe("plt.setp(h, visible='off')")
+  })
+})
+
+// 2026-07-04: corpus cluster — MATLAB's inline `try STMT; catch` idiom
+// collapses the try-header and its first body statement into ONE
+// structured line's `content` (a multi-line string with indentation baked
+// in). When that body statement itself contains an unsupported construct
+// (evalin, feval), the flagging code's blind `# Original: ${content}`
+// template only puts `#` on content's first line — content's OWN embedded
+// newline resurfaces the body as its own, unflagged, uncommented output
+// line once Stage 5 splits multi-line content back apart. Worse, fully
+// commenting the `try:` header would leave the `except:` after it with no
+// opener. flagUnsupportedConstruct keeps the header, flags+passes the body.
+describe('unsupported construct inside a collapsed try-header+body line', () => {
+  it('keeps a valid try: opener and flags only the body statement', () => {
+    const out = py("try tf = evalin('caller', s); catch\n  error('bad');\nend")
+    expect(out).toBe(
+      "try:\n    # ❌ UNSUPPORTED: assignin/evalin — no Python equivalent — original: tf = evalin('caller', s)\n    pass\nexcept Exception:\n    raise ValueError('bad')",
+    )
   })
 })
