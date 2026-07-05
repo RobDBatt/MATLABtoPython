@@ -3,7 +3,7 @@ import { convert } from '@/lib/converter'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { scheduleTelemetry } from '@/lib/telemetry/server'
 import type { Target } from '@/lib/telemetry/types'
-import { isValidEmail, saveSubscriber } from '@/lib/subscribers'
+import { isValidEmail, saveSubscriber, hasUsedMatlabFreeConversion, markMatlabFreeConversionUsed } from '@/lib/subscribers'
 
 const FREE_LINE_LIMIT = 50
 
@@ -60,6 +60,19 @@ export async function POST(req: NextRequest) {
           { status: 403 },
         )
       }
+      // One free conversion per email. Checked before the line-limit test
+      // below so a repeat email gets the clearest, most relevant error.
+      // Marked as used only after a successful convert() (see below) — a
+      // failed attempt (line limit, internal error) doesn't burn it.
+      if (await hasUsedMatlabFreeConversion(email)) {
+        return NextResponse.json(
+          {
+            error: 'free_conversion_used',
+            message: 'This email has already used its free conversion. Sign up or upgrade to convert more.',
+          },
+          { status: 403 },
+        )
+      }
       after(() => saveSubscriber(email, 'convert_gate').catch(() => { /* best-effort; never blocks conversion */ }))
     }
 
@@ -112,6 +125,10 @@ export async function POST(req: NextRequest) {
       consent: telemetryConsent,
       target: telemetryMode,
     })
+
+    if (!userId && email) {
+      after(() => markMatlabFreeConversionUsed(email, 'convert_gate').catch(() => { /* best-effort */ }))
+    }
 
     return NextResponse.json(result)
   } catch (err) {
