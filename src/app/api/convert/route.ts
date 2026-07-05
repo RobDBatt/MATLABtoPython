@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { convert } from '@/lib/converter'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { scheduleTelemetry } from '@/lib/telemetry/server'
 import type { Target } from '@/lib/telemetry/types'
+import { isValidEmail, saveSubscriber } from '@/lib/subscribers'
 
 const FREE_LINE_LIMIT = 50
 
@@ -22,6 +23,7 @@ export async function POST(req: NextRequest) {
     telemetryConsent = body?.telemetry_consent === true
     telemetrySession = typeof body?.session_id === 'string' ? body.session_id : undefined
     telemetryMode = (body?.mode === 'upload' || body?.mode === 'batch' ? body.mode : 'paste') as Target
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
 
     if (!code || typeof code !== 'string') {
       return NextResponse.json(
@@ -47,6 +49,19 @@ export async function POST(req: NextRequest) {
     // Check auth and plan limits
     let lineLimit = FREE_LINE_LIMIT
     const { userId } = await auth()
+
+    // Free-tier (anonymous) conversions require a valid email — turns
+    // otherwise-invisible free usage into a lead we can follow up with.
+    // Signed-in users already gave Clerk an email, so they're exempt.
+    if (!userId) {
+      if (!isValidEmail(email)) {
+        return NextResponse.json(
+          { error: 'email_required', message: 'Enter a valid email to convert on the free tier.' },
+          { status: 403 },
+        )
+      }
+      after(() => saveSubscriber(email, 'convert_gate').catch(() => { /* best-effort; never blocks conversion */ }))
+    }
 
     if (userId) {
       const user = await currentUser()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { track } from '@vercel/analytics'
@@ -12,6 +12,8 @@ import { telemetryFields } from '@/lib/telemetry/client'
 import { CONSENT_VERSION } from '@/lib/telemetry/types'
 
 const FREE_LINE_LIMIT = 50
+const EMAIL_STORAGE_KEY = 'mtp_convert_email'
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface Props {
   exampleCode: string
@@ -31,10 +33,24 @@ export function ConverterWidget({ exampleCode }: Props) {
   const [copied, setCopied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Anonymous free-tier conversions require an email. Remembered locally so
+  // returning visitors on the same browser don't have to retype it.
+  const [email, setEmail] = useState('')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = window.localStorage.getItem(EMAIL_STORAGE_KEY)
+    if (saved) setEmail(saved)
+  }, [])
+  const emailValid = EMAIL_RE.test(email.trim())
+
   const lineCount = input.split('\n').filter(l => l.trim() !== '').length
 
   const handleConvert = useCallback(async () => {
     if (!input.trim()) return
+    if (!isSignedIn && !emailValid) {
+      setError('Enter a valid email to convert on the free tier.')
+      return
+    }
     setLoading(true)
     setError(null)
     setResult(null)
@@ -44,7 +60,12 @@ export function ConverterWidget({ exampleCode }: Props) {
       const res = await fetch('/api/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: input, mode, ...telemetryFields(!!isSignedIn) }),
+        body: JSON.stringify({
+          code: input,
+          mode,
+          ...(!isSignedIn ? { email: email.trim() } : {}),
+          ...telemetryFields(!!isSignedIn),
+        }),
       })
 
       const data = await res.json()
@@ -53,6 +74,10 @@ export function ConverterWidget({ exampleCode }: Props) {
         setError(data.message || data.error || 'Conversion failed')
         track('conversion_failed', { lines, reason: data.error || 'unknown' })
         return
+      }
+
+      if (!isSignedIn && typeof window !== 'undefined') {
+        window.localStorage.setItem(EMAIL_STORAGE_KEY, email.trim())
       }
 
       setResult(data)
@@ -89,7 +114,7 @@ export function ConverterWidget({ exampleCode }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [input, mode, isSignedIn])
+  }, [input, mode, isSignedIn, email, emailValid])
 
   const handleCopy = useCallback(async () => {
     if (!result?.python) return
@@ -275,11 +300,25 @@ export function ConverterWidget({ exampleCode }: Props) {
             </div>
           </div>
 
+          {/* Anonymous free-tier email gate */}
+          {!isSignedIn && (
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="px-3 py-1.5 border border-[#2d3561] rounded bg-[#07091a] text-[#f0f0f8] placeholder:text-[#4d5580] w-56 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+              />
+              <span className="text-xs text-[#4d5580]">Email required for free conversions</span>
+            </div>
+          )}
+
           {/* Action bar */}
           <div className="flex items-center gap-3 mt-4">
             <button
               onClick={handleConvert}
-              disabled={loading || !input.trim()}
+              disabled={loading || !input.trim() || (!isSignedIn && !emailValid)}
               className="px-6 py-2.5 bg-[#7c3aed] text-white text-sm font-medium rounded-lg hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Converting...' : 'Convert →'}

@@ -14,7 +14,7 @@ const tiers = [
       '50 lines per conversion',
       'Compatibility report',
       'Toolbox detection',
-      'No account required',
+      'Just an email — no account required',
     ],
     limits: ['No file upload', 'No batch conversion'],
     cta: 'Start converting',
