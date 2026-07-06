@@ -97,7 +97,7 @@ export function DebugWidget({ exampleCode }: Props) {
         <button
           onClick={handleConvert}
           disabled={loading || !input.trim()}
-          className="px-4 py-2 rounded bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white text-sm font-medium"
+          className="px-4 py-2 rounded bg-orange-600 hover:bg-orange-700 disabled:opacity-40 text-white text-sm font-medium"
         >
           {loading ? 'Converting…' : 'Run conversion'}
         </button>

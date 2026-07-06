@@ -11,12 +11,12 @@ export default function ExamplesPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
       <div className="mb-12">
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8] mb-3">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#eef0f4] mb-3">
           Conversion examples
         </h1>
-        <p className="text-[#9ba3c4] max-w-2xl leading-relaxed">
+        <p className="text-[#9aa1ac] max-w-2xl leading-relaxed">
           Real MATLAB snippets converted to Python by the same engine that powers
-          the <a href="/convert" className="text-[#7c3aed] hover:text-[#a78bfa] transition-colors">live converter</a>.
+          the <a href="/convert" className="text-[#d9662b] hover:text-[#e8935f] transition-colors">live converter</a>.
           Each example shows the MATLAB source, the converter&apos;s Python output,
           and notes on what changed and why.
         </p>
@@ -27,17 +27,17 @@ export default function ExamplesPage() {
           <a
             key={ex.slug}
             href={`/examples/${ex.slug}`}
-            className="group block p-6 bg-[#0e1228] border border-[#1e2547] rounded-lg hover:border-[#7c3aed]/50 transition-colors"
+            className="group block p-6 bg-[#1b1e26] border border-[#2a2e3a] rounded-lg hover:border-[#d9662b]/50 transition-colors"
           >
-            <h2 className="text-[#f0f0f8] font-semibold text-base mb-2 group-hover:text-[#a78bfa] transition-colors">
+            <h2 className="text-[#eef0f4] font-semibold text-base mb-2 group-hover:text-[#e8935f] transition-colors">
               {ex.title}
             </h2>
-            <p className="text-[#9ba3c4] text-sm mb-3">{ex.summary}</p>
+            <p className="text-[#9aa1ac] text-sm mb-3">{ex.summary}</p>
             <div className="flex flex-wrap gap-1.5">
               {ex.tags.map(tag => (
                 <span
                   key={tag}
-                  className="px-2 py-0.5 bg-[#07091a] border border-[#2d3561] rounded text-xs text-[#4d5580] font-[family-name:var(--font-jetbrains)]"
+                  className="px-2 py-0.5 bg-[#15171d] border border-[#3a3f4d] rounded text-xs text-[#5a5f6b] font-[family-name:var(--font-jetbrains)]"
                 >
                   {tag}
                 </span>
@@ -50,11 +50,11 @@ export default function ExamplesPage() {
       <div className="mt-12">
         <a
           href="/convert"
-          className="inline-block px-6 py-3 bg-[#7c3aed] text-white font-medium rounded-lg hover:bg-[#6d28d9] transition-colors"
+          className="inline-block px-6 py-3 bg-[#d9662b] text-white font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
         >
           Convert your own code
         </a>
-        <p className="text-[#4d5580] text-xs mt-2">
+        <p className="text-[#5a5f6b] text-xs mt-2">
           Free for 50 lines. No account required.
         </p>
       </div>

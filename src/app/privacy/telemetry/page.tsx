@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 export default function TelemetryPrivacyPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 text-[#cbd5e1]">
-      <h1 className="text-2xl font-semibold text-[#f0f0f8]">Anonymous usage telemetry</h1>
-      <p className="mt-4 text-sm leading-relaxed text-[#9ba3c4]">
+      <h1 className="text-2xl font-semibold text-[#eef0f4]">Anonymous usage telemetry</h1>
+      <p className="mt-4 text-sm leading-relaxed text-[#9aa1ac]">
         The converter has an optional toggle: <em>&ldquo;Help improve coverage by sharing
         which MATLAB functions and toolboxes your code uses.&rdquo;</em> This page explains
         exactly what that does. It is off for signed-in users by default and on for
@@ -20,12 +20,12 @@ export default function TelemetryPrivacyPage() {
         on your device.
       </p>
 
-      <h2 className="mt-10 text-lg font-semibold text-[#f0f0f8]">What is shared</h2>
-      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-[#9ba3c4]">
+      <h2 className="mt-10 text-lg font-semibold text-[#eef0f4]">What is shared</h2>
+      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-[#9aa1ac]">
         <li>
           The <strong>names of recognized MATLAB functions and toolboxes</strong> your
-          code uses (for example <code className="text-[#a78bfa]">fft</code>,{' '}
-          <code className="text-[#a78bfa]">butter</code>, Signal Processing) — only words
+          code uses (for example <code className="text-[#e8935f]">fft</code>,{' '}
+          <code className="text-[#e8935f]">butter</code>, Signal Processing) — only words
           already in our converter&rsquo;s known vocabulary.
         </li>
         <li>
@@ -39,8 +39,8 @@ export default function TelemetryPrivacyPage() {
         </li>
       </ul>
 
-      <h2 className="mt-10 text-lg font-semibold text-[#f0f0f8]">What is never shared</h2>
-      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-[#9ba3c4]">
+      <h2 className="mt-10 text-lg font-semibold text-[#eef0f4]">What is never shared</h2>
+      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-[#9aa1ac]">
         <li>
           <strong>Your source code.</strong> It is never transmitted or stored for
           telemetry. Only known vocabulary words are recorded — anything we don&rsquo;t
@@ -51,15 +51,15 @@ export default function TelemetryPrivacyPage() {
         <li>Raw line counts, file names, or comments.</li>
       </ul>
 
-      <h2 className="mt-10 text-lg font-semibold text-[#f0f0f8]">Why we ask</h2>
-      <p className="mt-3 text-sm leading-relaxed text-[#9ba3c4]">
+      <h2 className="mt-10 text-lg font-semibold text-[#eef0f4]">Why we ask</h2>
+      <p className="mt-3 text-sm leading-relaxed text-[#9aa1ac]">
         It tells us which MATLAB features real users actually paste, so we prioritize
         converter coverage by evidence instead of guesswork. Raw events are retained for
         90 days; only aggregate counts are kept after that.
       </p>
 
       <p className="mt-10 text-sm">
-        <Link href="/convert" className="text-[#7c3aed] underline underline-offset-2 hover:text-[#a78bfa]">
+        <Link href="/convert" className="text-[#d9662b] underline underline-offset-2 hover:text-[#e8935f]">
           ← Back to the converter
         </Link>
       </p>

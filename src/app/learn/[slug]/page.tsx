@@ -80,8 +80,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         </header>
 
         {/* CTA top */}
-        <div className="mb-10 px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg">
-          <a href="/convert" className="text-purple-600 hover:text-purple-500 text-sm font-medium transition-colors">
+        <div className="mb-10 px-4 py-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <a href="/convert" className="text-orange-600 hover:text-orange-500 text-sm font-medium transition-colors">
             Try the converter free (50 lines, no account) →
           </a>
         </div>
@@ -101,14 +101,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                       <p key={j} dangerouslySetInnerHTML={{
                         __html: paragraph
                           .replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-700">$1</strong>')
-                          .replace(/`(.+?)`/g, '<code class="text-purple-600 font-[family-name:var(--font-jetbrains)] text-xs bg-gray-50 px-1 py-0.5 rounded">$1</code>')
+                          .replace(/`(.+?)`/g, '<code class="text-orange-600 font-[family-name:var(--font-jetbrains)] text-xs bg-gray-50 px-1 py-0.5 rounded">$1</code>')
                       }} />
                     )
                   }
                   return (
                     <p key={j} dangerouslySetInnerHTML={{
                       __html: paragraph
-                        .replace(/`(.+?)`/g, '<code class="text-purple-600 font-[family-name:var(--font-jetbrains)] text-xs bg-gray-50 px-1 py-0.5 rounded">$1</code>')
+                        .replace(/`(.+?)`/g, '<code class="text-orange-600 font-[family-name:var(--font-jetbrains)] text-xs bg-gray-50 px-1 py-0.5 rounded">$1</code>')
                     }} />
                   )
                 })}
@@ -121,7 +121,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <div className="mt-12 text-center">
           <a
             href="/convert"
-            className="inline-block px-8 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-500 transition-colors"
+            className="inline-block px-8 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-500 transition-colors"
           >
             Start converting
           </a>

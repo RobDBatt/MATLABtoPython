@@ -61,7 +61,7 @@ export default async function ToolboxPage({ params }: { params: Promise<{ slug: 
       {/* Install */}
       <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="text-slate-500 text-xs mb-1">Install</div>
-        <code className="text-purple-600 font-[family-name:var(--font-jetbrains)] text-sm">
+        <code className="text-orange-600 font-[family-name:var(--font-jetbrains)] text-sm">
           {tb.installCmd}
         </code>
       </div>
@@ -70,7 +70,7 @@ export default async function ToolboxPage({ params }: { params: Promise<{ slug: 
       <div className="mb-8">
         <a
           href="/convert"
-          className="inline-block px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-500 transition-colors"
+          className="inline-block px-5 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-500 transition-colors"
         >
           {tb.autoConverted ? `Convert ${tb.name} code now` : 'Convert your MATLAB code'}
         </a>
@@ -116,7 +116,7 @@ export default async function ToolboxPage({ params }: { params: Promise<{ slug: 
         </p>
         <a
           href="/convert"
-          className="inline-block px-6 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-500 transition-colors"
+          className="inline-block px-6 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-500 transition-colors"
         >
           Try the converter
         </a>

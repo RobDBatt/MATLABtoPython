@@ -39,14 +39,14 @@ export function RelatedLinks({
           <a
             key={link.href}
             href={link.href}
-            className="group block p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-purple-400 transition-colors"
+            className="group block p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-orange-400 transition-colors"
           >
             {link.kind && (
-              <div className="text-[10px] uppercase tracking-wider text-purple-600 font-[family-name:var(--font-jetbrains)] mb-1">
+              <div className="text-[10px] uppercase tracking-wider text-orange-600 font-[family-name:var(--font-jetbrains)] mb-1">
                 {KIND_LABELS[link.kind]}
               </div>
             )}
-            <div className="text-slate-900 font-medium text-sm group-hover:text-purple-600 transition-colors">
+            <div className="text-slate-900 font-medium text-sm group-hover:text-orange-600 transition-colors">
               {link.title}
             </div>
             {link.caption && (

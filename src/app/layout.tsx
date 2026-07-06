@@ -90,7 +90,7 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="relative min-h-full flex flex-col font-[family-name:var(--font-dm-sans)] bg-[#07091a] text-[#f0f0f8]">
+      <body className="relative min-h-full flex flex-col font-[family-name:var(--font-dm-sans)] bg-[#15171d] text-[#eef0f4]">
         <ClerkProvider>
           <Nav />
           <main className="flex-1">{children}</main>
@@ -113,31 +113,31 @@ export default function RootLayout({
 
 function Footer() {
   return (
-    <footer className="mt-16 border-t border-[#1e2547] bg-[#0e1228]">
+    <footer className="mt-16 border-t border-[#2a2e3a] bg-[#1b1e26]">
       <div className="mx-auto max-w-6xl px-6 py-10 grid md:grid-cols-3 gap-8">
         <div>
-          <div className="font-[family-name:var(--font-syne)] font-bold text-[#f0f0f8] text-lg mb-2">
-            MATLAB<span className="text-[#7c3aed]">to</span>Python
+          <div className="font-[family-name:var(--font-syne)] font-bold text-[#eef0f4] text-lg mb-2">
+            MATLAB<span className="text-[#d9662b]">to</span>Python
           </div>
-          <p className="text-[#9ba3c4] text-sm">
+          <p className="text-[#9aa1ac] text-sm">
             Deterministic MATLAB-to-Python conversion. No AI hallucinations. Honest flags.
           </p>
         </div>
         <div className="text-sm">
-          <div className="text-[#f0f0f8] font-medium mb-3">Product</div>
-          <ul className="space-y-1.5 text-[#9ba3c4]">
-            <li><a href="/convert" className="hover:text-[#f0f0f8] transition-colors">Converter</a></li>
-            <li><a href="/pricing" className="hover:text-[#f0f0f8] transition-colors">Pricing</a></li>
-            <li><a href="/examples" className="hover:text-[#f0f0f8] transition-colors">Examples</a></li>
-            <li><a href="/toolboxes" className="hover:text-[#f0f0f8] transition-colors">Toolbox coverage</a></li>
-            <li><a href="/learn" className="hover:text-[#f0f0f8] transition-colors">Migration guides</a></li>
-            <li><a href="/debug" className="hover:text-[#f0f0f8] transition-colors">Debug view</a></li>
+          <div className="text-[#eef0f4] font-medium mb-3">Product</div>
+          <ul className="space-y-1.5 text-[#9aa1ac]">
+            <li><a href="/convert" className="hover:text-[#eef0f4] transition-colors">Converter</a></li>
+            <li><a href="/pricing" className="hover:text-[#eef0f4] transition-colors">Pricing</a></li>
+            <li><a href="/examples" className="hover:text-[#eef0f4] transition-colors">Examples</a></li>
+            <li><a href="/toolboxes" className="hover:text-[#eef0f4] transition-colors">Toolbox coverage</a></li>
+            <li><a href="/learn" className="hover:text-[#eef0f4] transition-colors">Migration guides</a></li>
+            <li><a href="/debug" className="hover:text-[#eef0f4] transition-colors">Debug view</a></li>
             <li>
               <a
                 href="https://pypi.org/project/matlabtopython-compat/"
                 target="_blank"
                 rel="noopener"
-                className="hover:text-[#f0f0f8] transition-colors"
+                className="hover:text-[#eef0f4] transition-colors"
               >
                 matlabtopython-compat (PyPI)
               </a>
@@ -145,8 +145,8 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <div className="text-[#f0f0f8] font-medium text-sm mb-3">Stay in touch</div>
-          <p className="text-[#9ba3c4] text-xs mb-3">
+          <div className="text-[#eef0f4] font-medium text-sm mb-3">Stay in touch</div>
+          <p className="text-[#9aa1ac] text-xs mb-3">
             One email per week. New toolbox mappings and release notes.
           </p>
           <EmailCapture
@@ -156,7 +156,7 @@ function Footer() {
           />
         </div>
       </div>
-      <div className="border-t border-[#1e2547] text-center text-xs text-[#4d5580] py-4">
+      <div className="border-t border-[#2a2e3a] text-center text-xs text-[#5a5f6b] py-4">
         © {new Date().getFullYear()} MATLABtoPython.com
       </div>
     </footer>
@@ -165,33 +165,33 @@ function Footer() {
 
 function Nav() {
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#1e2547] bg-[#07091a]/95 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-[#2a2e3a] bg-[#15171d]/95 backdrop-blur-sm">
       <div className="mx-auto max-w-6xl flex items-center justify-between px-6 h-14">
         <a
           href="/"
-          className="font-[family-name:var(--font-syne)] font-bold text-[#f0f0f8] text-lg tracking-tight"
+          className="font-[family-name:var(--font-syne)] font-bold text-[#eef0f4] text-lg tracking-tight"
         >
-          MATLAB<span className="text-[#7c3aed]">to</span>Python
+          MATLAB<span className="text-[#d9662b]">to</span>Python
         </a>
         <div className="flex items-center gap-6 text-sm">
-          <a href="/convert" className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+          <a href="/convert" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Converter
           </a>
-          <a href="/examples" className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+          <a href="/examples" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Examples
           </a>
-          <a href="/toolboxes" className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+          <a href="/toolboxes" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Toolboxes
           </a>
-          <a href="/learn" className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+          <a href="/learn" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Learn
           </a>
-          <a href="/pricing" className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+          <a href="/pricing" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Pricing
           </a>
           <Show when="signed-out">
             <SignInButton>
-              <button className="text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors">
+              <button className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
                 Sign in
               </button>
             </SignInButton>

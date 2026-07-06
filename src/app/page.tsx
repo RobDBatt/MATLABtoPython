@@ -1,4 +1,5 @@
 import { EmailCapture } from '@/components/email-capture'
+import HeroCanvas from '@/components/hero-canvas'
 
 const homeJsonLd = {
   '@context': 'https://schema.org',
@@ -78,19 +79,37 @@ export default function Home() {
       />
 
       {/* Hero */}
-      <section className="pt-20 pb-16">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3b1f6e] border border-[#7c3aed]/30 text-[#a78bfa] text-xs font-[family-name:var(--font-jetbrains)] mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed] animate-pulse" />
+      <section className="relative overflow-hidden rounded-2xl border border-[#2a2e3a] pt-20 pb-16 min-h-[460px] flex items-center">
+        <HeroCanvas />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#15171d] via-[#15171d]/85 to-transparent"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-5 bottom-5 font-[family-name:var(--font-jetbrains)] text-[11px] text-[#e8935f]/60"
+        >
+          .m
+        </span>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-5 bottom-5 font-[family-name:var(--font-jetbrains)] text-[11px] text-[#8a97ad]/60"
+        >
+          .py
+        </span>
+
+        <div className="relative z-10 max-w-3xl px-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3a2415] border border-[#d9662b]/30 text-[#e8935f] text-xs font-[family-name:var(--font-jetbrains)] mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d9662b] animate-pulse" />
             923 real-world scripts tested · 69.8% compile clean first try
           </div>
-          <h1 className="font-[family-name:var(--font-syne)] text-4xl lg:text-5xl font-bold text-[#f0f0f8] leading-tight mb-3">
+          <h1 className="font-[family-name:var(--font-syne)] text-4xl lg:text-5xl font-bold text-[#eef0f4] leading-tight mb-3">
             MATLAB&nbsp;to&nbsp;Python Converter
           </h1>
-          <p className="font-[family-name:var(--font-syne)] text-xl lg:text-2xl text-[#7c3aed] font-semibold mb-5">
+          <p className="font-[family-name:var(--font-syne)] text-xl lg:text-2xl text-[#d9662b] font-semibold mb-5">
             Your code runs the research — now get it off the lease.
           </p>
-          <p className="text-lg text-[#9ba3c4] mb-8 max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#9aa1ac] mb-8 max-w-2xl leading-relaxed">
             Deterministic MATLAB to Python conversion. No AI hallucinations — rule-based, toolbox-aware,
             auditable. Flags what it can&apos;t convert instead of guessing wrong.
             Same input, same output, every time.
@@ -98,13 +117,13 @@ export default function Home() {
           <div className="flex items-center gap-4 flex-wrap">
             <a
               href="/convert"
-              className="px-6 py-3 bg-[#7c3aed] text-white font-medium rounded-lg hover:bg-[#6d28d9] transition-colors"
+              className="px-6 py-3 bg-[#d9662b] text-white font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
             >
               Convert my first file →
             </a>
             <a
               href="/examples"
-              className="px-6 py-3 text-[#9ba3c4] border border-[#1e2547] rounded-lg hover:text-[#f0f0f8] hover:border-[#2d3561] transition-colors"
+              className="px-6 py-3 text-[#9aa1ac] border border-[#2a2e3a] rounded-lg hover:text-[#eef0f4] hover:border-[#3a3f4d] transition-colors"
             >
               See example output
             </a>
@@ -113,34 +132,34 @@ export default function Home() {
       </section>
 
       {/* The forcing function — concrete numbers */}
-      <section className="py-16 border-t border-[#1e2547]">
-        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-8">
+      <section className="py-16 border-t border-[#2a2e3a]">
+        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#eef0f4] mb-8">
           The forcing function
         </h2>
         <div className="grid md:grid-cols-3 gap-8 text-sm">
           <div>
-            <div className="text-[#f59e0b] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
+            <div className="text-[#8a97ad] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
               $860+
             </div>
-            <div className="text-[#9ba3c4] leading-relaxed">
+            <div className="text-[#9aa1ac] leading-relaxed">
               Per seat, per year — a commercial MATLAB subscription before toolboxes,
               each of which adds hundreds more. A recurring cost that compounds.
             </div>
           </div>
           <div>
-            <div className="text-[#f59e0b] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
+            <div className="text-[#8a97ad] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
               $0
             </div>
-            <div className="text-[#9ba3c4] leading-relaxed">
+            <div className="text-[#9aa1ac] leading-relaxed">
               Python with NumPy, SciPy, and matplotlib. The same computational
               power, no license fees, open source, runs everywhere.
             </div>
           </div>
           <div>
-            <div className="text-[#f59e0b] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
+            <div className="text-[#8a97ad] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
               69.8%
             </div>
-            <div className="text-[#9ba3c4] leading-relaxed">
+            <div className="text-[#9aa1ac] leading-relaxed">
               Of real-world MATLAB scripts compile to valid, flag-free Python on
               the first conversion. Measured against 923 scripts from public research
               repos. The rest gets flagged — never silently broken.
@@ -150,26 +169,26 @@ export default function Home() {
       </section>
 
       {/* What makes it different — lead with pain, show before/after */}
-      <section className="py-16 border-t border-[#1e2547]">
-        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-2">
+      <section className="py-16 border-t border-[#2a2e3a]">
+        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#eef0f4] mb-2">
           Not another AI wrapper
         </h2>
-        <p className="text-[#9ba3c4] text-sm mb-8 max-w-xl">
+        <p className="text-[#9aa1ac] text-sm mb-8 max-w-xl">
           Every other converter pastes your proprietary code into a language model and hopes.
           This one doesn&apos;t.
         </p>
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8 text-sm">
-          <div className="border-l-2 border-[#7c3aed] pl-5">
-            <h3 className="text-[#f0f0f8] font-medium mb-1.5">Deterministic engine</h3>
-            <p className="text-[#9ba3c4] leading-relaxed">
+          <div className="border-l-2 border-[#d9662b] pl-5">
+            <h3 className="text-[#eef0f4] font-medium mb-1.5">Deterministic engine</h3>
+            <p className="text-[#9aa1ac] leading-relaxed">
               Rule-based, no LLM in the loop. Same MATLAB input produces the
               exact same Python output every time. Auditable, reproducible,
               testable — we test it against 923 real-world scripts.
             </p>
           </div>
-          <div className="border-l-2 border-[#7c3aed] pl-5">
-            <h3 className="text-[#f0f0f8] font-medium mb-1.5">Toolbox-aware</h3>
-            <p className="text-[#9ba3c4] leading-relaxed">
+          <div className="border-l-2 border-[#d9662b] pl-5">
+            <h3 className="text-[#eef0f4] font-medium mb-1.5">Toolbox-aware</h3>
+            <p className="text-[#9aa1ac] leading-relaxed">
               Eight toolboxes are auto-converted — Signal Processing, Statistics,
               Image Processing, Optimization, Control Systems, Symbolic Math, Curve
               Fitting, and Wavelets — each mapped to the right SciPy, scikit-image,
@@ -178,18 +197,18 @@ export default function Home() {
               faithful 1:1 mapping exists.
             </p>
           </div>
-          <div className="border-l-2 border-[#7c3aed] pl-5">
-            <h3 className="text-[#f0f0f8] font-medium mb-1.5">Flag, don&apos;t guess</h3>
-            <p className="text-[#9ba3c4] leading-relaxed">
+          <div className="border-l-2 border-[#d9662b] pl-5">
+            <h3 className="text-[#eef0f4] font-medium mb-1.5">Flag, don&apos;t guess</h3>
+            <p className="text-[#9aa1ac] leading-relaxed">
               When a construct can&apos;t be converted with certainty — OOP patterns,
-              eval(), ambiguous matrix multiply — it gets a clear <code className="text-[#a78bfa] text-xs"># TODO:</code> annotation
+              eval(), ambiguous matrix multiply — it gets a clear <code className="text-[#e8935f] text-xs"># TODO:</code> annotation
               instead of silently wrong code. The compatibility report tells you
               exactly what needs review.
             </p>
           </div>
-          <div className="border-l-2 border-[#7c3aed] pl-5">
-            <h3 className="text-[#f0f0f8] font-medium mb-1.5">Your code stays private</h3>
-            <p className="text-[#9ba3c4] leading-relaxed">
+          <div className="border-l-2 border-[#d9662b] pl-5">
+            <h3 className="text-[#eef0f4] font-medium mb-1.5">Your code stays private</h3>
+            <p className="text-[#9aa1ac] leading-relaxed">
               No code is sent to any external AI service. The engine runs entirely
               on our servers. Proprietary algorithms, research code, trade
               secrets — none of it leaves your conversion session.
@@ -199,11 +218,11 @@ export default function Home() {
       </section>
 
       {/* Toolbox coverage grid */}
-      <section className="py-16 border-t border-[#1e2547]">
-        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-2">
+      <section className="py-16 border-t border-[#2a2e3a]">
+        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#eef0f4] mb-2">
           Toolbox coverage
         </h2>
-        <p className="text-[#9ba3c4] text-sm mb-6">
+        <p className="text-[#9aa1ac] text-sm mb-6">
           Each page maps the most-used functions to their Python equivalents.
           <span className="text-[#34d399]"> Auto-converted</span> toolboxes are transformed by the
           engine;<span className="text-[#fbbf24]"> migration-guide</span> toolboxes have no 1:1 mapping,
@@ -226,10 +245,10 @@ export default function Home() {
             <a
               key={tb.slug}
               href={`/toolboxes/${tb.slug}`}
-              className="p-3.5 bg-[#0e1228] border border-[#1e2547] rounded-lg hover:border-[#7c3aed]/50 hover:bg-[#151a35] transition-colors group"
+              className="p-3.5 bg-[#1b1e26] border border-[#2a2e3a] rounded-lg hover:border-[#d9662b]/50 hover:bg-[#232733] transition-colors group"
             >
               <div className="flex items-start justify-between gap-1.5 mb-1">
-                <div className="text-[#f0f0f8] font-medium text-xs group-hover:text-[#a78bfa] transition-colors">
+                <div className="text-[#eef0f4] font-medium text-xs group-hover:text-[#e8935f] transition-colors">
                   {tb.name}
                 </div>
                 <span
@@ -237,13 +256,13 @@ export default function Home() {
                   className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${tb.auto ? 'bg-[#34d399]' : 'bg-[#fbbf24]'}`}
                 />
               </div>
-              <div className="text-[#4d5580] text-xs font-[family-name:var(--font-jetbrains)]">
+              <div className="text-[#5a5f6b] text-xs font-[family-name:var(--font-jetbrains)]">
                 {tb.lib}
               </div>
             </a>
           ))}
         </div>
-        <p className="text-[10px] text-[#4d5580] mt-3 flex items-center gap-3">
+        <p className="text-[10px] text-[#5a5f6b] mt-3 flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#34d399]" /> Auto-converted
           </span>
@@ -251,41 +270,41 @@ export default function Home() {
             <span className="h-1.5 w-1.5 rounded-full bg-[#fbbf24]" /> Migration guide
           </span>
         </p>
-        <p className="text-xs text-[#4d5580] mt-4">
-          <a href="/toolboxes" className="text-[#7c3aed] hover:text-[#a78bfa] transition-colors">
+        <p className="text-xs text-[#5a5f6b] mt-4">
+          <a href="/toolboxes" className="text-[#d9662b] hover:text-[#e8935f] transition-colors">
             See all toolbox pages →
           </a>
         </p>
       </section>
 
       {/* FAQ */}
-      <section className="py-16 border-t border-[#1e2547]">
-        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-8">
+      <section className="py-16 border-t border-[#2a2e3a]">
+        <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#eef0f4] mb-8">
           MATLAB to Python converter — FAQ
         </h2>
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8 max-w-4xl">
           {faqs.map(f => (
             <div key={f.q}>
-              <h3 className="text-[#f0f0f8] font-medium mb-1.5 text-[15px]">{f.q}</h3>
-              <p className="text-[#9ba3c4] text-sm leading-relaxed">{f.a}</p>
+              <h3 className="text-[#eef0f4] font-medium mb-1.5 text-[15px]">{f.q}</h3>
+              <p className="text-[#9aa1ac] text-sm leading-relaxed">{f.a}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 border-t border-[#1e2547]">
+      <section className="py-20 border-t border-[#2a2e3a]">
         <div className="max-w-xl">
-          <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#f0f0f8] mb-3">
+          <h2 className="font-[family-name:var(--font-syne)] text-2xl font-semibold text-[#eef0f4] mb-3">
             Ready to start?
           </h2>
-          <p className="text-[#9ba3c4] mb-6 text-sm leading-relaxed">
+          <p className="text-[#9aa1ac] mb-6 text-sm leading-relaxed">
             Free for up to 50 lines. No account required. Paste your MATLAB,
             get Python with a full compatibility report in under a second.
           </p>
           <a
             href="/convert"
-            className="inline-block px-8 py-3 bg-[#7c3aed] text-white font-medium rounded-lg hover:bg-[#6d28d9] transition-colors"
+            className="inline-block px-8 py-3 bg-[#d9662b] text-white font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
           >
             Convert my first file →
           </a>
@@ -293,7 +312,7 @@ export default function Home() {
       </section>
 
       {/* Email capture */}
-      <section className="py-16 border-t border-[#1e2547]">
+      <section className="py-16 border-t border-[#2a2e3a]">
         <div className="max-w-xl">
           <EmailCapture
             source="homepage-cta"

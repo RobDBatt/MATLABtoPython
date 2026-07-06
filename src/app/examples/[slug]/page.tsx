@@ -48,7 +48,7 @@ export default async function ExamplePage({
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
       <nav className="text-xs text-slate-500 mb-6">
-        <a href="/examples" className="hover:text-purple-600">← All examples</a>
+        <a href="/examples" className="hover:text-orange-600">← All examples</a>
       </nav>
 
       <header className="mb-8">
@@ -136,7 +136,7 @@ export default async function ExamplePage({
       <div className="my-10 text-center">
         <a
           href="/convert"
-          className="inline-block px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-500 transition-colors"
+          className="inline-block px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-500 transition-colors"
         >
           Try it on your own MATLAB
         </a>
@@ -151,7 +151,7 @@ export default async function ExamplePage({
           {prevExample && (
             <a
               href={`/examples/${prevExample.slug}`}
-              className="block p-4 rounded-lg border border-gray-200 hover:border-purple-400 transition-colors"
+              className="block p-4 rounded-lg border border-gray-200 hover:border-orange-400 transition-colors"
             >
               <div className="text-xs text-slate-500 mb-1">← Previous example</div>
               <div className="text-slate-900 font-medium text-sm">{prevExample.title}</div>
@@ -162,7 +162,7 @@ export default async function ExamplePage({
           {nextExample && (
             <a
               href={`/examples/${nextExample.slug}`}
-              className="block p-4 rounded-lg border border-gray-200 hover:border-purple-400 transition-colors text-right"
+              className="block p-4 rounded-lg border border-gray-200 hover:border-orange-400 transition-colors text-right"
             >
               <div className="text-xs text-slate-500 mb-1">Next example →</div>
               <div className="text-slate-900 font-medium text-sm">{nextExample.title}</div>

@@ -66,12 +66,12 @@ export function EmailCapture({
           onChange={e => setEmail(e.target.value)}
           placeholder="you@company.com"
           disabled={state === 'submitting' || state === 'success'}
-          className="px-3 py-1.5 border border-[#2d3561] rounded bg-[#07091a] text-[#f0f0f8] placeholder:text-[#4d5580] w-44 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+          className="px-3 py-1.5 border border-[#3a3f4d] rounded bg-[#15171d] text-[#eef0f4] placeholder:text-[#5a5f6b] w-44 focus:outline-none focus:ring-1 focus:ring-[#d9662b]"
         />
         <button
           type="submit"
           disabled={state === 'submitting' || state === 'success'}
-          className="px-3 py-1.5 bg-[#7c3aed] text-white rounded hover:bg-[#6d28d9] disabled:opacity-40 shrink-0 transition-colors text-sm"
+          className="px-3 py-1.5 bg-[#d9662b] text-white rounded hover:bg-[#b8541f] disabled:opacity-40 shrink-0 transition-colors text-sm"
         >
           {state === 'submitting' ? '…' : state === 'success' ? '✓' : cta}
         </button>
@@ -86,11 +86,11 @@ export function EmailCapture({
 
   // card variant
   return (
-    <div className="rounded-lg border border-[#1e2547] bg-[#0e1228] p-6">
-      <h3 className="font-[family-name:var(--font-syne)] text-lg font-semibold text-[#f0f0f8] mb-1">
+    <div className="rounded-lg border border-[#2a2e3a] bg-[#1b1e26] p-6">
+      <h3 className="font-[family-name:var(--font-syne)] text-lg font-semibold text-[#eef0f4] mb-1">
         {headline}
       </h3>
-      <p className="text-sm text-[#9ba3c4] mb-4 leading-relaxed">{sub}</p>
+      <p className="text-sm text-[#9aa1ac] mb-4 leading-relaxed">{sub}</p>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
@@ -99,12 +99,12 @@ export function EmailCapture({
           onChange={e => setEmail(e.target.value)}
           placeholder="you@company.com"
           disabled={state === 'submitting' || state === 'success'}
-          className="flex-1 min-w-0 px-4 py-2 border border-[#2d3561] bg-[#07091a] rounded text-[#f0f0f8] placeholder:text-[#4d5580] focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+          className="flex-1 min-w-0 px-4 py-2 border border-[#3a3f4d] bg-[#15171d] rounded text-[#eef0f4] placeholder:text-[#5a5f6b] focus:outline-none focus:ring-1 focus:ring-[#d9662b]"
         />
         <button
           type="submit"
           disabled={state === 'submitting' || state === 'success'}
-          className="px-5 py-2 bg-[#7c3aed] text-white rounded hover:bg-[#6d28d9] disabled:opacity-40 font-medium transition-colors"
+          className="px-5 py-2 bg-[#d9662b] text-white rounded hover:bg-[#b8541f] disabled:opacity-40 font-medium transition-colors"
         >
           {state === 'submitting' ? 'Saving…' : state === 'success' ? 'Done ✓' : cta}
         </button>

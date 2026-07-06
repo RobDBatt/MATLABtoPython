@@ -152,10 +152,10 @@ export default function PricingPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <div className="mb-12">
-        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8] mb-3">
+        <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#eef0f4] mb-3">
           Simple, honest pricing
         </h1>
-        <p className="text-[#9ba3c4] max-w-lg text-sm leading-relaxed">
+        <p className="text-[#9aa1ac] max-w-lg text-sm leading-relaxed">
           Free for small conversions. Pay only when you need more lines
           or file upload. No surprise fees. A commercial MATLAB seat runs ~$860+/year
           on subscription — far more with toolboxes — so a $49 migration pass pays for itself fast.
@@ -168,39 +168,39 @@ export default function PricingPage() {
             key={tier.name}
             className={`relative flex flex-col p-6 rounded-lg border transition-colors ${
               tier.highlight
-                ? 'border-[#7c3aed] bg-[#0e1228]'
-                : 'border-[#1e2547] bg-[#0e1228] hover:border-[#2d3561]'
+                ? 'border-[#d9662b] bg-[#1b1e26]'
+                : 'border-[#2a2e3a] bg-[#1b1e26] hover:border-[#3a3f4d]'
             }`}
           >
             {tier.highlight && (
-              <div className="absolute -top-3 left-5 px-3 py-0.5 bg-[#7c3aed] text-white text-xs font-medium rounded-full">
+              <div className="absolute -top-3 left-5 px-3 py-0.5 bg-[#d9662b] text-white text-xs font-medium rounded-full">
                 Recommended
               </div>
             )}
 
             <div className="mb-4">
-              <h2 className="text-[#f0f0f8] font-semibold text-base">{tier.name}</h2>
-              <p className="text-[#4d5580] text-xs mt-1">{tier.description}</p>
+              <h2 className="text-[#eef0f4] font-semibold text-base">{tier.name}</h2>
+              <p className="text-[#5a5f6b] text-xs mt-1">{tier.description}</p>
             </div>
 
             <div className="mb-6">
-              <span className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#f0f0f8]">
+              <span className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#eef0f4]">
                 {tier.price}
               </span>
               {tier.period && (
-                <span className="text-[#4d5580] text-xs ml-1">{tier.period}</span>
+                <span className="text-[#5a5f6b] text-xs ml-1">{tier.period}</span>
               )}
             </div>
 
             <ul className="space-y-2 mb-6 flex-1">
               {tier.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-xs text-[#9ba3c4]">
+                <li key={f} className="flex items-start gap-2 text-xs text-[#9aa1ac]">
                   <span className="text-[#10b981] mt-0.5 shrink-0">+</span>
                   {f}
                 </li>
               ))}
               {tier.limits.map((l) => (
-                <li key={l} className="flex items-start gap-2 text-xs text-[#4d5580]">
+                <li key={l} className="flex items-start gap-2 text-xs text-[#5a5f6b]">
                   <span className="mt-0.5 shrink-0">–</span>
                   {l}
                 </li>
@@ -212,8 +212,8 @@ export default function PricingPage() {
               disabled={loading === tier.planKey}
               className={`block w-full text-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 tier.highlight
-                  ? 'bg-[#7c3aed] text-white hover:bg-[#6d28d9]'
-                  : 'border border-[#2d3561] text-[#9ba3c4] hover:border-[#7c3aed]/50 hover:text-[#f0f0f8]'
+                  ? 'bg-[#d9662b] text-white hover:bg-[#b8541f]'
+                  : 'border border-[#3a3f4d] text-[#9aa1ac] hover:border-[#d9662b]/50 hover:text-[#eef0f4]'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading === tier.planKey ? 'Loading...' : tier.cta}
@@ -224,7 +224,7 @@ export default function PricingPage() {
 
       {/* FAQ */}
       <div className="mt-20 max-w-2xl">
-        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-[#f0f0f8] mb-8">
+        <h2 className="font-[family-name:var(--font-syne)] text-xl font-semibold text-[#eef0f4] mb-8">
           Common questions
         </h2>
         <div className="space-y-6 text-sm">
@@ -250,9 +250,9 @@ export default function PricingPage() {
               a: 'Signal Processing (scipy.signal), Statistics (scipy.stats), Image Processing (scikit-image), Optimization (scipy.optimize), Control Systems (python-control), Symbolic Math (SymPy), Wavelets (PyWavelets), and Curve Fitting (scipy.interpolate).',
             },
           ].map(({ q, a }) => (
-            <div key={q} className="border-l border-[#1e2547] pl-4">
-              <h3 className="text-[#f0f0f8] font-medium mb-1.5">{q}</h3>
-              <p className="text-[#9ba3c4] leading-relaxed">{a}</p>
+            <div key={q} className="border-l border-[#2a2e3a] pl-4">
+              <h3 className="text-[#eef0f4] font-medium mb-1.5">{q}</h3>
+              <p className="text-[#9aa1ac] leading-relaxed">{a}</p>
             </div>
           ))}
         </div>

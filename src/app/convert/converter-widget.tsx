@@ -181,8 +181,8 @@ export function ConverterWidget({ exampleCode }: Props) {
             onClick={() => setMode(m)}
             className={`px-4 py-1.5 text-sm rounded-t-md transition-colors ${
               mode === m
-                ? 'bg-[#0e1228] text-[#f0f0f8] border border-b-0 border-[#1e2547]'
-                : 'text-[#4d5580] hover:text-[#9ba3c4]'
+                ? 'bg-[#1b1e26] text-[#eef0f4] border border-b-0 border-[#2a2e3a]'
+                : 'text-[#5a5f6b] hover:text-[#9aa1ac]'
             }`}
           >
             {m === 'paste' ? 'Paste Code' : m === 'upload' ? 'Upload .m File' : 'Batch (Team)'}
@@ -191,7 +191,7 @@ export function ConverterWidget({ exampleCode }: Props) {
       </div>
 
       {mode === 'batch' && (
-        <div className="rounded-b-lg rounded-tr-lg border border-[#1e2547] bg-[#0e1228] p-6">
+        <div className="rounded-b-lg rounded-tr-lg border border-[#2a2e3a] bg-[#1b1e26] p-6">
           <BatchWidget />
         </div>
       )}
@@ -199,14 +199,14 @@ export function ConverterWidget({ exampleCode }: Props) {
       {mode !== 'batch' && (
         <>
           {/* Editor panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-[#1e2547] rounded-b-lg rounded-tr-lg overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-[#2a2e3a] rounded-b-lg rounded-tr-lg overflow-hidden">
             {/* MATLAB input */}
-            <div className="relative border-b lg:border-b-0 lg:border-r border-[#1e2547]">
-              <div className="flex items-center justify-between px-4 py-2 bg-[#0e1228] border-b border-[#1e2547]">
-                <span className="text-xs font-medium text-[#4d5580] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
+            <div className="relative border-b lg:border-b-0 lg:border-r border-[#2a2e3a]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[#1b1e26] border-b border-[#2a2e3a]">
+                <span className="text-xs font-medium text-[#5a5f6b] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
                   {fileName ? fileName : 'MATLAB'}
                 </span>
-                <span className={`text-xs font-[family-name:var(--font-jetbrains)] ${lineCount > FREE_LINE_LIMIT && !hasPaidPlan ? 'text-[#ef4444]' : 'text-[#4d5580]'}`}>
+                <span className={`text-xs font-[family-name:var(--font-jetbrains)] ${lineCount > FREE_LINE_LIMIT && !hasPaidPlan ? 'text-[#ef4444]' : 'text-[#5a5f6b]'}`}>
                   {lineCount} lines
                 </span>
               </div>
@@ -216,19 +216,19 @@ export function ConverterWidget({ exampleCode }: Props) {
                   value={input}
                   onChange={e => { setInput(e.target.value); setFileName(null) }}
                   placeholder="Paste your MATLAB code here..."
-                  className="code-editor code-panel w-full h-64 lg:h-[400px] bg-[#0d1117] text-[#cbd5e1] px-4 py-3 focus:outline-none placeholder:text-[#4d5580]"
+                  className="code-editor code-panel w-full h-64 lg:h-[400px] bg-[#0d1117] text-[#cbd5e1] px-4 py-3 focus:outline-none placeholder:text-[#5a5f6b]"
                   spellCheck={false}
                 />
               ) : (
                 <div className="w-full h-64 lg:h-[400px] bg-[#0d1117] flex items-center justify-center">
                   {!isSignedIn || !hasPaidPlan ? (
                     <div className="text-center px-8">
-                      <div className="text-[#9ba3c4] text-sm mb-3">
+                      <div className="text-[#9aa1ac] text-sm mb-3">
                         File upload requires a paid plan
                       </div>
                       <a
                         href={isSignedIn ? '/pricing' : '/sign-up?redirect_url=/pricing'}
-                        className="px-4 py-2 bg-[#7c3aed] text-white text-sm rounded-lg hover:bg-[#6d28d9] transition-colors"
+                        className="px-4 py-2 bg-[#d9662b] text-white text-sm rounded-lg hover:bg-[#b8541f] transition-colors"
                       >
                         {isSignedIn ? 'View plans' : 'Sign up to upgrade'}
                       </a>
@@ -236,21 +236,21 @@ export function ConverterWidget({ exampleCode }: Props) {
                   ) : fileName ? (
                     <div className="text-center px-8">
                       <div className="text-[#10b981] text-sm mb-1">{fileName}</div>
-                      <div className="text-[#4d5580] text-xs mb-4">{lineCount} lines loaded</div>
+                      <div className="text-[#5a5f6b] text-xs mb-4">{lineCount} lines loaded</div>
                       <button
                         onClick={() => { setInput(''); setFileName(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                        className="text-xs text-[#4d5580] hover:text-[#9ba3c4] transition-colors"
+                        className="text-xs text-[#5a5f6b] hover:text-[#9aa1ac] transition-colors"
                       >
                         Remove file
                       </button>
                     </div>
                   ) : (
                     <label className="cursor-pointer text-center px-8">
-                      <div className="border-2 border-dashed border-[#2d3561] rounded-lg px-12 py-8 hover:border-[#7c3aed]/50 transition-colors">
-                        <div className="text-[#9ba3c4] text-sm mb-1">
+                      <div className="border-2 border-dashed border-[#3a3f4d] rounded-lg px-12 py-8 hover:border-[#d9662b]/50 transition-colors">
+                        <div className="text-[#9aa1ac] text-sm mb-1">
                           Drop a .m file here or click to browse
                         </div>
-                        <div className="text-[#4d5580] text-xs">
+                        <div className="text-[#5a5f6b] text-xs">
                           Accepts .m files only
                         </div>
                       </div>
@@ -269,21 +269,21 @@ export function ConverterWidget({ exampleCode }: Props) {
 
             {/* Python output */}
             <div className="relative">
-              <div className="flex items-center justify-between px-4 py-2 bg-[#0e1228] border-b border-[#1e2547]">
-                <span className="text-xs font-medium text-[#4d5580] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[#1b1e26] border-b border-[#2a2e3a]">
+                <span className="text-xs font-medium text-[#5a5f6b] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
                   Python
                 </span>
                 {result && (
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleCopy}
-                      className="text-xs text-[#9ba3c4] hover:text-[#f0f0f8] transition-colors"
+                      className="text-xs text-[#9aa1ac] hover:text-[#eef0f4] transition-colors"
                     >
                       {copied ? '✓ Copied' : 'Copy'}
                     </button>
                     <button
                       onClick={handleDownload}
-                      className="text-xs text-[#7c3aed] hover:text-[#a78bfa] transition-colors"
+                      className="text-xs text-[#d9662b] hover:text-[#e8935f] transition-colors"
                     >
                       Download .py
                     </button>
@@ -292,7 +292,7 @@ export function ConverterWidget({ exampleCode }: Props) {
               </div>
               <pre className="code-editor code-panel w-full h-64 lg:h-[400px] bg-[#0d1117] text-[#cbd5e1] px-4 py-3 overflow-auto whitespace-pre">
                 {result?.python || (
-                  <span className="text-[#4d5580]">
+                  <span className="text-[#5a5f6b]">
                     Python output will appear here...
                   </span>
                 )}
@@ -308,9 +308,9 @@ export function ConverterWidget({ exampleCode }: Props) {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="px-3 py-1.5 border border-[#2d3561] rounded bg-[#07091a] text-[#f0f0f8] placeholder:text-[#4d5580] w-56 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+                className="px-3 py-1.5 border border-[#3a3f4d] rounded bg-[#15171d] text-[#eef0f4] placeholder:text-[#5a5f6b] w-56 focus:outline-none focus:ring-1 focus:ring-[#d9662b]"
               />
-              <span className="text-xs text-[#4d5580]">Email required for free conversions</span>
+              <span className="text-xs text-[#5a5f6b]">Email required for free conversions</span>
             </div>
           )}
 
@@ -319,26 +319,26 @@ export function ConverterWidget({ exampleCode }: Props) {
             <button
               onClick={handleConvert}
               disabled={loading || !input.trim() || (!isSignedIn && !emailValid)}
-              className="px-6 py-2.5 bg-[#7c3aed] text-white text-sm font-medium rounded-lg hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2.5 bg-[#d9662b] text-white text-sm font-medium rounded-lg hover:bg-[#b8541f] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Converting...' : 'Convert →'}
             </button>
             <button
               onClick={handleClear}
-              className="px-4 py-2.5 text-[#4d5580] text-sm hover:text-[#9ba3c4] transition-colors"
+              className="px-4 py-2.5 text-[#5a5f6b] text-sm hover:text-[#9aa1ac] transition-colors"
             >
               Clear
             </button>
             {!input && mode === 'paste' && (
               <button
                 onClick={handleLoadExample}
-                className="px-4 py-2.5 text-[#4d5580] text-sm hover:text-[#9ba3c4] transition-colors"
+                className="px-4 py-2.5 text-[#5a5f6b] text-sm hover:text-[#9aa1ac] transition-colors"
               >
                 Load example
               </button>
             )}
             {result && (
-              <span className="ml-auto text-xs text-[#4d5580] font-[family-name:var(--font-jetbrains)]">
+              <span className="ml-auto text-xs text-[#5a5f6b] font-[family-name:var(--font-jetbrains)]">
                 {result.processingMs}ms
               </span>
             )}
@@ -369,11 +369,11 @@ export function ConverterWidget({ exampleCode }: Props) {
                 sub="Get the changelog the moment conversion history, batch mode, and 500-line files ship — plus a weekly MATLAB→Python migration tip. No spam, unsubscribe any time."
                 cta="Keep me posted"
               />
-              <p className="mt-2 text-center text-xs text-[#4d5580]">
+              <p className="mt-2 text-center text-xs text-[#5a5f6b]">
                 or{' '}
                 <Link
                   href="/sign-up?redirect_url=/convert"
-                  className="text-[#7c3aed] hover:text-[#a78bfa] transition-colors"
+                  className="text-[#d9662b] hover:text-[#e8935f] transition-colors"
                 >
                   create a free account
                 </Link>{' '}
@@ -401,31 +401,31 @@ function ConversionStats({ result, inputLines }: { result: ConversionResult; inp
 
   return (
     <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
+      <div className="bg-[#1b1e26] border border-[#2a2e3a] rounded-lg px-3 py-2.5">
         <div className="text-[#10b981] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {report.conversionRate}%
         </div>
-        <div className="text-[#4d5580] text-xs">Converted cleanly</div>
+        <div className="text-[#5a5f6b] text-xs">Converted cleanly</div>
       </div>
-      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
-        <div className="text-[#7c3aed] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#1b1e26] border border-[#2a2e3a] rounded-lg px-3 py-2.5">
+        <div className="text-[#d9662b] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           ~{hoursSaved}h
         </div>
-        <div className="text-[#4d5580] text-xs">Dev time saved</div>
+        <div className="text-[#5a5f6b] text-xs">Dev time saved</div>
       </div>
-      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
-        <div className="text-[#f0f0f8] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#1b1e26] border border-[#2a2e3a] rounded-lg px-3 py-2.5">
+        <div className="text-[#eef0f4] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {reviewItems > 0 ? `~${Math.round(reviewMinutes / 60 * 10) / 10}h` : '0h'}
         </div>
-        <div className="text-[#4d5580] text-xs">
+        <div className="text-[#5a5f6b] text-xs">
           {reviewItems > 0 ? `${reviewItems} items to review` : 'Nothing to review'}
         </div>
       </div>
-      <div className="bg-[#0e1228] border border-[#1e2547] rounded-lg px-3 py-2.5">
-        <div className="text-[#f0f0f8] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
+      <div className="bg-[#1b1e26] border border-[#2a2e3a] rounded-lg px-3 py-2.5">
+        <div className="text-[#eef0f4] font-[family-name:var(--font-jetbrains)] text-lg font-bold">
           {processingMs < 1000 ? `${Math.round(processingMs)}ms` : `${(processingMs / 1000).toFixed(1)}s`}
         </div>
-        <div className="text-[#4d5580] text-xs">Processing time</div>
+        <div className="text-[#5a5f6b] text-xs">Processing time</div>
       </div>
     </div>
   )
@@ -451,10 +451,10 @@ function CompatibilityReport({ report }: { report: ConversionResult['report'] })
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="mt-4 border border-[#1e2547] rounded-lg overflow-hidden">
+    <div className="mt-4 border border-[#2a2e3a] rounded-lg overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#0e1228] hover:bg-[#151a35] transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-[#1b1e26] hover:bg-[#232733] transition-colors"
       >
         <div className="flex items-center gap-4 text-sm">
           <span className="text-[#10b981]">
@@ -470,21 +470,21 @@ function CompatibilityReport({ report }: { report: ConversionResult['report'] })
               {report.unsupportedCount} unsupported
             </span>
           )}
-          <span className="text-[#4d5580]">
+          <span className="text-[#5a5f6b]">
             {report.conversionRate}% converted
           </span>
         </div>
-        <span className="text-[#4d5580] text-xs">
+        <span className="text-[#5a5f6b] text-xs">
           {expanded ? 'Hide' : 'Show'} details
         </span>
       </button>
 
       {expanded && (
-        <div className="px-4 py-3 space-y-3 text-sm bg-[#07091a]">
+        <div className="px-4 py-3 space-y-3 text-sm bg-[#15171d]">
           {report.detectedToolboxes.length > 0 && (
             <div>
-              <span className="text-[#4d5580]">Detected toolboxes: </span>
-              <span className="text-[#9ba3c4]">
+              <span className="text-[#5a5f6b]">Detected toolboxes: </span>
+              <span className="text-[#9aa1ac]">
                 {report.detectedToolboxes.join(', ')}
               </span>
             </div>
@@ -492,25 +492,25 @@ function CompatibilityReport({ report }: { report: ConversionResult['report'] })
 
           {report.imports.length > 0 && (
             <div>
-              <span className="text-[#4d5580]">Imports added: </span>
-              <span className="text-[#a78bfa] font-[family-name:var(--font-jetbrains)] text-xs">
+              <span className="text-[#5a5f6b]">Imports added: </span>
+              <span className="text-[#e8935f] font-[family-name:var(--font-jetbrains)] text-xs">
                 {report.imports.join(', ')}
               </span>
             </div>
           )}
 
           {report.flags.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-[#1e2547]">
+            <div className="space-y-2 pt-2 border-t border-[#2a2e3a]">
               {groupFlags(report.flags).map((group, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
                   <FlagBadge type={group.type} />
                   <div>
-                    <span className="text-[#4d5580]">
+                    <span className="text-[#5a5f6b]">
                       {group.lines.length === 1
                         ? `Line ${group.lines[0]}: `
                         : `Lines ${group.lines.join(', ')}: `}
                     </span>
-                    <span className="text-[#9ba3c4]">{group.message}</span>
+                    <span className="text-[#9aa1ac]">{group.message}</span>
                   </div>
                 </div>
               ))}
@@ -527,7 +527,7 @@ function FlagBadge({ type }: { type: string }) {
     WARNING: 'bg-[#78450a]/30 text-[#f59e0b] border border-[#78450a]',
     INDEX:   'bg-[#3b1f6e]/30 text-[#a78bfa] border border-[#3b1f6e]',
     TOOLBOX: 'bg-[#1e3a5f]/30 text-[#60a5fa] border border-[#1e3a5f]',
-    TODO:    'bg-[#1e2547]/50 text-[#9ba3c4] border border-[#2d3561]',
+    TODO:    'bg-[#2a2e3a]/50 text-[#9aa1ac] border border-[#3a3f4d]',
     UNSUPPORTED: 'bg-[#3b0f0f]/30 text-[#ef4444] border border-[#3b0f0f]',
   }
 

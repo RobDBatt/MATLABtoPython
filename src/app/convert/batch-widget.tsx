@@ -133,7 +133,7 @@ export function BatchWidget() {
         <p className="text-slate-600 mb-4">Batch conversion requires a Team-tier account.</p>
         <a
           href="/sign-in?redirect_url=/convert"
-          className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
+          className="inline-block px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-500"
         >
           Sign in
         </a>
@@ -143,7 +143,7 @@ export function BatchWidget() {
 
   if (!isTeam) {
     return (
-      <div className="rounded-lg border border-purple-300 bg-purple-50 p-8 text-center">
+      <div className="rounded-lg border border-orange-300 bg-orange-50 p-8 text-center">
         <h3 className="font-semibold text-slate-900 mb-2">Batch conversion is a Team-tier feature</h3>
         <p className="text-slate-600 mb-4">
           Upload a folder of .m files and get a zip of converted .py files back, with a per-file
@@ -151,7 +151,7 @@ export function BatchWidget() {
         </p>
         <a
           href="/pricing"
-          className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
+          className="inline-block px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-500"
         >
           See pricing
         </a>
@@ -163,7 +163,7 @@ export function BatchWidget() {
     <div className="space-y-4">
       <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
         <label className="inline-block cursor-pointer">
-          <span className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500">
+          <span className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-500">
             Select .m files
           </span>
           <input
@@ -187,7 +187,7 @@ export function BatchWidget() {
             <button
               onClick={handleConvertAll}
               disabled={running || files.length === 0}
-              className="px-3 py-1 bg-purple-600 text-white text-sm rounded disabled:opacity-40 hover:bg-purple-500"
+              className="px-3 py-1 bg-orange-600 text-white text-sm rounded disabled:opacity-40 hover:bg-orange-500"
             >
               {running ? 'Converting…' : 'Convert all'}
             </button>
