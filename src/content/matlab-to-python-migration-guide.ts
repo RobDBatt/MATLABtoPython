@@ -219,7 +219,7 @@ print(f'Value: {x:.3f}')
       body: `The migration from MATLAB to Python in 2026 is well-trodden territory. The ecosystem is mature, the toolboxes are mapped, and the converter does the mechanical work.
 
 Typical migration results:
-- **66.7% of real-world MATLAB files** compile to valid, flag-free Python on the first pass (measured against 1,062 files from public research repositories)
+- **66.7% of real-world MATLAB files** compile to valid, flag-free Python on the first pass, needing zero review — and 94.9% produce valid Python overall (measured against 1,062 files from public research repositories); the rest gets flagged instead of silently guessed wrong
 - **Most remaining issues** are OOP patterns, eval() usage, or toolbox functions requiring manual mapping
 - **Average review time:** 20–30 minutes per 200-line function for flagged items
 

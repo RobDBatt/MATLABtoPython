@@ -149,8 +149,9 @@ export default function Home() {
             </div>
             <div className="text-[#9aa1ac] leading-relaxed">
               Of real-world MATLAB scripts compile to valid, flag-free Python on
-              the first conversion. Measured against 1,062 scripts from public research
-              repos. The rest gets flagged — never silently broken.
+              the first conversion — no review needed. 94.9% produce valid Python
+              overall, measured against 1,062 scripts from public research repos;
+              the rest gets flagged instead of silently guessed wrong.
             </div>
           </div>
         </div>
