@@ -175,9 +175,15 @@ beforeAll(() => {
     if (!existsSync(goldenPath)) {
       writeFileSync(goldenPath, python, 'utf8')
       res.tierA = 'BOOTSTRAP'
-    } else if (readFileSync(goldenPath, 'utf8') !== python) {
-      res.tierA = 'FAIL'
-      res.notes.push('golden drift — output changed vs committed expected.py (regression)')
+    } else {
+      // Normalize line endings before comparing — goldens get checked out as
+      // CRLF on Windows (core.autocrlf), while convert() always emits `\n`.
+      // That's a checkout artifact, not a content difference.
+      const golden = readFileSync(goldenPath, 'utf8').replace(/\r\n/g, '\n')
+      if (golden !== python) {
+        res.tierA = 'FAIL'
+        res.notes.push('golden drift — output changed vs committed expected.py (regression)')
+      }
     }
 
     // --- Tier B/C: execute under numpy/scipy ---

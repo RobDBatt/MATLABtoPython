@@ -6,5 +6,5 @@ def addopt(a, b=10):
     return r
 r1 = addopt(5)
 r2 = addopt(5, 20)
-print('%d %d' % (r1, r2))
+print(f'{r1:d} {r2:d}')
 

@@ -6,4 +6,4 @@ b = np.array([4, 5, 6])
 c = a * b
 d = a / b
 e = a ** 2
-print('%g' % (c[0],))
+print(f'{c[0]:g}')

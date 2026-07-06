@@ -6,4 +6,4 @@ b = np.array([1, 1]) / 2
 a = 1
 x = np.array([1, 2, 3, 4])
 y = signal.lfilter(b, a, x)
-print('%g' % (y[1],))
+print(f'{y[1]:g}')

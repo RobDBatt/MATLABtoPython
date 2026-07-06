@@ -5,4 +5,4 @@ v = np.array([1, 2, 3])
 w = v.T
 M = np.array([[1, 2], [3, 4]])
 Mt = M.T
-print('%d' % (w[0],))
+print(f'{w[0]:d}')

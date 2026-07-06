@@ -5,4 +5,4 @@ s = Struct()
 s['name'] = 'hp'
 s['value'] = 42
 x = s['value']
-print('%d' % (x,))
+print(f'{x:d}')
