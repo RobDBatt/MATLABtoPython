@@ -33,7 +33,15 @@ function easeInOut(t: number) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 }
 
-function samplePoints(text: string, w: number, h: number, fontPx: number): Point[] {
+function samplePoints(text: string, wRaw: number, hRaw: number, fontPxRaw: number): Point[] {
+  // Canvas backing stores are always integer pixels — a fractional width/height
+  // gets silently truncated. If getImageData and the row-stride math below kept
+  // using the fractional value, every row past the first would read from the
+  // wrong offset (drift compounds with y), returning near-empty results.
+  const w = Math.round(wRaw)
+  const h = Math.round(hRaw)
+  const fontPx = Math.round(fontPxRaw)
+
   const off = document.createElement('canvas')
   off.width = w
   off.height = h
