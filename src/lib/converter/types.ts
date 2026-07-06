@@ -63,11 +63,6 @@ export interface CompatibilityReport {
 /** The full result returned by convert() */
 export interface ConversionResult {
   python: string
-  /** `python` with every flag's explanation rendered inline as a comment
-   *  (residual line markers above their line; construct-level notes in a header
-   *  block). Equals `python` when there are no flags. Serve this to end users so
-   *  the "why it can't be Python" guidance travels with the code. */
-  annotated: string
   report: CompatibilityReport
   processingMs: number
 }
