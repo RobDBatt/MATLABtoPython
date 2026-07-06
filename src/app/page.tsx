@@ -85,18 +85,6 @@ export default function Home() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#15171d] via-[#15171d]/85 to-transparent"
         />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-5 bottom-5 font-[family-name:var(--font-jetbrains)] text-[11px] text-[#e8935f]/60"
-        >
-          .m
-        </span>
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute right-5 bottom-5 font-[family-name:var(--font-jetbrains)] text-[11px] text-[#8a97ad]/60"
-        >
-          .py
-        </span>
 
         <div className="relative z-10 max-w-3xl px-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3a2415] border border-[#d9662b]/30 text-[#e8935f] text-xs font-[family-name:var(--font-jetbrains)] mb-6">
