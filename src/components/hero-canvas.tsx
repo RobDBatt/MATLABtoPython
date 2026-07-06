@@ -187,19 +187,31 @@ export default function HeroCanvas() {
       animId = requestAnimationFrame(frame)
     }
 
-    // ResizeObserver fires once immediately with the current box size, then
-    // again whenever it actually changes — more reliable than the window
-    // 'resize' event, which never fires for layout settling / font swaps
-    // that change this element's size without the viewport changing.
-    const ro = new ResizeObserver(() => {
+    function rebuildAndStart() {
       build()
       if (particles.length === 0) return
       if (reduceMotion) drawStatic()
       else if (!animId) animId = requestAnimationFrame(frame)
-    })
+    }
+
+    // ResizeObserver fires once immediately with the current box size, then
+    // again whenever it actually changes — more reliable than the window
+    // 'resize' event, which never fires for layout settling that changes
+    // this element's size without the viewport changing.
+    const ro = new ResizeObserver(rebuildAndStart)
     ro.observe(canvas)
 
+    // Canvas text does not repaint itself once a web font finishes loading,
+    // so if JetBrains Mono is still swapping in when the ResizeObserver's
+    // first callback fires, the glyph gets sampled from a fallback font and
+    // never corrects itself. Rebuild once fonts are confirmed ready too.
+    let cancelled = false
+    document.fonts.ready.then(() => {
+      if (!cancelled) rebuildAndStart()
+    })
+
     return () => {
+      cancelled = true
       cancelAnimationFrame(animId)
       ro.disconnect()
     }
