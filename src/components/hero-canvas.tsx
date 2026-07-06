@@ -92,8 +92,11 @@ export default function HeroCanvas() {
 
     function build() {
       if (!canvas) return
-      W = canvas.width = canvas.offsetWidth
-      H = canvas.height = canvas.offsetHeight
+      const w = canvas.offsetWidth
+      const h = canvas.offsetHeight
+      if (w < 10 || h < 10) return // layout not settled yet; wait for the next observed resize
+      W = canvas.width = w
+      H = canvas.height = h
 
       const fontPx = Math.min(H * 0.62, W * 0.24)
       const cx = W * 0.66
@@ -184,18 +187,21 @@ export default function HeroCanvas() {
       animId = requestAnimationFrame(frame)
     }
 
-    build()
-    window.addEventListener('resize', build)
-
-    if (reduceMotion) {
-      drawStatic()
-    } else {
-      animId = requestAnimationFrame(frame)
-    }
+    // ResizeObserver fires once immediately with the current box size, then
+    // again whenever it actually changes — more reliable than the window
+    // 'resize' event, which never fires for layout settling / font swaps
+    // that change this element's size without the viewport changing.
+    const ro = new ResizeObserver(() => {
+      build()
+      if (particles.length === 0) return
+      if (reduceMotion) drawStatic()
+      else if (!animId) animId = requestAnimationFrame(frame)
+    })
+    ro.observe(canvas)
 
     return () => {
       cancelAnimationFrame(animId)
-      window.removeEventListener('resize', build)
+      ro.disconnect()
     }
   }, [])
 
