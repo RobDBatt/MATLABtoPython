@@ -812,9 +812,9 @@
   {
     "rel": "export_fig\\append_pdfs.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "error": "SyntaxError: invalid syntax. Is this intended to be part of the string?",
     "snippet": "",
-    "flagCount": 9,
+    "flagCount": 8,
     "flags": [
       {
         "type": "WARNING",
@@ -838,19 +838,15 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 160: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 161: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 161: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 162: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
         "message": "Unmapped MATLAB function `cellfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -902,7 +898,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: expected ':'",
     "snippet": "",
-    "flagCount": 133,
+    "flagCount": 132,
     "flags": [
       {
         "type": "WARNING",
@@ -1418,7 +1414,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 2248: unterminated string literal — converter output may be corrupted"
+        "message": "Output may contain syntax errors on line 2254: unterminated string literal — converter output may be corrupted"
       },
       {
         "type": "TODO",
@@ -1431,10 +1427,6 @@
       {
         "type": "TODO",
         "message": "Unmapped MATLAB function `arrayfun` survived into the output — it will raise NameError. No direct numpy equivalent; rewrite as a comprehension/loop (e.g. `[f(x) for x in items]`), or `np.vectorize(f)(arr)` for the elementwise case."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -1838,7 +1830,7 @@
   {
     "rel": "export_fig\\xkcdify.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: expected an indented block after 'except' statement on line 298 (_check_b9fovyhcja.py, line 301",
+    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
     "snippet": "",
     "flagCount": 25,
     "flags": [
@@ -1936,7 +1928,7 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 366: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 367: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -3227,7 +3219,7 @@
   {
     "rel": "lightspeed\\mexcompiler.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_k90oi719v1j.py:39: SyntaxWarning: \"\\P\" is an invalid ",
+    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_6pv0jnf4b28.py:39: SyntaxWarning: \"\\P\" is an invalid ",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -3975,8 +3967,8 @@
   },
   {
     "rel": "matlab2tikz\\src\\m2tInputParser.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: cannot use starred expression here",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 6,
     "flags": [
@@ -4082,6 +4074,1261 @@
   },
   {
     "rel": "matlab2tikz\\src\\private\\versionString.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\FFT.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\leastsquare\\FullRankLS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\leastsquare\\LS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\leastsquare\\PolyFit.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\leastsquare\\TikhonovLS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\leastsquare\\WeightedLS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\orthpoly\\Chebyshev.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\orthpoly\\Hermite.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\orthpoly\\Laguerre.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\approximation\\orthpoly\\Legendre.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\ChebyshevAcceleration.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\GershgorinTheorem.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TODO",
+        "message": "rectangle → matplotlib.patches.Rectangle added via ax.add_patch(...)."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\MinErrorPolyInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\NumDiffError.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\OptimalRelaxationFactor.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\OrthogonalPolynomial.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\demo\\RungePhenomenon.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\differentiation\\Diff.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\differentiation\\Jacobian.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\Balance.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\Eigen.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\EigenDeflation.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\iteration\\InverseIter.m",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: invalid syntax",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\iteration\\Jacobi.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\iteration\\PowerIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\iteration\\RayleighQuotientIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\QRiteration\\BidiagQRIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "nargin used — make optional parameters default to None in your function signature (e.g. def func(a, b=None):) and check with \"if b is None:\" instead of counting arguments."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\QRiteration\\DoubleHessenbergQRIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\QRiteration\\SingleHessenbergQRIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\QRiteration\\TridiagQRIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\reduction\\BidiagReduction.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\reduction\\HessenbergReduction.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\reduction\\TridiagReduction.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\SVD.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\eigen\\SymEigen.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\helper\\CheckMultiplicationSize.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\helper\\CheckSquareMatrix.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\integral\\AdaptiveSimpson.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\integral\\GaussianQuadrature.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "polyval → np.polyval — Same interface: np.polyval(p, x)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "polyval → np.polyval — Same interface: np.polyval(p, x)."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "polyval → np.polyval — Same interface: np.polyval(p, x)."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\integral\\Romberg.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\integral\\Simpson.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\integral\\Trapezoid.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\ChebyshevInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\CubicSplineInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\HermiteInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\LinearInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\NearestInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\interpolation\\PolyInterp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\basic\\ConditionNumber.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\basic\\Norm.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\basic\\Rank.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\decomposition\\Cholesky.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\decomposition\\LU.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\decomposition\\QR.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\direct\\GaussianElimination.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\direct\\SPDSolve.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\direct\\TriangleSolve.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\direct\\TridiagSolve.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\inverse\\Inverse.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\inverse\\NewtonInverse.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\inverse\\TriangleInverse.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\ChebyshevAcc.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\GSIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\JacIter.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\BiCG.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\BiCGstab.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\CG.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\CGNE.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\CGNR.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\CGS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\krylov\\GMRES.m",
+    "status": "PY_COMPILE_FAIL",
+    "error": "SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?",
+    "snippet": "vi+1 = w / h[i+1, i - 1]",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\SOR.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\linear\\iterative\\SSOR.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\multivariable\\Broyden.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\multivariable\\Continuation.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\multivariable\\Newtons.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\polynomial\\Horner.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\polynomial\\PolyDiff.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\polynomial\\PolyRealRootDeflation.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 2,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\polynomial\\PolyRoot.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\polynomial\\PolyRootDeflation.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 5,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "TOOLBOX",
+        "message": "filter → signal.lfilter (Signal Processing Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Bisection.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Brent.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Muller.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Newton.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Secant.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\nonlinear\\singlevariable\\Steffensen.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\AdamsCoef.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 1,
+    "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "sym → sp.Symbol — sp.Symbol('x') creates one symbol. For multiple: x, y, z = sp.symbols('x y z')."
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\BDFCoef.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\EmbeddedRK.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 4,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\EmbeddedRKTableau.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\HermiteRefine.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\HighOrderODE.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\MilneSimpsonCoef.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\NystromCoef.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\PredictorCorrector.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\RK.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 7,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\RKTableau.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\RungeKutta.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\ode\\_adams.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "eval/feval cannot be converted deterministically"
+      }
+    ]
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\Backtracking.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\BFGS.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\CauchyPoint.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\DogLeg.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\GaussNewton.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\Hybrid.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\LevenbergMarquardt.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\LineSearch.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\LSTrustRegionDogLeg.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\NelderMead.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\RosenbrockSearch.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\optimization\\SR1TrustRegion.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\pde\\Poisson2.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-analysis-toolbox\\Setup.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\differentiation\\derivative_backward_difference.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\differentiation\\derivative_five_point.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\differentiation\\derivative_three_point.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\integration\\composite2_simpson.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\integration\\composite2_trapezoidal.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\integration\\composite_simpson.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\integration\\composite_trapezoidal.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\interpolation\\lagrange.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\interpolation\\neville.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\linear_systems\\backward_substitution.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\linear_systems\\forward_substitution.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\linear_systems\\gauss_elimination_pp.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\linear_systems_iterative\\gauss_seidel.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\linear_systems_iterative\\jacobi.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\main.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\ode\\euler.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\ode\\rk4.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\ode\\rk4_system.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\ode\\taylor2.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\ode\\taylor4.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\polynomials\\briot_ruffini.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\polynomials\\newton_divided_difference.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 3,
+    "flags": [
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 35: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 38: bare `end` keyword remained after conversion — not a Python identifier"
+      },
+      {
+        "type": "WARNING",
+        "message": "Output may contain syntax errors on line 41: bare `end` keyword remained after conversion — not a Python identifier"
+      }
+    ]
+  },
+  {
+    "rel": "numerical-methods-matlab\\solutions\\bisection.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\solutions\\newton.m",
+    "status": "PASS",
+    "error": "",
+    "snippet": "",
+    "flagCount": 0,
+    "flags": []
+  },
+  {
+    "rel": "numerical-methods-matlab\\solutions\\secant.m",
     "status": "PASS",
     "error": "",
     "snippet": "",
@@ -4746,8 +5993,8 @@
   },
   {
     "rel": "PRMLT\\chapter10\\mixGaussEvidence.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid decimal literal",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 0,
     "flags": []
@@ -7252,8 +8499,8 @@
   },
   {
     "rel": "rcnn\\rcnn_config.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -7881,10 +9128,10 @@
   },
   {
     "rel": "spatialmath-matlab\\Apps\\tripleangle.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Perhaps you forgot a comma?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 39,
+    "flagCount": 38,
     "flags": [
       {
         "type": "WARNING",
@@ -8037,17 +9284,13 @@
       {
         "type": "WARNING",
         "message": "Output may contain syntax errors on line 167: bare `end` keyword remained after conversion — not a Python identifier"
-      },
-      {
-        "type": "WARNING",
-        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_mg8b5cnp6zn.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (_check_1boxu3nlz25.py, line 365)",
     "snippet": "",
     "flagCount": 56,
     "flags": [
@@ -9954,11 +11197,19 @@
   },
   {
     "rel": "spatialmath-matlab\\tranimate.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "uicontrol → uicontrol (GUI Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "uicontrol creates legacy MATLAB UI controls — no Python equivalent. Reimplement using widgets in PyQt6/PySide6 (QPushButton, etc.) or tkinter."
+      },
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
@@ -9966,24 +11217,24 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
-      },
-      {
-        "type": "WARNING",
-        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
   {
     "rel": "spatialmath-matlab\\tranimate2.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
+      {
+        "type": "TOOLBOX",
+        "message": "uicontrol → uicontrol (GUI Toolbox) — check that arguments and return values match. Some functions have different default parameters or output formats."
+      },
+      {
+        "type": "UNSUPPORTED",
+        "message": "uicontrol creates legacy MATLAB UI controls — no Python equivalent. Reimplement using widgets in PyQt6/PySide6 (QPushButton, etc.) or tkinter."
+      },
       {
         "type": "WARNING",
         "message": "isa with a non-literal or unrecognized class name can't map to isinstance automatically — review."
@@ -9991,14 +11242,6 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
-      },
-      {
-        "type": "WARNING",
-        "message": "Unbalanced brackets on this line — the construct could not be fully converted; review manually."
       }
     ]
   },
@@ -10196,10 +11439,10 @@
   },
   {
     "rel": "spatialmath-matlab\\trplot.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 13,
+    "flagCount": 12,
     "flags": [
       {
         "type": "WARNING",
@@ -10248,10 +11491,6 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -10260,7 +11499,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 3,
+    "flagCount": 2,
     "flags": [
       {
         "type": "WARNING",
@@ -10269,10 +11508,6 @@
       {
         "type": "WARNING",
         "message": "get(h, 'Prop') → plt.getp(h, 'prop') — matplotlib property names are lowercase and may differ from MATLAB's."
-      },
-      {
-        "type": "TODO",
-        "message": "MATLAB cell-array indexing `{ }` could not be converted on this line — map the cell to a Python list and index with [ ]."
       }
     ]
   },
@@ -11436,8 +12671,8 @@
   },
   {
     "rel": "vbmc\\gplite\\gplite_fmin.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 3,
     "flags": [
@@ -11793,8 +13028,8 @@
   },
   {
     "rel": "vbmc\\gplite\\private\\slicesamplebnd.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_ejwg9zie27j.py, line 304)",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -11824,11 +13059,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 423: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 421: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 530: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 528: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -12198,8 +13433,8 @@
   },
   {
     "rel": "vbmc\\misc\\vpoptimize_vbmc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 4,
     "flags": [
@@ -12733,7 +13968,7 @@
     "status": "PY_COMPILE_FAIL",
     "error": "SyntaxError: invalid syntax",
     "snippet": "",
-    "flagCount": 57,
+    "flagCount": 56,
     "flags": [
       {
         "type": "TODO",
@@ -12958,10 +14193,6 @@
       {
         "type": "TODO",
         "message": "MATLAB cell expansion `{:}` produced a `*` where Python doesn't allow it — use the element directly (e.g. name[0])."
-      },
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
       }
     ]
   },
@@ -13073,8 +14304,8 @@
   },
   {
     "rel": "vbmc\\utils\\evalbool.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unindent does not match any outer indentation level (_check_jhv59ycwlp.py, line 18)",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 1,
     "flags": [
@@ -13300,8 +14531,8 @@
   },
   {
     "rel": "vbmc\\utils\\slicesamplebnd.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_h5uyykkl0uo.py, line 292)",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 7,
     "flags": [
@@ -13327,18 +14558,18 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 401: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 399: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 482: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 480: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
   {
     "rel": "vbmc\\utils\\slicesample_vbmc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_0t2gtdj80pyo.py, line 312)",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 8,
     "flags": [
@@ -13368,11 +14599,11 @@
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 431: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 429: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
-        "message": "Output may contain syntax errors on line 538: bare `end` keyword remained after conversion — not a Python identifier"
+        "message": "Output may contain syntax errors on line 536: bare `end` keyword remained after conversion — not a Python identifier"
       }
     ]
   },
@@ -13452,7 +14683,7 @@
     "status": "PASS",
     "error": "",
     "snippet": "",
-    "flagCount": 40,
+    "flagCount": 39,
     "flags": [
       {
         "type": "UNSUPPORTED",
@@ -13589,10 +14820,6 @@
       {
         "type": "TODO",
         "message": "which(name) locates a MATLAB file — closest Python is shutil.which (executables) or importlib.util.find_spec (modules)."
-      },
-      {
-        "type": "WARNING",
-        "message": "Output may contain syntax errors on line 36: bare `end` keyword remained after conversion — not a Python identifier"
       },
       {
         "type": "WARNING",
@@ -13923,10 +15150,10 @@
   },
   {
     "rel": "ypea\\src\\ypea\\ypea_abc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
-    "flagCount": 7,
+    "flagCount": 6,
     "flags": [
       {
         "type": "TODO",
@@ -13951,10 +15178,6 @@
       {
         "type": "TODO",
         "message": "MATLAB property accessor set.max_acceleration → def set_max_acceleration. In Python, make this a @property (getter) or @<prop>.setter on the class instead of a standalone method."
-      },
-      {
-        "type": "TODO",
-        "message": "Space-separated elements in a literal `[a b]` — an unconverted matrix literal; Python needs commas (or np.array)."
       }
     ]
   },

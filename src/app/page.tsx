@@ -89,7 +89,7 @@ export default function Home() {
         <div className="relative z-10 max-w-3xl px-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3a2415] border border-[#d9662b]/30 text-[#e8935f] text-xs font-[family-name:var(--font-jetbrains)] mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d9662b] animate-pulse" />
-            923 real-world scripts tested · 69.8% compile clean first try
+            1,062 real-world scripts tested · 66.7% compile clean first try
           </div>
           <h1 className="font-[family-name:var(--font-syne)] text-4xl lg:text-5xl font-bold text-[#eef0f4] leading-tight mb-3">
             MATLAB&nbsp;to&nbsp;Python Converter
@@ -145,11 +145,11 @@ export default function Home() {
           </div>
           <div>
             <div className="text-[#8a97ad] font-[family-name:var(--font-jetbrains)] text-3xl font-bold mb-2 tracking-tight">
-              69.8%
+              66.7%
             </div>
             <div className="text-[#9aa1ac] leading-relaxed">
               Of real-world MATLAB scripts compile to valid, flag-free Python on
-              the first conversion. Measured against 923 scripts from public research
+              the first conversion. Measured against 1,062 scripts from public research
               repos. The rest gets flagged — never silently broken.
             </div>
           </div>
@@ -171,7 +171,7 @@ export default function Home() {
             <p className="text-[#9aa1ac] leading-relaxed">
               Rule-based, no LLM in the loop. Same MATLAB input produces the
               exact same Python output every time. Auditable, reproducible,
-              testable — we test it against 923 real-world scripts.
+              testable — we test it against 1,062 real-world scripts.
             </p>
           </div>
           <div className="border-l-2 border-[#d9662b] pl-5">
