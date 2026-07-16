@@ -77,47 +77,43 @@ export async function hasUsedMatlabFreeConversion(email: string): Promise<boolea
 }
 
 /**
- * Record that this email has now used its free conversion. Tries an UPDATE
- * first so an existing row's `source` (e.g. a prior newsletter signup)
- * isn't clobbered; only INSERTs a fresh row when no match was found.
+ * Record that this email has now used its free conversion.
+ *
+ * Delegates to an atomic upsert (see 0004_mark_free_conversion_atomic.sql).
+ * This ran as a PATCH-then-INSERT until it lost a race with `saveSubscriber`'s
+ * concurrent INSERT — Next's `after()` fires its callbacks in parallel — and
+ * silently left the flag NULL for every first-time email. The gate never
+ * engaged. Keep the write as one statement; a read-then-write from here
+ * reopens that window.
+ *
+ * The timestamp is Postgres `now()`, not a client clock, so it can't disagree
+ * with `created_at`.
  */
 export async function markMatlabFreeConversionUsed(email: string, source: string): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
-  const usedAt = new Date().toISOString()
 
   if (!supabaseUrl || !supabaseKey) {
-    console.log('[free-conversion-gate] (no-db)', { email, ts: usedAt })
+    console.log('[free-conversion-gate] (no-db)', { email, ts: new Date().toISOString() })
     return
   }
 
   try {
-    const patchRes = await fetch(
-      `${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(email)}`,
-      {
-        method: 'PATCH',
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify({ matlab_free_conversion_used_at: usedAt }),
-      },
-    )
-    const updated = patchRes.ok ? await patchRes.json().catch(() => []) : []
-    if (Array.isArray(updated) && updated.length > 0) return
-
-    await fetch(`${supabaseUrl}/rest/v1/subscribers`, {
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/mark_matlab_free_conversion_used`, {
       method: 'POST',
       headers: {
         apikey: supabaseKey,
         Authorization: `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
       },
-      body: JSON.stringify({ email, source, matlab_free_conversion_used_at: usedAt }),
+      body: JSON.stringify({ p_email: email, p_source: source }),
     })
+    if (!res.ok) {
+      // Never swallow this silently again — a failure here means the gate
+      // didn't engage, which is exactly the bug this function used to hide.
+      const errText = await res.text().catch(() => '')
+      console.error('[free-conversion-gate] rpc failed', res.status, errText)
+    }
   } catch (err) {
     console.error('[free-conversion-gate] network error', err)
   }
