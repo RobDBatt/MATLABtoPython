@@ -770,6 +770,9 @@ function splitTopLevelCommaArgs(s: string): string[] {
   return parts
 }
 
+/** MATLAB/C conversion chars that require an integer operand in Python. */
+const INT_CONVERSIONS = new Set(['d', 'i', 'u', 'o', 'x', 'X'])
+
 /**
  * Build `f'...'`/`f"..."` from a MATLAB-derived format string's inner text
  * (already stripped of its outer quotes) + its resolved value expressions.
@@ -798,7 +801,12 @@ function buildFString(quote: string, inner: string, valueArgs: string[]): string
       const spec = matlabSpecToFString(flags, width, precision, type)
       if (spec === null) return null
       const value = valueArgs[argIdx++]
-      rebuilt += spec ? `{${value}:${spec}}` : `{${value}}`
+      // MATLAB has no integer type — `n = numel(x)` or `sum(...)` is a double,
+      // so an integer conversion routinely receives a Python float. `%d` coerced
+      // it; f-string `:d`/`:x`/`:o` raise ValueError on a float instead. int()
+      // restores that coercion (identical truncation-toward-zero to `%`).
+      const rendered = INT_CONVERSIONS.has(type) ? `int(${value})` : value
+      rebuilt += spec ? `{${rendered}:${spec}}` : `{${rendered}}`
     }
     lastIndex = SPEC_RE.lastIndex
   }
@@ -827,6 +835,10 @@ function matlabSpecToFString(
   if (type === 'c') return null // char-vs-string ambiguity — no type info to resolve it
   if (flags.includes('#') || flags.includes(' ')) return null // rare alternate-form / space flags
   if (width === '*' || precision === '*') return null // dynamic width/precision consumes an extra arg
+  // C/MATLAB read precision on an integer conversion as zero-pad-to-N-digits
+  // ('%.3d' → '005'); Python rejects it outright ("Precision not allowed in
+  // integer format specifier"). No f-string equivalent — keep the `%` form.
+  if (precision !== undefined && INT_CONVERSIONS.has(type)) return null
 
   const pyType = type === 'i' || type === 'u' ? 'd' : type
   const align = flags.includes('-') ? '<' : ''

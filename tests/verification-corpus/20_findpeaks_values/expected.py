@@ -5,4 +5,4 @@ import scipy.signal as signal
 x = np.array([0, 2, 0, 4, 0, 6, 0])
 locs = signal.find_peaks(x)[0]
 pks = x[locs]
-print(f'{len(pks):d}')
+print(f'{int(len(pks)):d}')

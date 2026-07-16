@@ -10,4 +10,4 @@ y = signal.lfilter(b, a, x)
 Y = np.abs(np.fft.fft(y))
 locs = signal.find_peaks(x)[0]
 pks = x[locs]
-print(f'peaks={len(pks):d}')
+print(f'peaks={int(len(pks)):d}')

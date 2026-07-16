@@ -3,4 +3,4 @@ import numpy as np
 # linspace + colon range
 x = np.linspace(0, 1, 5)
 r = np.arange(0, 10 + 2, 2)
-print(f'count {len(r):d}')
+print(f'count {int(len(r)):d}')
