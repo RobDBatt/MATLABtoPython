@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { PLANS, type PlanId } from '@/lib/plans'
 
 export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -17,23 +18,105 @@ export async function POST(req: Request) {
     }
   }
 
-  const { priceId } = await req.json()
-  if (!priceId) {
-    return NextResponse.json({ error: 'Missing priceId' }, { status: 400 })
+  // The client sends a plan key, never a price ID. The price is resolved here
+  // from PLANS, so a client can neither drift from the server's price config
+  // nor name an arbitrary Stripe price to buy a paid tier with.
+  const { planKey } = await req.json()
+  if (!planKey || typeof planKey !== 'string') {
+    return NextResponse.json({ error: 'Missing planKey' }, { status: 400 })
   }
+
+  // Absolute base URL for Stripe's success/cancel redirects. Stripe rejects a
+  // relative URL, so a missing NEXT_PUBLIC_APP_URL must not fall through to ''.
+  // Fall back to the request's own origin (correct for a same-origin POST from
+  // the pricing page), and only then error — never hand Stripe a bad URL.
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || req.headers.get('origin') || '').replace(/\/$/, '')
+  if (!/^https?:\/\//.test(baseUrl)) {
+    console.error('[checkout] No absolute base URL available', {
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? null,
+      origin: req.headers.get('origin'),
+    })
+    return NextResponse.json(
+      { error: 'checkout_failed', message: 'Checkout is temporarily unavailable. Please try again shortly.' },
+      { status: 503 },
+    )
+  }
+
+  const plan = PLANS[planKey as PlanId]
+  if (!plan || !('stripePriceId' in plan)) {
+    return NextResponse.json(
+      { error: 'Unknown or non-purchasable plan' },
+      { status: 400 },
+    )
+  }
+
+  const planId = planKey as PlanId
+  const priceId = plan.stripePriceId
 
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-  const isOneTime = priceId.includes('migration')
 
-  const session = await stripe.checkout.sessions.create({
-    mode: isOneTime ? 'payment' : 'subscription',
-    payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL || ''}/convert?upgraded=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || ''}/pricing`,
-    metadata: userId ? { userId } : {},
-  })
+  // Stripe rejects a checkout whose mode disagrees with the price, so read the
+  // price rather than assuming. `price.recurring` is null for one-time prices.
+  let isOneTime: boolean
+  try {
+    const price = await stripe.prices.retrieve(priceId)
+    isOneTime = !price.recurring
+  } catch (err) {
+    console.error('[checkout] Could not retrieve price', {
+      planId,
+      priceId,
+      message: err instanceof Error ? err.message : String(err),
+    })
+    return NextResponse.json({ error: 'checkout_failed' }, { status: 502 })
+  }
+
+  // The Migration Pass is advertised as a one-time 30-day purchase. If its
+  // Stripe price is recurring, letting checkout through would bill the customer
+  // $49 every month for something sold as a single payment. Refuse loudly
+  // rather than mis-sell: fix the price in Stripe (a price cannot be converted
+  // between one-time and recurring — create a new one and archive the old).
+  if (planId === 'migration_pass' && !isOneTime) {
+    console.error(
+      '[checkout] MISCONFIGURED: Migration Pass price is recurring but the plan is sold as one-time',
+      { priceId },
+    )
+    return NextResponse.json(
+      {
+        error: 'plan_misconfigured',
+        message: 'The Migration Pass is temporarily unavailable. Please contact support.',
+      },
+      { status: 503 },
+    )
+  }
+
+  let session
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: isOneTime ? 'payment' : 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${baseUrl}/convert?upgraded=true`,
+      cancel_url: `${baseUrl}/pricing`,
+      metadata: userId ? { userId, planId } : { planId },
+      // Stamp the subscription itself too. `customer.subscription.*` events
+      // carry no session metadata, so without this the webhook cannot tell
+      // which Clerk user a cancellation belongs to.
+      ...(isOneTime || !userId
+        ? {}
+        : { subscription_data: { metadata: { userId, planId } } }),
+    })
+  } catch (err) {
+    console.error('[checkout] Stripe session create failed', {
+      planId,
+      mode: isOneTime ? 'payment' : 'subscription',
+      message: err instanceof Error ? err.message : String(err),
+    })
+    return NextResponse.json(
+      { error: 'checkout_failed', message: 'Could not start checkout. Please try again.' },
+      { status: 502 },
+    )
+  }
 
   return NextResponse.json({ url: session.url })
 }

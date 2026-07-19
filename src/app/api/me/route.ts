@@ -17,7 +17,8 @@ export async function GET() {
 
   const meta = user.publicMetadata as { plan?: PlanId }
   const planId = meta?.plan || 'free'
-  const plan = PLANS[planId]
+  // Guarded: a stale metadata value would otherwise serialise as `plan: null`.
+  const plan = PLANS[planId] ?? PLANS.free
 
   return NextResponse.json({
     user: {

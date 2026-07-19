@@ -79,12 +79,6 @@ const tiers = [
   },
 ]
 
-const PRICE_IDS: Record<string, string> = {
-  migration_pass: process.env.NEXT_PUBLIC_STRIPE_PRICE_MIGRATION_PASS || 'price_1TLHrpRElJyZVpb2TIQVSzCj',
-  pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || 'price_1TLHrqRElJyZVpb2X14Ag9oY',
-  team: process.env.NEXT_PUBLIC_STRIPE_PRICE_TEAM || 'price_1TLHrqRElJyZVpb2ULp88N8T',
-}
-
 export default function PricingPage() {
   const { isSignedIn } = useUser()
   const [loading, setLoading] = useState<string | null>(null)
@@ -119,7 +113,9 @@ export default function PricingPage() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: PRICE_IDS[planKey] }),
+        // Send the plan key, not a price ID. The server resolves it through
+        // PLANS, so the client and server can never drift on price config.
+        body: JSON.stringify({ planKey }),
       })
 
       const contentType = res.headers.get('content-type') || ''
