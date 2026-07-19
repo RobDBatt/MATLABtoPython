@@ -5,7 +5,6 @@ interface UserMetadata {
   plan?: PlanId
   stripeCustomerId?: string
   stripeSubscriptionId?: string
-  migrationPassExpiresAt?: string
   linesUsedThisMonth?: number
   linesResetDate?: string
 }
@@ -25,16 +24,9 @@ function planForUser(user: ClerkUser) {
   const meta = user.publicMetadata as UserMetadata
   const planId = meta?.plan || 'free'
 
-  // A migration pass is a one-time 30-day purchase, so it must be re-checked
-  // on every conversion — nothing else expires it.
-  if (planId === 'migration_pass' && meta.migrationPassExpiresAt) {
-    if (new Date(meta.migrationPassExpiresAt) < new Date()) {
-      return PLANS.free
-    }
-  }
-
-  // Guard the lookup: a stale or hand-edited metadata value would otherwise
-  // return undefined and throw at the call site.
+  // Guard the lookup: a stale value (e.g. a retired plan such as the old
+  // 'migration_pass') would otherwise return undefined and throw at the call
+  // site. Retired plans degrade to free rather than crashing the gate.
   return PLANS[planId] ?? PLANS.free
 }
 

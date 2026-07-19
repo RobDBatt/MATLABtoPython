@@ -6,15 +6,6 @@ export const PLANS = {
     fileUpload: false,
     batchUpload: false,
   },
-  migration_pass: {
-    name: 'Migration Pass',
-    linesPerConversion: 5000,
-    linesPerMonth: Infinity,
-    fileUpload: true,
-    batchUpload: false,
-    stripePriceId: process.env.STRIPE_PRICE_MIGRATION_PASS || 'price_1Tv0FYRElJyZVpb2R4sSXFa2',
-    durationDays: 30,
-  },
   pro: {
     name: 'Individual Pro',
     linesPerConversion: 5000,

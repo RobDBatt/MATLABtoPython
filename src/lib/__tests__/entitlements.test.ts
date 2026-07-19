@@ -27,16 +27,13 @@ describe('entitlement gate', () => {
     expect(v.reason).toBe('batch_not_allowed')
   })
 
-  it('EXPIRED migration pass falls back to free (was unenforced on the live path)', async () => {
-    mockUser = userWith({ plan: 'migration_pass', migrationPassExpiresAt: '2020-01-01T00:00:00Z' })
+  it('a RETIRED plan degrades to free rather than crashing the gate', async () => {
+    // 'migration_pass' was removed from PLANS; any Clerk metadata still
+    // carrying it must fall back to free, not return undefined.
+    mockUser = userWith({ plan: 'migration_pass', migrationPassExpiresAt: '2099-01-01T00:00:00Z' })
     const v = await checkConversionAllowed(5000)
     expect(v.allowed).toBe(false)
     expect(v.limit).toBe(50)
-  })
-
-  it('unexpired migration pass still works', async () => {
-    mockUser = userWith({ plan: 'migration_pass', migrationPassExpiresAt: '2099-01-01T00:00:00Z' })
-    expect((await checkConversionAllowed(5000)).allowed).toBe(true)
   })
 
   it('team monthly cap is enforced once the counter is populated', async () => {

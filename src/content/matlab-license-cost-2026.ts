@@ -121,7 +121,7 @@ The academic pathway is one of the biggest drivers of migration: researchers who
       heading: 'Start the migration',
       body: `The converter handles the bulk of the translation work automatically. Paste your MATLAB code — 50 lines free, no account required — and see the Python output with a compatibility report showing exactly what converted cleanly and what needs review.
 
-For full codebase migrations, the Migration Pass gives you 30 days of unlimited conversions with file upload for $49 — a small fraction of a single MATLAB seat-year.`,
+For full codebase migrations, Individual Pro gives you unlimited conversions with file upload for $19.99/month — a small fraction of a single MATLAB seat-year.`,
     },
   ],
 }

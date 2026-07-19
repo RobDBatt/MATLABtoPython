@@ -22,7 +22,7 @@ interface Props {
 export function ConverterWidget({ exampleCode }: Props) {
   const { isSignedIn, user } = useUser()
   const plan = (user?.publicMetadata as Record<string, unknown>)?.plan as string | undefined
-  const hasPaidPlan = plan === 'pro' || plan === 'team' || plan === 'migration_pass'
+  const hasPaidPlan = plan === 'pro' || plan === 'team'
 
   const [mode, setMode] = useState<'paste' | 'upload' | 'batch'>('paste')
   const [input, setInput] = useState('')

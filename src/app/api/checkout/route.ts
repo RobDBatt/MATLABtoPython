@@ -56,12 +56,27 @@ export async function POST(req: Request) {
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-  // Stripe rejects a checkout whose mode disagrees with the price, so read the
-  // price rather than assuming. `price.recurring` is null for one-time prices.
-  let isOneTime: boolean
+  // Every plan is a subscription. Verify the configured price agrees rather
+  // than assuming: Stripe rejects a checkout whose mode disagrees with the
+  // price, and a one-time price wired to a monthly plan would charge the
+  // customer once for something sold as recurring. Refuse loudly instead.
+  // (A price cannot be converted between one-time and recurring — create a new
+  // one and archive the old.)
   try {
     const price = await stripe.prices.retrieve(priceId)
-    isOneTime = !price.recurring
+    if (!price.recurring) {
+      console.error('[checkout] MISCONFIGURED: price is one-time but the plan is sold as a subscription', {
+        planId,
+        priceId,
+      })
+      return NextResponse.json(
+        {
+          error: 'plan_misconfigured',
+          message: 'This plan is temporarily unavailable. Please contact support.',
+        },
+        { status: 503 },
+      )
+    }
   } catch (err) {
     console.error('[checkout] Could not retrieve price', {
       planId,
@@ -71,29 +86,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'checkout_failed' }, { status: 502 })
   }
 
-  // The Migration Pass is advertised as a one-time 30-day purchase. If its
-  // Stripe price is recurring, letting checkout through would bill the customer
-  // $49 every month for something sold as a single payment. Refuse loudly
-  // rather than mis-sell: fix the price in Stripe (a price cannot be converted
-  // between one-time and recurring — create a new one and archive the old).
-  if (planId === 'migration_pass' && !isOneTime) {
-    console.error(
-      '[checkout] MISCONFIGURED: Migration Pass price is recurring but the plan is sold as one-time',
-      { priceId },
-    )
-    return NextResponse.json(
-      {
-        error: 'plan_misconfigured',
-        message: 'The Migration Pass is temporarily unavailable. Please contact support.',
-      },
-      { status: 503 },
-    )
-  }
-
   let session
   try {
     session = await stripe.checkout.sessions.create({
-      mode: isOneTime ? 'payment' : 'subscription',
+      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${baseUrl}/convert?upgraded=true`,
@@ -102,14 +98,11 @@ export async function POST(req: Request) {
       // Stamp the subscription itself too. `customer.subscription.*` events
       // carry no session metadata, so without this the webhook cannot tell
       // which Clerk user a cancellation belongs to.
-      ...(isOneTime || !userId
-        ? {}
-        : { subscription_data: { metadata: { userId, planId } } }),
+      ...(userId ? { subscription_data: { metadata: { userId, planId } } } : {}),
     })
   } catch (err) {
     console.error('[checkout] Stripe session create failed', {
       planId,
-      mode: isOneTime ? 'payment' : 'subscription',
       message: err instanceof Error ? err.message : String(err),
     })
     return NextResponse.json(
