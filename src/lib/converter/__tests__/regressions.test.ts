@@ -479,7 +479,7 @@ describe('Tier-1 registry breadth', () => {
   it('assert becomes a statement, not a tuple-asserting call', () => {
     expect(convert("assert(x > 0, 'must be positive');").python).toContain("assert x > 0, 'must be positive'")
     expect(convert('assert(isempty(y));').python).toContain('assert len(y) == 0')
-    expect(convert("assert(n > 0, 'n=%d', n);").python).toContain("assert n > 0, f'n={n:d}'")
+    expect(convert("assert(n > 0, 'n=%d', n);").python).toContain("assert n > 0, f'n={int(n):d}'")
   })
   it('isscalar/isreal/isequal map to numpy', () => {
     expect(convert('b = isscalar(x);').python).toContain('np.isscalar(x)')
@@ -667,13 +667,13 @@ describe('fprintf/sprintf → f-string (Stage 5 rewrite)', () => {
     expect(out).toContain("print(f'value: {v[9]:f}')")
   })
   it('rewrites a multi-value fprintf with mixed specs', () => {
-    expect(py("fprintf('x = %d, y = %.2f\\n', x, y);")).toBe("print(f'x = {x:d}, y = {y:.2f}')")
+    expect(py("fprintf('x = %d, y = %.2f\\n', x, y);")).toBe("print(f'x = {int(x):d}, y = {y:.2f}')")
   })
   it('handles width/zero-pad/left-justify flags', () => {
     expect(py("fprintf('%-10s|%05.2f\\n', name, val);")).toBe("print(f'{name:<10}|{val:05.2f}')")
   })
   it('preserves a literal %% alongside a real spec', () => {
-    expect(py("fprintf('100%% done: %d\\n', n);")).toBe("print(f'100% done: {n:d}')")
+    expect(py("fprintf('100%% done: %d\\n', n);")).toBe("print(f'100% done: {int(n):d}')")
   })
   it('falls back to % formatting for %c (char/string ambiguity)', () => {
     expect(py("fprintf('%c\\n', ch);")).toBe("print('%c' % (ch,))")
@@ -686,6 +686,39 @@ describe('fprintf/sprintf → f-string (Stage 5 rewrite)', () => {
   // but a Python SyntaxError inside f-string braces (`{*gs_options}`).
   it('falls back to % formatting when a value arg is a cell-expand splat', () => {
     expect(py("gs_options = sprintf(' %s',gs_options{:});")).toBe("gs_options = ' %s' % (*gs_options,)")
+  })
+})
+
+// 2026-07-16: oracle gate (preallocate_loop.m) — since 1ed87558 switched
+// fprintf/sprintf to f-strings, an integer conversion emitted a bare `{v:d}`.
+// MATLAB has no integer type, so `sum(z)`/`numel(x)` arrive as Python floats
+// and `f'{np.float64(55.0):d}'` raises "Unknown format code 'd' for object of
+// type 'float'" — where the old `'%d' % (v,)` coerced. int() restores exactly
+// that coercion (same truncation-toward-zero) while keeping the f-string.
+describe('integer format code applied to a float value', () => {
+  it('wraps %d values in int() so a float argument still formats', () => {
+    const out = py("z = zeros(1,5);\ntotal = sum(z);\nfprintf('total=%d\\n', total);")
+    expect(out).toBe("z = np.zeros(5)\ntotal = np.sum(z)\nprint(f'total={int(total):d}')")
+  })
+  it('keeps width/zero-pad flags alongside the int() coercion', () => {
+    expect(py("fprintf('%05d\\n', n);")).toBe("print(f'{int(n):05d}')")
+  })
+  it('wraps the other integer conversions (%x/%o/%X) too', () => {
+    // `'%x' % 255.0` was a TypeError even in the old % form — int() fixes it.
+    expect(py("fprintf('%x\\n', v);")).toBe("print(f'{int(v):x}')")
+    expect(py("fprintf('%o\\n', v);")).toBe("print(f'{int(v):o}')")
+  })
+  it('does NOT wrap float conversions — Python formats an int fine with %f/%e/%g', () => {
+    expect(py("fprintf('%.2f\\n', x);")).toBe("print(f'{x:.2f}')")
+    expect(py("fprintf('%e\\n', x);")).toBe("print(f'{x:e}')")
+  })
+  it('does NOT wrap %s', () => {
+    expect(py("fprintf('%s\\n', name);")).toBe("print(f'{name}')")
+  })
+  // Python rejects precision on an integer spec ("Precision not allowed in
+  // integer format specifier"); C/MATLAB read '%.3d' as zero-pad-to-3 → '005'.
+  it('falls back to % formatting for precision on an integer spec', () => {
+    expect(py("fprintf('%.3d\\n', n);")).toBe("print('%.3d' % (n,))")
   })
 })
 

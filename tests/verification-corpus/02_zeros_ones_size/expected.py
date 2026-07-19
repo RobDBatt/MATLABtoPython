@@ -4,4 +4,4 @@ import numpy as np
 A = np.zeros((2, 3))
 B = np.ones((3, 3))
 s = A.shape
-print(f'{s[0]:d}')
+print(f'{int(s[0]):d}')

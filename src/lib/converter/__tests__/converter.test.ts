@@ -56,7 +56,7 @@ describe('Core Syntax', () => {
     expect(py('c = {\n  1 %a\n  2 %b\n  3 %c\n};')).toContain('np.array([1, 2, 3])')
     // A `%` inside a string is NOT a comment and must survive the join —
     // then convert cleanly to an f-string, not get truncated.
-    expect(py("y = sprintf('%d', ...\n  x);")).toBe("y = f'{x:d}'")
+    expect(py("y = sprintf('%d', ...\n  x);")).toBe("y = f'{int(x):d}'")
   })
 
   it('multi-line matrix with bracket on its own line — no empty rows', () => {
@@ -660,7 +660,7 @@ describe('Phase 2: Indexing Intelligence', () => {
 describe('Phase 3: Format Strings and Registry', () => {
   it('3A: fprintf with format specifiers → f-string', () => {
     const result = py("fprintf('x = %d, y = %.2f\\n', x, y);")
-    expect(result).toBe("print(f'x = {x:d}, y = {y:.2f}')")
+    expect(result).toBe("print(f'x = {int(x):d}, y = {y:.2f}')")
   })
 
   it('3A: sprintf returns an f-string', () => {

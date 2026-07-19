@@ -259,7 +259,7 @@ describe('Issue probes (failing = needs fix)', () => {
     expect(py('assert(isempty(y));')).toBe('assert len(y) == 0')
   })
   it('assert with format args → f-string', () => {
-    expect(py("assert(n > 0, 'n=%d', n);")).toBe("assert n > 0, f'n={n:d}'")
+    expect(py("assert(n > 0, 'n=%d', n);")).toBe("assert n > 0, f'n={int(n):d}'")
   })
 
   // ── classdef attributes / inheritance ─────────────────────

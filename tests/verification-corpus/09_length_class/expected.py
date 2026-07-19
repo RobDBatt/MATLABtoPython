@@ -4,4 +4,4 @@ import numpy as np
 v = np.arange(1, 7 + 1)
 n = np.max(v.shape)
 c = type(v).__name__
-print(f'{n:d}')
+print(f'{int(n):d}')
