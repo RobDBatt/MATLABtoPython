@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { PLANS, planIdForPriceId } from '@/lib/plans'
+import { isOwnPlan, tolerateMissingUser } from '@/lib/webhook-guards'
 
 export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
@@ -32,6 +33,19 @@ export async function POST(req: Request) {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
+      const planId = session.metadata?.planId
+
+      // Not ours — another product on the same Stripe account. Acknowledge and
+      // move on rather than failing a delivery that can never apply here.
+      if (!isOwnPlan(planId)) {
+        console.warn('[stripe-webhook] Ignoring checkout session from another product', {
+          eventId: event.id,
+          sessionId: session.id,
+          planId: planId ?? null,
+        })
+        break
+      }
+
       const userId = session.metadata?.userId
       if (!userId || !hasClerk) break
 
@@ -39,16 +53,29 @@ export async function POST(req: Request) {
       const client = await clerkClient()
 
       if (session.mode === 'payment') {
-        await client.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            plan: 'migration_pass',
-            stripeCustomerId: session.customer,
-            migrationPassExpiresAt: new Date(
-              Date.now() + PLANS.migration_pass.durationDays * 24 * 60 * 60 * 1000,
-            ).toISOString(),
-            linesUsedThisMonth: 0,
-          },
-        })
+        // The Migration Pass is the only one-time purchase we sell.
+        if (planId !== 'migration_pass') {
+          console.error('[stripe-webhook] Unexpected one-time payment, no plan granted', {
+            planId,
+            sessionId: session.id,
+          })
+          break
+        }
+
+        await tolerateMissingUser(
+          () =>
+            client.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                plan: 'migration_pass',
+                stripeCustomerId: session.customer,
+                migrationPassExpiresAt: new Date(
+                  Date.now() + PLANS.migration_pass.durationDays * 24 * 60 * 60 * 1000,
+                ).toISOString(),
+                linesUsedThisMonth: 0,
+              },
+            }),
+          { userId, eventId: event.id, sessionId: session.id, planId },
+        )
       } else {
         const sub = await stripe.subscriptions.retrieve(
           session.subscription as string,
@@ -69,15 +96,19 @@ export async function POST(req: Request) {
           break
         }
 
-        await client.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            plan,
-            stripeCustomerId: session.customer,
-            stripeSubscriptionId: session.subscription,
-            linesUsedThisMonth: 0,
-            linesResetDate: new Date().toISOString(),
-          },
-        })
+        await tolerateMissingUser(
+          () =>
+            client.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                plan,
+                stripeCustomerId: session.customer,
+                stripeSubscriptionId: session.subscription,
+                linesUsedThisMonth: 0,
+                linesResetDate: new Date().toISOString(),
+              },
+            }),
+          { userId, eventId: event.id, sessionId: session.id, planId },
+        )
       }
       break
     }
@@ -87,6 +118,17 @@ export async function POST(req: Request) {
     case 'customer.subscription.deleted':
     case 'customer.subscription.updated': {
       const sub = event.data.object as Stripe.Subscription
+
+      // Same cross-product guard as above — subscription events fan out to
+      // every endpoint on the account too.
+      if (!isOwnPlan(sub.metadata?.planId)) {
+        console.warn('[stripe-webhook] Ignoring subscription event from another product', {
+          eventId: event.id,
+          subscriptionId: sub.id,
+          planId: sub.metadata?.planId ?? null,
+        })
+        break
+      }
 
       // 'past_due' is deliberately excluded — Stripe is still retrying payment
       // and the customer has not actually lost the subscription yet.
@@ -113,14 +155,18 @@ export async function POST(req: Request) {
       const { clerkClient } = await import('@clerk/nextjs/server')
       const client = await clerkClient()
 
-      await client.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          plan: 'free',
-          stripeCustomerId: sub.customer,
-          stripeSubscriptionId: null,
-          linesUsedThisMonth: 0,
-        },
-      })
+      await tolerateMissingUser(
+        () =>
+          client.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              plan: 'free',
+              stripeCustomerId: sub.customer,
+              stripeSubscriptionId: null,
+              linesUsedThisMonth: 0,
+            },
+          }),
+        { userId, eventId: event.id, subscriptionId: sub.id, status: sub.status },
+      )
       break
     }
   }
