@@ -13,7 +13,6 @@ const homeJsonLd = {
   offers: [
     { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'USD' },
     { '@type': 'Offer', name: 'Individual Pro', price: '19.99', priceCurrency: 'USD' },
-    { '@type': 'Offer', name: 'Migration Pass', price: '49', priceCurrency: 'USD' },
     { '@type': 'Offer', name: 'Team', price: '79', priceCurrency: 'USD' },
   ],
   featureList: [
