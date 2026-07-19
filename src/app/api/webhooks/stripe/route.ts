@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { PLANS, planIdForPriceId } from '@/lib/plans'
+import { planIdForPriceId } from '@/lib/plans'
 import { isOwnPlan, tolerateMissingUser } from '@/lib/webhook-guards'
 
 export async function POST(req: Request) {
@@ -52,64 +52,49 @@ export async function POST(req: Request) {
       const { clerkClient } = await import('@clerk/nextjs/server')
       const client = await clerkClient()
 
-      if (session.mode === 'payment') {
-        // The Migration Pass is the only one-time purchase we sell.
-        if (planId !== 'migration_pass') {
-          console.error('[stripe-webhook] Unexpected one-time payment, no plan granted', {
-            planId,
-            sessionId: session.id,
-          })
-          break
-        }
-
-        await tolerateMissingUser(
-          () =>
-            client.users.updateUserMetadata(userId, {
-              publicMetadata: {
-                plan: 'migration_pass',
-                stripeCustomerId: session.customer,
-                migrationPassExpiresAt: new Date(
-                  Date.now() + PLANS.migration_pass.durationDays * 24 * 60 * 60 * 1000,
-                ).toISOString(),
-                linesUsedThisMonth: 0,
-              },
-            }),
-          { userId, eventId: event.id, sessionId: session.id, planId },
-        )
-      } else {
-        const sub = await stripe.subscriptions.retrieve(
-          session.subscription as string,
-        )
-        const priceId = sub.items.data[0].price.id
-        const plan = planIdForPriceId(priceId)
-
-        // An unrecognised price must not grant anything. The previous
-        // `includes('team') ? 'team' : 'pro'` fell through to 'pro' for every
-        // price, which both downgraded Team buyers and handed Pro to anyone
-        // who checked out with an arbitrary price ID.
-        if (!plan) {
-          console.error('[stripe-webhook] Unrecognised priceId, no plan granted', {
-            priceId,
-            userId,
-            subscriptionId: session.subscription,
-          })
-          break
-        }
-
-        await tolerateMissingUser(
-          () =>
-            client.users.updateUserMetadata(userId, {
-              publicMetadata: {
-                plan,
-                stripeCustomerId: session.customer,
-                stripeSubscriptionId: session.subscription,
-                linesUsedThisMonth: 0,
-                linesResetDate: new Date().toISOString(),
-              },
-            }),
-          { userId, eventId: event.id, sessionId: session.id, planId },
-        )
+      // Every plan is a subscription; we sell nothing one-time. A payment-mode
+      // session here means a misconfigured price, so grant nothing.
+      if (session.mode !== 'subscription') {
+        console.error('[stripe-webhook] Non-subscription checkout, no plan granted', {
+          mode: session.mode,
+          planId,
+          sessionId: session.id,
+        })
+        break
       }
+
+      const sub = await stripe.subscriptions.retrieve(
+        session.subscription as string,
+      )
+      const priceId = sub.items.data[0].price.id
+      const plan = planIdForPriceId(priceId)
+
+      // An unrecognised price must not grant anything. The previous
+      // `includes('team') ? 'team' : 'pro'` fell through to 'pro' for every
+      // price, which both downgraded Team buyers and handed Pro to anyone
+      // who checked out with an arbitrary price ID.
+      if (!plan) {
+        console.error('[stripe-webhook] Unrecognised priceId, no plan granted', {
+          priceId,
+          userId,
+          subscriptionId: session.subscription,
+        })
+        break
+      }
+
+      await tolerateMissingUser(
+        () =>
+          client.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              plan,
+              stripeCustomerId: session.customer,
+              stripeSubscriptionId: session.subscription,
+              linesUsedThisMonth: 0,
+              linesResetDate: new Date().toISOString(),
+            },
+          }),
+        { userId, eventId: event.id, sessionId: session.id, planId },
+      )
       break
     }
 

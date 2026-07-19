@@ -83,7 +83,7 @@ If you have a single 20-line function and want a quick translation, ChatGPT work
 
 If you have 50 scripts totaling 10,000 lines and need to migrate them reliably over a few weeks, you need a tool that processes every line, flags every uncertainty, and gives you the same result every time you run it. That is what we built.
 
-The Migration Pass ($49 for 30 days) is designed for one-time migration projects. The Individual Pro ($19.99/month) is for researchers who regularly convert MATLAB scripts. Both include file upload, Python file download, and the full compatibility report with actionable flags.
+Individual Pro ($19.99/month) is for researchers who regularly convert MATLAB scripts. Team ($79/month) adds batch folder conversion and per-file reports for groups migrating a whole codebase. Both include file upload, Python file download, and the full compatibility report with actionable flags.
 
 The free tier converts 50 lines with no account required — enough to evaluate the output on your own code before deciding.`,
     },

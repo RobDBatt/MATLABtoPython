@@ -22,24 +22,6 @@ const tiers = [
     highlight: false,
   },
   {
-    name: 'Migration Pass',
-    price: '$49',
-    period: 'one-time / 30 days',
-    description: 'For one-time migration projects',
-    features: [
-      '5,000 lines per conversion',
-      'File upload (.m files)',
-      'Python file download',
-      'Compatibility report',
-      'Toolbox detection',
-      '30 days of full access',
-    ],
-    limits: [],
-    cta: 'Get Migration Pass',
-    planKey: 'migration_pass' as const,
-    highlight: false,
-  },
-  {
     name: 'Individual Pro',
     price: '$19.99',
     period: '/month',
@@ -154,7 +136,7 @@ export default function PricingPage() {
         <p className="text-[#9aa1ac] max-w-lg text-sm leading-relaxed">
           Free for small conversions. Pay only when you need more lines
           or file upload. No surprise fees. A commercial MATLAB seat runs ~$860+/year
-          on subscription — far more with toolboxes — so a $49 migration pass pays for itself fast.
+          on subscription — far more with toolboxes — so a month of Pro pays for itself fast.
         </p>
       </div>
 
@@ -238,8 +220,8 @@ export default function PricingPage() {
               a: 'No. The converter is 100% deterministic and rule-based. Your code is processed entirely on our server and never sent to any third-party AI API. Same input, same output, every time.',
             },
             {
-              q: 'What\'s the difference between Migration Pass and Pro?',
-              a: 'Migration Pass is a one-time 30-day purchase for engineers doing a single migration project. Pro is a monthly subscription for researchers who regularly convert MATLAB scripts.',
+              q: 'What\'s the difference between Pro and Team?',
+              a: 'Pro is for individual researchers converting MATLAB scripts one at a time. Team adds batch folder conversion, a larger per-conversion limit, and per-file reports for research groups migrating a whole codebase.',
             },
             {
               q: 'Which toolboxes are supported?',

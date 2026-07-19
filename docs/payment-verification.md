@@ -11,15 +11,15 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 Use Stripe test card `4242 4242 4242 4242`, any future expiry, any CVC.
 
-## 1. Migration Pass grants correctly and mode is one-time  ← the fix that was misconfigured
-- [ ] Signed in, buy **Migration Pass**.
-- [ ] Stripe CLI shows `checkout.session.completed` with `mode: payment` (NOT subscription). If it says subscription, the price is still recurring — stop.
-- [ ] Clerk `publicMetadata` → `plan: "migration_pass"`, `migrationPassExpiresAt` ≈ 30 days out.
+## 1. Pro grants correctly and mode is subscription
+- [ ] Signed in, buy **Individual Pro**.
+- [ ] Stripe CLI shows `checkout.session.completed` with `mode: subscription`.
+- [ ] Clerk `publicMetadata` → `plan: "pro"`, `stripeSubscriptionId` set.
 - [ ] Convert a 51-line file → allowed. Convert 5001 lines → refused (`exceeds_line_limit`).
 
-## 2. Migration Pass expiry actually enforces  ← was dead code before this session
-- [ ] In Clerk, hand-edit `migrationPassExpiresAt` to a past date.
-- [ ] Convert a 200-line file → refused, limit drops to 50 (free). This is the check that lived in `entitlements.ts` but was never called.
+## 2. A retired plan value degrades to free  ← 'migration_pass' was removed
+- [ ] In Clerk, hand-set a user's `plan` to `migration_pass` (a plan that no longer exists).
+- [ ] Convert a 200-line file → refused, limit drops to 50. The lookup must fall back to free, never return undefined.
 
 ## 3. Team resolves to Team, not Pro  ← the P0 substring bug
 - [ ] Buy **Team**. Clerk → `plan: "team"` (NOT `"pro"`).
@@ -41,11 +41,11 @@ Use Stripe test card `4242 4242 4242 4242`, any future expiry, any CVC.
 - [ ] With a valid planKey while signed out → 401.
 
 ## 7. Misconfiguration is loud, not silent
-- [ ] Temporarily point `STRIPE_PRICE_MIGRATION_PASS` at a **recurring** price, restart, buy Migration Pass → 503 `plan_misconfigured`, logs show `MISCONFIGURED: Migration Pass price is recurring`. Restore the one-time price after.
+- [ ] Temporarily point `STRIPE_PRICE_PRO` at a **one-time** price, restart, buy Pro → 503 `plan_misconfigured`, logs show `MISCONFIGURED: price is one-time but the plan is sold as a subscription`. Restore the recurring price after.
 
 ## Production notes (can't be tested locally)
-- [ ] Vercel Production + Preview both have `STRIPE_PRICE_MIGRATION_PASS = price_1Tv0FYRElJyZVpb2R4sSXFa2` (the one-time price).
-- [ ] Old recurring Migration Pass price is **archived** in Stripe.
+- [ ] `STRIPE_PRICE_MIGRATION_PASS` is gone from Vercel (Production + Preview) — the plan was retired.
+- [ ] Both Migration Pass prices (the old recurring one and the one-time `price_1Tv0FY…`) are **archived** in Stripe so neither is purchasable by direct link.
 - [ ] Production Stripe webhook endpoint points at `/api/webhooks/stripe` and its signing secret is in Vercel.
 - [ ] Preview deploys use `pk_test_`/`sk_test_` Clerk keys — production keys are domain-locked and render sign-in blank on preview URLs.
 - [ ] Any customer who bought before this session's fix: check for `plan: "pro"` that should be `"team"`, and reconcile against the Stripe subscription list (the webhook fix does not repair existing users).

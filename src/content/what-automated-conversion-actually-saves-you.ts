@@ -11,7 +11,7 @@ export const article = {
 
 An automated converter does the bulk of that work in under a second. Our converter processes 600 lines in about 400 milliseconds. But it does not produce a file you can run without any review. No converter does, and any tool that claims otherwise is either using AI that hallucinates silently or has not been tested on real code.
 
-Here is what actually happens when you run a real MATLAB file through a deterministic converter, and why the output is still worth far more than the price of a Migration Pass.`,
+Here is what actually happens when you run a real MATLAB file through a deterministic converter, and why the output is still worth far more than a month of subscription.`,
     },
     {
       heading: 'What converts cleanly (the 85-95%)',
@@ -87,7 +87,7 @@ The review items are not failures. They are the converter being honest about wha
     },
     {
       heading: 'Try it yourself',
-      body: `The free tier converts 50 lines with no account required. Paste a MATLAB function and see the output, the flags, and the stats for yourself. If your file is larger, a Migration Pass gives you 30 days of full access for a one-time migration project.`,
+      body: `The free tier converts 50 lines with no account required. Paste a MATLAB function and see the output, the flags, and the stats for yourself. If your file is larger, Individual Pro raises the limit to 5,000 lines per conversion and adds file upload.`,
     },
   ],
 }
