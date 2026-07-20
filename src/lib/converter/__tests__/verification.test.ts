@@ -196,10 +196,20 @@ beforeAll(() => {
     const pyFile = join(tmpDir, `${meta.id}.py`)
     writeFileSync(pyFile, script, 'utf8')
     const compatPath = join(repoRoot, 'packages', 'matlabtopython-compat', 'src')
-    const run = spawnSync(PY, [pyFile], { encoding: 'utf8', timeout: 15000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: compatPath } })
+    // 60s, not 15s: this is a hang-detector, not a benchmark. 17_signal_processing
+    // imports scipy.signal and runs butter/filter/fft/findpeaks, which under
+    // parallel vitest workers intermittently exceeded 15s and was killed —
+    // surfacing as a flaky `exec failed: SIGTERM` roughly 1 run in 8, with
+    // nothing actually wrong with the converted Python.
+    const run = spawnSync(PY, [pyFile], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: compatPath } })
 
     if (run.status !== 0) {
-      const err = (run.stderr || '').trim().split('\n').filter(Boolean).pop() || run.signal || 'nonzero exit'
+      // A timeout kill reports no stderr, so name it explicitly rather than
+      // letting a bare "SIGTERM" masquerade as a converter defect.
+      const timedOut = run.signal === 'SIGTERM' && !(run.stderr || '').trim()
+      const err = timedOut
+        ? 'timed out after 60s (not a converter defect — investigate the environment)'
+        : (run.stderr || '').trim().split('\n').filter(Boolean).pop() || run.signal || 'nonzero exit'
       res.notes.push(`exec failed: ${err}`.slice(0, 160))
       continue
     }
