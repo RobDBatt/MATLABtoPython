@@ -98,7 +98,14 @@ function run(set: string): Result[] {
     const pyFile = join(TMP, 'case.py')
     writeFileSync(pyFile, PREAMBLE + py)
     const COMPAT = join(REPO, 'packages', 'matlabtopython-compat', 'src')
-    const r = spawnSync('python3', [pyFile], { encoding: 'utf8', timeout: 8000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: COMPAT } })
+    // 60s, not 8s. This is a hang-detector, not a benchmark: scipy-heavy cases
+    // (butter/filter/fft/findpeaks) can take 25s+ when the machine is busy —
+    // e.g. the pre-push hook running this right after the unit suite, or a
+    // sibling repo's corpus gate running concurrently. At 8s those were killed
+    // and reported as "converter defect(s)", failing the gate for reasons that
+    // had nothing to do with the converter. A gate that cries wolf gets
+    // ignored, which is how a real defect survived on master for two weeks.
+    const r = spawnSync('python3', [pyFile], { encoding: 'utf8', timeout: 60000, env: { ...process.env, MPLBACKEND: 'Agg', PYTHONPATH: COMPAT } })
     if (r.status === 0) {
       results.push({ rel, status: 'RUNS', bucket: 'ok', detail: '' })
       continue
@@ -180,7 +187,21 @@ function main() {
   // CI gate (curated set only): must never pass vacuously.
   if (set === 'curated' && process.argv.includes('--gate')) {
     const reasons: string[] = []
-    if (defects.length > 0) reasons.push(`${defects.length} converter defect(s)`)
+    if (defects.length > 0) {
+      // Name the buckets. "2 converter defect(s)" alone reads as a converter
+      // regression even when the cause is `Timeout` (machine load) — the
+      // reader needs to know which, without re-running to find out.
+      const byBucket = Object.entries(
+        defects.reduce<Record<string, number>>((acc, d) => {
+          acc[d.bucket] = (acc[d.bucket] || 0) + 1
+          return acc
+        }, {}),
+      )
+        .sort((a, b) => b[1] - a[1])
+        .map(([b, n]) => `${n}× ${b}`)
+        .join(', ')
+      reasons.push(`${defects.length} converter defect(s) [${byBucket}]`)
+    }
     // Curated cases are self-contained — they need only numpy/scipy. Any
     // ENVIRONMENTAL failure means python3 can't import the deps, so the gate
     // would otherwise pass without executing the Python. Fail loudly instead.
