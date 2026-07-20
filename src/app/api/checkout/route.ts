@@ -30,8 +30,16 @@ export async function POST(req: Request) {
   // relative URL, so a missing NEXT_PUBLIC_APP_URL must not fall through to ''.
   // Fall back to the request's own origin (correct for a same-origin POST from
   // the pricing page), and only then error — never hand Stripe a bad URL.
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || req.headers.get('origin') || '').replace(/\/$/, '')
-  if (!/^https?:\/\//.test(baseUrl)) {
+  //
+  // .trim() is load-bearing, not tidiness: the sibling site carried a trailing
+  // space in this exact variable for months, which made success_url
+  // "https://host /path" and had Stripe reject every checkout with
+  // `url_invalid`. A prefix-only test passes such a value, so the guard below
+  // also requires the whole string to be whitespace-free.
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || req.headers.get('origin') || '')
+    .trim()
+    .replace(/\/+$/, '')
+  if (!/^https?:\/\/\S+$/.test(baseUrl)) {
     console.error('[checkout] No absolute base URL available', {
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? null,
       origin: req.headers.get('origin'),
