@@ -106,6 +106,14 @@ export default function RootLayout({
             gtag('config', 'G-5JFH7H7ZNW');
           `}
         </Script>
+
+        {/* Ahrefs Web Analytics (privacy-friendly, cookieless). Key is the
+            public data-key for the MATLABtoPython Ahrefs project. */}
+        <Script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="yIfVeMFXawD0LU96XeA6lg"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
