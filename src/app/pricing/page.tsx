@@ -1,7 +1,7 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { track } from '@vercel/analytics'
 
 const tiers = [
@@ -62,16 +62,27 @@ const tiers = [
 ]
 
 export default function PricingPage() {
-  const { isSignedIn } = useUser()
+  const { isSignedIn, isLoaded } = useUser()
   const [loading, setLoading] = useState<string | null>(null)
 
-  if (typeof window !== 'undefined' && isSignedIn) {
+  // Resume the checkout a signed-out visitor started before we sent them to
+  // sign up. This used to run during render, which is a side effect in render:
+  // React may discard such a render, and the sessionStorage key was consumed
+  // before checkout was ever reached — the buyer came back signed in, the
+  // pending plan was gone, and the page just sat there. An effect only runs on
+  // a committed render, and the ref makes it fire exactly once per mount.
+  const resumedRef = useRef(false)
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || resumedRef.current) return
     const pending = window.sessionStorage.getItem('pendingCheckoutPlan')
-    if (pending && !loading) {
-      window.sessionStorage.removeItem('pendingCheckoutPlan')
-      setTimeout(() => handleCheckout(pending), 0)
-    }
-  }
+    if (!pending) return
+    resumedRef.current = true
+    window.sessionStorage.removeItem('pendingCheckoutPlan')
+    handleCheckout(pending)
+    // handleCheckout is redeclared each render; the ref guard, not the dep
+    // list, is what keeps this to a single run.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn])
 
   async function handleCheckout(planKey: string) {
     track('pricing_plan_click', { plan: planKey, signedIn: !!isSignedIn })
