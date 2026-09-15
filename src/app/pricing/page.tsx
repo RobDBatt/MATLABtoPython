@@ -3,6 +3,7 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect, useRef } from 'react'
 import { track } from '@vercel/analytics'
+import { logClientEvent } from '@/lib/telemetry/client'
 
 const tiers = [
   {
@@ -87,6 +88,11 @@ export default function PricingPage() {
   async function handleCheckout(planKey: string) {
     track('pricing_plan_click', { plan: planKey, signedIn: !!isSignedIn })
 
+    // Funnel: the click on a paid plan. Vercel Analytics already counts this,
+    // but usage_events is where the conversion events live, so the drop-off
+    // from convert_success to a purchase is only visible if both land there.
+    if (planKey !== 'free') logClientEvent('upgrade_clicked', !!isSignedIn)
+
     if (planKey === 'free') {
       window.location.href = '/convert'
       return
@@ -124,6 +130,7 @@ export default function PricingPage() {
       const data = await res.json()
       if (data.url) {
         track('checkout_session_started', { plan: planKey })
+        logClientEvent('checkout_started', !!isSignedIn)
         window.location.href = data.url
       } else if (data.error === 'Unauthorized') {
         window.location.href = `/sign-in?redirect_url=/pricing`

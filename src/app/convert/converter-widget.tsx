@@ -8,7 +8,7 @@ import type { ConversionResult } from '@/lib/converter'
 import { BatchWidget } from './batch-widget'
 import { ConsentToggle } from '@/components/ConsentToggle'
 import { EmailCapture } from '@/components/email-capture'
-import { telemetryFields } from '@/lib/telemetry/client'
+import { telemetryFields, logClientEvent } from '@/lib/telemetry/client'
 import { CONSENT_VERSION } from '@/lib/telemetry/types'
 
 const FREE_LINE_LIMIT = 50
@@ -44,6 +44,19 @@ export function ConverterWidget({ exampleCode }: Props) {
   const emailValid = EMAIL_RE.test(email.trim())
 
   const lineCount = input.split('\n').filter(l => l.trim() !== '').length
+
+  // Funnel: the first paid-plan gate this visitor runs into. Fired once per
+  // mount on purpose -- lineCount changes on every keystroke, and a row per
+  // keystroke would drown the table this is meant to make readable.
+  const paywallLoggedRef = useRef(false)
+  const overFreeLimit = lineCount > FREE_LINE_LIMIT && !hasPaidPlan
+  const uploadGated = mode === 'upload' && !hasPaidPlan
+  useEffect(() => {
+    if (paywallLoggedRef.current) return
+    if (!overFreeLimit && !uploadGated) return
+    paywallLoggedRef.current = true
+    logClientEvent('paywall_shown', !!isSignedIn)
+  }, [overFreeLimit, uploadGated, isSignedIn])
 
   const handleConvert = useCallback(async () => {
     if (!input.trim()) return
@@ -228,6 +241,7 @@ export function ConverterWidget({ exampleCode }: Props) {
                       </div>
                       <a
                         href={isSignedIn ? '/pricing' : '/sign-up?redirect_url=/pricing'}
+                        onClick={() => logClientEvent('upgrade_clicked', !!isSignedIn)}
                         className="px-4 py-2 bg-[#d9662b] text-white text-sm rounded-lg hover:bg-[#b8541f] transition-colors"
                       >
                         {isSignedIn ? 'View plans' : 'Sign up to upgrade'}

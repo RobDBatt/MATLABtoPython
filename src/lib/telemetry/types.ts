@@ -12,7 +12,18 @@
 
 export const SITE = 'matlab' as const
 
-export const EVENT_TYPES = ['preflight', 'convert_attempt', 'convert_success', 'convert_failure'] as const
+/**
+ * Conversion events are mirrored server-side off /api/convert. The funnel
+ * events below are client-only moments the server never sees, POSTed to
+ * /api/telemetry -- they are what makes the drop-off between 'used the
+ * converter' and 'paid' visible in the same table as everything else.
+ * VBAtoPython logs the same three; keep the names identical so one query
+ * covers both sites.
+ */
+export const EVENT_TYPES = [
+  'preflight', 'convert_attempt', 'convert_success', 'convert_failure',
+  'paywall_shown', 'upgrade_clicked', 'checkout_started',
+] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 
 /** Repurposes the shared table's `target` column as the conversion mode. */

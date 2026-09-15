@@ -9,7 +9,7 @@
  * No source code, identity, or IP is ever handled here — only consent booleans
  * and a random session uuid.
  */
-import { CONSENT_VERSION } from './types'
+import { CONSENT_VERSION, type EventType } from './types'
 
 const CONSENT_KEY = 'mtp_telemetry_consent' // value: `${"on"|"off"}:${version}`
 const SESSION_KEY = 'mtp_telemetry_session' // value: `${uuid}:${YYYY-MM}`
@@ -77,4 +77,47 @@ export function setConsent(on: boolean): void {
 export function telemetryFields(isSignedIn: boolean): { telemetry_consent?: true; session_id?: string } {
   if (!getConsent(isSignedIn)) return {}
   return { telemetry_consent: true, session_id: getSessionId() }
+}
+
+
+/**
+ * Log a UI-only funnel event (paywall_shown / upgrade_clicked /
+ * checkout_started). These never touch /api/convert, so they cannot ride the
+ * server-side mirror the conversion events use -- they POST straight to
+ * /api/telemetry, where sanitizeEvent applies the same vocabulary chokepoint.
+ *
+ * Same consent gate and same anonymous session id as convert_success: nothing
+ * is emitted when consent is off, and no code, identity or free text is ever
+ * included. sendBeacon first because upgrade_clicked is immediately followed
+ * by a navigation, which cancels an in-flight fetch.
+ */
+export function logClientEvent(eventType: EventType, isSignedIn: boolean): void {
+  if (!hasWindow()) return
+  if (!getConsent(isSignedIn)) return
+  const session_id = getSessionId()
+  if (!session_id) return
+
+  const body = JSON.stringify({
+    session_id,
+    event_type: eventType,
+    target: null,
+    lines_bucket: null,
+    features_hit: [],
+    warnings_emitted: [],
+    consent_version: CONSENT_VERSION,
+  })
+
+  // Telemetry is never load-bearing: every failure path is swallowed.
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      const ok = navigator.sendBeacon('/api/telemetry', new Blob([body], { type: 'application/json' }))
+      if (ok) return
+    }
+    void fetch('/api/telemetry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+    }).catch(() => { /* ignore */ })
+  } catch { /* ignore */ }
 }
