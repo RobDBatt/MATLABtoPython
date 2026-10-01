@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { gaEvent, gaPlanValue } from '../ga'
 
 type W = { dataLayer?: unknown[]; gtag?: (...a: unknown[]) => void }
@@ -18,11 +18,23 @@ describe('gaEvent', () => {
     expect(calls).toEqual([['event', 'purchase', { transaction_id: 'cs_1' }]])
   })
 
-  it('before gtag.js loads, queues an Arguments object (gtag ignores arrays)', () => {
-    gaEvent('begin_checkout', { plan: 'pro' })
-    const entry = w.dataLayer![0] as IArguments
-    expect(Object.prototype.toString.call(entry)).toBe('[object Arguments]')
-    expect(Array.from(entry)).toEqual(['event', 'begin_checkout', { plan: 'pro' }])
+  it('waits for gtag when it is not loaded yet, instead of dropping the event', () => {
+    vi.useFakeTimers()
+    const calls: unknown[][] = []
+    gaEvent('purchase', { transaction_id: 'cs_2' })
+    expect(calls).toEqual([])
+    w.gtag = (...a) => { calls.push(a) }
+    vi.advanceTimersByTime(250)
+    expect(calls).toEqual([['event', 'purchase', { transaction_id: 'cs_2' }]])
+    vi.useRealTimers()
+  })
+
+  it('gives up quietly if GA never loads', () => {
+    vi.useFakeTimers()
+    gaEvent('purchase', { transaction_id: 'cs_3' })
+    vi.advanceTimersByTime(20_000)
+    expect(vi.getTimerCount()).toBe(0)
+    vi.useRealTimers()
   })
 })
 

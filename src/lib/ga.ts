@@ -8,20 +8,23 @@ import { PLANS, type PlanId } from './plans'
  */
 export function gaEvent(name: string, params: Record<string, unknown>): void {
   if (typeof window === 'undefined') return
-  const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...a: unknown[]) => void }
-  if (w.gtag) {
-    w.gtag('event', name, params)
+  sendWhenReady(name, params, 50)
+}
+
+/**
+ * gtag is defined by an afterInteractive script, which can run after a
+ * component's mount effect — the purchase on Stripe's redirect fires on
+ * mount. An event queued before gtag's `config` may never be sent, so wait
+ * for gtag (polling up to 10s) rather than pushing onto dataLayer early. If
+ * GA never loads (blocked), the event is dropped.
+ */
+function sendWhenReady(name: string, params: Record<string, unknown>, triesLeft: number): void {
+  const gtag = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag
+  if (gtag) {
+    gtag('event', name, params)
     return
   }
-  // gtag.js loads after hydration; queue the call the way its own stub does.
-  // The queue only accepts an Arguments object, not an array.
-  w.dataLayer = w.dataLayer || []
-  const queue = w.dataLayer
-  const push = function () {
-    // eslint-disable-next-line prefer-rest-params
-    queue.push(arguments)
-  } as (...args: unknown[]) => void
-  push('event', name, params)
+  if (triesLeft > 0) setTimeout(() => sendWhenReady(name, params, triesLeft - 1), 200)
 }
 
 /** The plan's price, for the `value` GA reports revenue from. */
