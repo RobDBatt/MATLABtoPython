@@ -6,6 +6,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Payments not configured' }, { status: 503 })
   }
 
+  // Signed in or not. A guest goes straight to Stripe, which collects the
+  // email; the webhook puts the plan on the Clerk user with that email,
+  // creating one if needed (src/lib/guest-buyer.ts). Making visitors create an
+  // account before they could pay was a detour at the moment of purchase.
   const hasClerk = !!process.env.CLERK_SECRET_KEY?.startsWith('sk_')
   let userId: string | null = null
 
@@ -13,9 +17,6 @@ export async function POST(req: Request) {
     const { auth } = await import('@clerk/nextjs/server')
     const session = await auth()
     userId = session.userId
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
   }
 
   // The client sends a plan key, never a price ID. The price is resolved here
@@ -105,8 +106,9 @@ export async function POST(req: Request) {
       metadata: userId ? { userId, planId } : { planId },
       // Stamp the subscription itself too. `customer.subscription.*` events
       // carry no session metadata, so without this the webhook cannot tell
-      // which Clerk user a cancellation belongs to.
-      ...(userId ? { subscription_data: { metadata: { userId, planId } } } : {}),
+      // which product, or which Clerk user, a cancellation belongs to. A
+      // guest's userId is added by the webhook once the user is resolved.
+      subscription_data: { metadata: userId ? { userId, planId } : { planId } },
     })
   } catch (err) {
     console.error('[checkout] Stripe session create failed', {

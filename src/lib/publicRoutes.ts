@@ -8,6 +8,9 @@
  * got the 404 page instead of the handler, so usage_events had none of them
  * for this site, and the "Learn more" link under the telemetry toggle sent
  * guests to sign-in.
+ *
+ * /api/checkout is public so a visitor can pay without making an account
+ * first; the route itself handles both signed-in and guest buyers.
  */
 export const PUBLIC_ROUTES = [
   '/',
@@ -23,6 +26,7 @@ export const PUBLIC_ROUTES = [
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/debug',
+  '/api/checkout',
   '/api/convert',
   '/api/debug',
   '/api/health',

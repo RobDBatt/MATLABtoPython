@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { planIdForPriceId } from '@/lib/plans'
 import { isOwnPlan, tolerateMissingUser } from '@/lib/webhook-guards'
+import { findOrCreateUserByEmail } from '@/lib/guest-buyer'
 
 export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
@@ -46,8 +47,7 @@ export async function POST(req: Request) {
         break
       }
 
-      const userId = session.metadata?.userId
-      if (!userId || !hasClerk) break
+      if (!hasClerk) break
 
       const { clerkClient } = await import('@clerk/nextjs/server')
       const client = await clerkClient()
@@ -76,15 +76,39 @@ export async function POST(req: Request) {
       if (!plan) {
         console.error('[stripe-webhook] Unrecognised priceId, no plan granted', {
           priceId,
-          userId,
+          userId: session.metadata?.userId ?? '(guest)',
           subscriptionId: session.subscription,
         })
         break
       }
 
+      // Signed-in buyers carry their Clerk id. A guest paid with only the email
+      // Stripe collected: the plan goes on the user with that email, created if
+      // need be (see guest-buyer.ts). Any Clerk failure here throws, so Stripe
+      // retries rather than keeping the money without granting the plan.
+      let userId = session.metadata?.userId
+      const isGuest = !userId
+      if (!userId) {
+        const email = session.customer_details?.email
+        if (!email) {
+          console.error('[stripe-webhook] Guest checkout without an email, no plan granted', {
+            eventId: event.id,
+            sessionId: session.id,
+          })
+          break
+        }
+        userId = await findOrCreateUserByEmail(client.users, email)
+        console.log('[stripe-webhook] Guest checkout resolved to Clerk user', {
+          userId,
+          sessionId: session.id,
+          planId,
+        })
+      }
+      const grantTo = userId
+
       await tolerateMissingUser(
         () =>
-          client.users.updateUserMetadata(userId, {
+          client.users.updateUserMetadata(grantTo, {
             publicMetadata: {
               plan,
               stripeCustomerId: session.customer,
@@ -93,8 +117,17 @@ export async function POST(req: Request) {
               linesResetDate: new Date().toISOString(),
             },
           }),
-        { userId, eventId: event.id, sessionId: session.id, planId },
+        { userId: grantTo, eventId: event.id, sessionId: session.id, planId },
       )
+
+      // A guest's subscription was created without a userId, and cancellation
+      // events carry only subscription metadata — stamp it now so a later
+      // cancel revokes the plan from this user.
+      if (isGuest) {
+        await stripe.subscriptions.update(sub.id, {
+          metadata: { ...sub.metadata, planId, userId: grantTo },
+        })
+      }
       break
     }
 

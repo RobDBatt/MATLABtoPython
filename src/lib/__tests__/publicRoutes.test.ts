@@ -21,9 +21,11 @@ describe('public routes', () => {
     }
   })
 
-  it('keeps account and checkout routes signed-in only', () => {
-    for (const p of ['/api/me', '/api/checkout']) {
-      expect(at(p)).toBe(false)
-    }
+  it('lets guests start checkout', () => {
+    expect(at('/api/checkout')).toBe(true)
+  })
+
+  it('keeps the account route signed-in only', () => {
+    expect(at('/api/me')).toBe(false)
   })
 })

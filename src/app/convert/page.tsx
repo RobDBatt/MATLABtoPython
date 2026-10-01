@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { ConverterWidget } from './converter-widget'
+import { UpgradeNotice } from './upgrade-notice'
 
 export const metadata: Metadata = {
   title: 'Convert MATLAB to Python',
@@ -51,6 +53,11 @@ export default function ConvertPage() {
           <span className="text-[#5a5f6b]"> Free tier: 50 lines.</span>
         </p>
       </div>
+
+      {/* useSearchParams needs a Suspense boundary to keep the page static. */}
+      <Suspense fallback={null}>
+        <UpgradeNotice />
+      </Suspense>
 
       <ConverterWidget exampleCode={EXAMPLE_MATLAB} />
     </div>
