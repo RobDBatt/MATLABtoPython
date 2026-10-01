@@ -1,6 +1,7 @@
 import type { StructuredLine, Flag, CleanupResult } from '../types'
 import { buildImportBlock } from '../registry/imports'
 import { validateAndFix } from '../validator/syntax-check'
+import { parenthesizeBitwiseComparisons } from './logical-ops'
 
 /**
  * Stage 4's shape-preserving index math widens a single scalar subscript
@@ -283,6 +284,13 @@ export function cleanup(
     }
 
     fixedLines.push(fixed)
+  }
+
+  // MATLAB binds comparisons tighter than `&` / `|`; Python binds them looser.
+  // `v > 2 & v < 5` → `(v > 2) & (v < 5)`. Last, so every rewrite that can
+  // introduce a comparison (`isempty(x)` → `len(x) == 0`) has already run.
+  for (let k = 0; k < fixedLines.length; k++) {
+    fixedLines[k] = parenthesizeBitwiseComparisons(fixedLines[k])
   }
 
   // Inject `pass` into empty blocks — MATLAB allows empty if/else/for/while

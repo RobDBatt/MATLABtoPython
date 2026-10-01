@@ -20,7 +20,7 @@ import { TOOLBOX_MAP } from '../registry/toolboxes'
 /** The KIND of a variable — what Python type it holds. Drives Stage 04's
  *  call-vs-index resolution beyond the binary variable/function split.
  *  See docs/symbol-kind-plan.md (Root Cause A). */
-export type SymbolKind = 'array' | 'lambda' | 'dict' | 'index' | 'scalar' | 'unknown'
+export type SymbolKind = 'array' | 'lambda' | 'dict' | 'index' | 'mask' | 'scalar' | 'unknown'
 
 export interface SymbolTable {
   variables: Set<string>
@@ -57,6 +57,9 @@ export function buildSymbolTable(lines: LogicalLine[]): SymbolTable {
   const functions = new Set<string>()
   const localFunctions = new Set<string>()
   const kinds = new Map<string, SymbolKind>()
+  // Names given a whole-value assignment that is NOT logical. A name is only
+  // a 'mask' if every such assignment is logical (see the demotion below).
+  const nonMaskWrites = new Set<string>()
 
   // Seed functions from registries + MATLAB built-ins
   for (const name of Object.keys(FUNCTION_MAP)) functions.add(name)
@@ -102,6 +105,7 @@ export function buildSymbolTable(lines: LogicalLine[]): SymbolTable {
     const forMatch = content.match(/^\s*(?:for|parfor)\s+(\w+)\s*=/)
     if (forMatch) {
       variables.add(forMatch[1])
+      nonMaskWrites.add(forMatch[1]) // a loop counter is never a mask
       // Skip the assignment LHS path below — that `=` belongs to the loop
       // header, not a variable assignment, and the LHS regex would
       // otherwise capture the keyword `for` itself as a variable.
@@ -138,6 +142,11 @@ export function buildSymbolTable(lines: LogicalLine[]): SymbolTable {
         const second = (parts[1] || '').trim().match(/^[A-Za-z_]\w*/)
         if (second && second[0] !== '~') kinds.set(second[0], 'index')
       }
+      // `[tf, loc] = ismember(...)` → the FIRST output is a logical mask.
+      if (/^ismember\s*\(/.test(rhs)) {
+        const first = (inner.split(',')[0] || '').trim().match(/^[A-Za-z_]\w*/)
+        if (first) kinds.set(first[0], 'mask')
+      }
     } else {
       // Single target — the root identifier is a variable
       // (e.g. `foo(i) = x`, `foo.bar = x`, `foo{i} = x` all define `foo`)
@@ -147,9 +156,20 @@ export function buildSymbolTable(lines: LogicalLine[]): SymbolTable {
         variables.add(name)
         // Whole-name assignment (`name = ...`) sets the kind from the RHS shape.
         // A subscript/field write (`name(i) = ...`) doesn't change a known kind.
-        if (lhs === name) kinds.set(name, kindFromRhs(rhs))
+        if (lhs === name) {
+          const kind = kindFromRhs(rhs, kinds)
+          kinds.set(name, kind)
+          if (kind !== 'mask') nonMaskWrites.add(name)
+        }
       }
     }
+  }
+
+  // A name that is a mask in one place and something else in another
+  // (`idx = v > 0; ... idx = 3;`) can't be trusted as a mask anywhere: the
+  // kind table isn't flow-sensitive, and an unshifted numeric index is wrong.
+  for (const [name, kind] of kinds) {
+    if (kind === 'mask' && nonMaskWrites.has(name)) kinds.set(name, 'unknown')
   }
 
   // Resolution: if a name is both a variable and a function, treat it as
@@ -167,15 +187,81 @@ export function buildSymbolTable(lines: LogicalLine[]): SymbolTable {
 /** Classify a variable by the raw MATLAB RHS of `name = <rhs>`. Conservative:
  *  only the shapes Stage 04 needs to disambiguate (Root Cause A); everything
  *  else is 'unknown' and falls back to the binary variable/function logic. */
-function kindFromRhs(rhs: string): SymbolKind {
+function kindFromRhs(rhs: string, known: Map<string, SymbolKind>): SymbolKind {
   if (/^@\s*\(/.test(rhs)) return 'lambda'                 // f = @(x) ...
   if (/^containers\.Map\b/.test(rhs)) return 'dict'        // m = containers.Map(...)
   if (/^find\s*\(/.test(rhs)) return 'index'               // idx = find(...) (0-based)
+  if (isLogicalRhs(rhs, known)) return 'mask'              // m = v > 0, isnan(v), ...
   if (/^(zeros|ones|eye|rand|randn|true|false|linspace|logspace|repmat|magic|reshape|cell)\s*\(/.test(rhs))
     return 'array'
   if (/^\[/.test(rhs)) return 'array'                      // matrix/array literal
   if (/^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?\s*;?\s*$/.test(rhs)) return 'scalar'
   return 'unknown'
+}
+
+/** MATLAB functions whose result is always logical, as a whole-RHS call. */
+const LOGICAL_CALL = /^(isnan|isinf|isfinite|ismember|logical|any|all|true|false)\s*\(/
+
+/** Index just past the `)` that closes the `(` at `open`, or -1. Skips strings. */
+function closeParen(s: string, open: number): number {
+  let depth = 0
+  let inString = false, sc = ''
+  for (let i = open; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) { if (ch === sc) inString = false; continue }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') { depth--; if (depth === 0) return i + 1 }
+  }
+  return -1
+}
+
+/**
+ * Whether a raw MATLAB RHS is logical-valued: a comparison or elementwise
+ * `&` / `|` at the top level, a leading `~`, a whole-RHS call to a logical
+ * function, or another mask. Short-circuit `&&` / `||` mean scalar logic and
+ * are left out, as is anything where the comparison is nested inside a call
+ * (`n = sum(v > 0)` is a count, `x = v(v > 0)` is values).
+ */
+export function isLogicalRhs(rhs: string, known: Map<string, SymbolKind>): boolean {
+  let e = rhs.trim()
+  // Drop a trailing comment and statement terminator.
+  {
+    let inString = false, sc = ''
+    for (let i = 0; i < e.length; i++) {
+      const ch = e[i]
+      if (inString) { if (ch === sc) inString = false; continue }
+      if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+      if (ch === '%' || ch === '#') { e = e.slice(0, i); break }
+    }
+    e = e.trim().replace(/[;,]+\s*$/, '').trim()
+  }
+  // Strip fully-enclosing parens: `(v > 0)`.
+  while (e.startsWith('(') && closeParen(e, 0) === e.length) e = e.slice(1, -1).trim()
+  if (!e) return false
+
+  if (e[0] === '~' && e[1] !== '=') return true
+  if (/^[A-Za-z_]\w*$/.test(e)) return known.get(e) === 'mask'
+  const call = e.match(LOGICAL_CALL)
+  if (call && closeParen(e, call[0].length - 1) === e.length) return true
+
+  let depth = 0
+  let inString = false, sc = ''
+  let logical = false
+  for (let i = 0; i < e.length; i++) {
+    const ch = e[i]
+    if (inString) { if (ch === sc) inString = false; continue }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') { depth++; continue }
+    if (ch === ')' || ch === ']' || ch === '}') { depth--; continue }
+    if (depth !== 0) continue
+    const two = e.slice(i, i + 2)
+    if (two === '&&' || two === '||') return false
+    if (ch === '&' || ch === '|') { logical = true; continue }
+    if (two === '==' || two === '~=' || two === '<=' || two === '>=') { logical = true; i++; continue }
+    if (ch === '<' || ch === '>') logical = true
+  }
+  return logical
 }
 
 /** Find the index of the `=` that's an assignment (not `==`/`~=`/etc.). */

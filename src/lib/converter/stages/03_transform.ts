@@ -9,6 +9,7 @@ import { applyIdioms } from '../analysis/idioms'
 import { extractNarginDefaults } from '../analysis/nargin-defaults'
 import { extractArgumentsDefaults } from '../analysis/arguments-defaults'
 import { extractVarargoutReturns } from '../analysis/varargout-returns'
+import { rewriteElementwiseNot, ELEMENTWISE_NOT } from './logical-ops'
 
 /**
  * Stage 3: Transform
@@ -28,6 +29,7 @@ export function transform(
   shapeTable?: Map<string, ShapeClass>,
   shadowed?: Set<string>,
   arrayNames?: Set<string>,
+  maskNames?: Set<string>,
 ): TransformResult {
   const imports = new Set<string>()
   const flags: Flag[] = []
@@ -102,7 +104,7 @@ export function transform(
     const lineFlags: Flag[] = []
 
     // 0. Pre-transform: MATLAB syntax that needs converting before everything else
-    content = preTransform(content, imports, lineFlags, line)
+    content = preTransform(content, imports, lineFlags, line, maskNames, arrayNames)
 
     // 0b. Matrix-multiply rewrite: bare `*` → `@` when both operands are known
     // 2-D matrices per the shape table.  Must run BEFORE transformOperators
@@ -400,6 +402,8 @@ function preTransform(
   imports: Set<string>,
   flags: Flag[],
   line: StructuredLine,
+  maskNames: Set<string> = new Set(),
+  arrayNames: Set<string> = new Set(),
 ): string {
   let result = content
 
@@ -683,6 +687,15 @@ function preTransform(
     }
   }
 
+  // Elementwise `~` first (arrays, masks, subscripts): `~isnan(v)` → `~np.isnan`,
+  // `A(~rows, :)` → `A[~rows, :]`, `keep = ~mask` → `np.logical_not(mask)`.
+  // Those are marked so the scalar `~ → not` rewrite below skips them.
+  {
+    const ew = rewriteElementwiseNot(result, maskNames, arrayNames)
+    result = ew.content
+    if (ew.usedNumpy) imports.add('numpy')
+  }
+
   // Convert MATLAB `~` logical-NOT to Python `not`.
   // MATLAB `~` is logical NOT (returns true/false for scalars). Python `~`
   // is bitwise NOT, which gives wrong semantics for booleans: `~True == -2`
@@ -730,6 +743,7 @@ function preTransform(
   // after `~=` is rewritten to `!=`. Catch that here by scanning for
   // `<op> not <balanced-expr>` and wrapping the RHS in parens.
   result = wrapNotAfterComparison(result)
+  if (result.includes(ELEMENTWISE_NOT)) result = result.split(ELEMENTWISE_NOT).join('~')
 
   // Transpose was resolved in Stage 0 (resolveQuotes): both `.'` and `'`
   // that were transpose operators are already `.T`. Any `'` reaching here
@@ -3120,7 +3134,9 @@ function rewriteTrueFalse(matlabName: string, rawArgs: string): string {
   }
   if (pyArgs.length === 1) {
     const a = pyArgs[0]
-    if (/^\d+$/.test(a)) {
+    // Only MATLAB's one-argument `true(n)` is n×n. `true(3,1)` arrives here
+    // already reduced to a 1-D vector dim (like `zeros(3,1)` → `np.zeros(3)`).
+    if (argList.length === 1 && /^\d+$/.test(a)) {
       return `${fn}((${a}, ${a}), dtype=bool)`
     }
     return `${fn}(${a}, dtype=bool)`

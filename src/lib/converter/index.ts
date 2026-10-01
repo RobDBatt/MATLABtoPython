@@ -103,7 +103,8 @@ export function convert(matlabCode: string, options?: ConvertOptions): Conversio
   for (const f of externals) shadowed.add(f)
 
   // Stage 3: Apply transformation rules (operators, functions, toolboxes, constants)
-  const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable, shadowed, symbols.variables)
+  const maskNames = new Set([...symbols.kinds].filter(([, k]) => k === 'mask').map(([n]) => n))
+  const { transformed, imports, flags: transformFlags } = transform(structured, shapeTable, shadowed, symbols.variables, maskNames)
   if (hasStructs) {
     imports.add('compat:Struct')
   }

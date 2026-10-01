@@ -83,11 +83,16 @@ export function shiftIndices(
   //   index  → already 0-based (argmax/argsort/flatnonzero); skip the `- 1` (A1)
   const dictNames = new Set<string>()
   const kindIndexNames = new Set<string>()
+  // Logical masks (`mask = v > 0`, `bad = isnan(v)`). A boolean mask selects
+  // elements as-is: shifting it (`v[mask - 1]`) turns True/False into the
+  // integer indices 0/-1 — silently wrong data.
+  const maskNames = new Set<string>()
   if (symbols) {
     for (const [name, kind] of symbols.kinds) {
       if (kind === 'lambda') { knownFunctions.add(name); knownArrays.delete(name) }
       else if (kind === 'dict') { dictNames.add(name); knownArrays.delete(name) }
       else if (kind === 'index') kindIndexNames.add(name)
+      else if (kind === 'mask') maskNames.add(name)
     }
   }
 
@@ -95,6 +100,7 @@ export function shiftIndices(
   // These should NOT be shifted when used as array subscripts
   const zeroBased = buildZeroBasedVars(lines)
   for (const n of kindIndexNames) zeroBased.add(n) // multi-return max/min/sort index (A1)
+  for (const n of maskNames) zeroBased.add(n)      // boolean masks select as-is
 
   // Variables that are ONLY ever scalar/empty-initialized. Writing past their
   // bounds is MATLAB array-growth, which NumPy/lists can't do silently.
@@ -133,13 +139,13 @@ export function shiftIndices(
     content = content.replace(/\b(\w+(?:\[[^\[\]]*\])+)\{:\}/g, '*$1')
 
     // 2C. Logical indexing: A(A > 5) → A[A > 5] (unambiguous)
-    content = transformLogicalIndexing(content, knownArrays, knownFunctions)
+    content = transformLogicalIndexing(content, knownArrays, knownFunctions, zeroBased, maskNames)
 
     // dict read: m('key') → m['key'] for containers.Map vars (keys, no shift) (A4)
     content = transformDictRead(content, dictNames)
 
     // Specific unambiguous patterns (end, :, slicing)
-    content = transformUnambiguousIndexing(content, zeroBased, lineFlags, line, knownArrays, knownFunctions, shapeTable)
+    content = transformUnambiguousIndexing(content, zeroBased, lineFlags, line, knownArrays, knownFunctions, shapeTable, maskNames)
 
     // 2B. General A(i) → A[i-1] using identifier tracker. Iterate to a fixed
     // point so an expression subscript like `v(idx(1))` resolves both layers:
@@ -185,7 +191,7 @@ export function shiftIndices(
           const args = splitArgs(argsStr)
           const pyArgs = args.map(a => {
             const trimmed = a.trim()
-            if (zeroBased.has(trimmed)) return trimmed
+            if (keepAsIs(trimmed, zeroBased)) return trimmed
             return shiftSingleIndex(trimmed)
           })
           content = content.slice(0, startIdx) + '[' + pyArgs.join(', ') + ']' + content.slice(j + 1)
@@ -526,6 +532,80 @@ function transformCellIndexing(content: string): string {
 // ── Logical Indexing (Phase 2C) ───────────────────────────
 
 /**
+ * Whether one subscript is a boolean mask rather than a 1-based position:
+ * a known mask variable, a top-level comparison or elementwise `&` / `|`,
+ * a leading `~`, or a NumPy predicate call. Only the TOP level counts —
+ * `idx(v > 0)` is a numeric index that happens to contain a comparison.
+ */
+function isLogicalIndexArg(arg: string, masks: Set<string>): boolean {
+  let t = arg.trim()
+  while (t.startsWith('(') && matchingClose(t, 0) === t.length - 1) t = t.slice(1, -1).trim()
+  if (!t) return false
+  if (masks.has(t)) return true
+  if (/^~(?!=)/.test(t) || /^not\s/.test(t)) return true
+  const call = t.match(/^np\.(?:isnan|isinf|isfinite|isin|isclose|logical_\w+)\(/)
+  if (call && matchingClose(t, call[0].length - 1) === t.length - 1) return true
+  let depth = 0
+  let inString = false, sc = ''
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i]
+    if (inString) { if (ch === sc) inString = false; continue }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') { depth++; continue }
+    if (ch === ')' || ch === ']' || ch === '}') { depth--; continue }
+    if (depth !== 0) continue
+    const two = t.slice(i, i + 2)
+    if (two === '&&' || two === '||') return false
+    if (ch === '&' || ch === '|' || ch === '<' || ch === '>') return true
+    if (two === '==' || two === '!=' || two === '~=') return true
+  }
+  return false
+}
+
+/**
+ * Inside a mask, `A(:, k)` / `A(k, :)` must be 1-D. The general rule keeps a
+ * single column 2-D (`A[:, k-1:k]`) for matrix maths, but NumPy rejects a
+ * 2-D boolean array as a row selector, so `A(A(:,1) > 3, :)` would raise.
+ */
+function flattenMaskOperands(expr: string, knownArrays?: Set<string>): string {
+  return expr
+    .replace(/\b(\w+)\(\s*:\s*,\s*([^(),:]+?)\s*\)/g, (m, name, k) =>
+      knownArrays?.has(name) ? `${name}[:, ${shiftSingleIndex(k.trim())}]` : m)
+    .replace(/\b(\w+)\(\s*([^(),:]+?)\s*,\s*:\s*\)/g, (m, name, k) =>
+      knownArrays?.has(name) ? `${name}[${shiftSingleIndex(k.trim())}, :]` : m)
+}
+
+/** Whether position `pos` of `s` falls inside a quoted string literal. */
+function inStringAt(s: string, pos: number): boolean {
+  let inString = false, sc = ''
+  for (let i = 0; i < pos && i < s.length; i++) {
+    const ch = s[i]
+    if (inString) { if (ch === sc) inString = false; continue }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch }
+  }
+  return inString
+}
+
+/** A subscript that is used as-is: a 0-based index var or a boolean mask. */
+function keepAsIs(arg: string, zeroBased: Set<string>): boolean {
+  return zeroBased.has(arg) || isLogicalIndexArg(arg, zeroBased)
+}
+
+/** Index of the bracket closing the one at `open`, or -1. Skips strings. */
+function matchingClose(s: string, open: number): number {
+  let depth = 0
+  let inString = false, sc = ''
+  for (let i = open; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) { if (ch === sc) inString = false; continue }
+    if (ch === "'" || ch === '"') { inString = true; sc = ch; continue }
+    if (ch === '(' || ch === '[' || ch === '{') depth++
+    else if (ch === ')' || ch === ']' || ch === '}') { depth--; if (depth === 0) return i }
+  }
+  return -1
+}
+
+/**
  * Convert A(A > 5) → A[A > 5], A(mask & cond) → A[mask & cond]
  * When content inside () contains comparison operators, it's boolean masking.
  * No index shift needed.
@@ -534,18 +614,47 @@ function transformLogicalIndexing(
   content: string,
   knownArrays?: Set<string>,
   knownFunctions?: Set<string>,
+  zeroBased: Set<string> = new Set(),
+  masks: Set<string> = new Set(),
 ): string {
   let result = content
 
   // Match: identifier(expression with comparison/logical operators)
   // Allows one level of nested parens for function calls like ~isnan(col)
-  // Covers: A(A > 5), A(A ~= 0), A(~isnan(A)), A(logical_mask & cond)
+  // Covers: A(A > 5), A(A ~= 0), A(~isnan(A)), A(m1 | m2), A(v > 0, 2)
   result = result.replace(
-    /\b(\w+)\(((?:[^()]|\([^()]*\))*(?:>|<|>=|<=|==|!=|~=|\bnot\b|~)(?:[^()]|\([^()]*\))*)\)/g,
-    (match, varName, expr) => {
+    /\b(\w+)\(((?:[^()]|\([^()]*\))*(?:>|<|>=|<=|==|!=|~=|\bnot\b|~|&|\||np\.(?:isnan|isinf|isfinite|isin|isclose|logical_\w+)(?=\())(?:[^()]|\([^()]*\))*)\)/g,
+    (match, varName, expr, offset: number) => {
       if (isKnownFunction(varName, knownArrays, knownFunctions)) return match
-      let pyExpr = expr.replace(/~=/g, '!=')
-      return `${varName}[${pyExpr}]`
+      // `name(` inside a string literal (a regex like '(\\)o(?!mega|times)')
+      // is text, not code.
+      if (inStringAt(content, offset)) return match
+      const args = splitArgs(expr)
+      // The operator may only appear nested (`A(idx(v > 0))` indexes with the
+      // VALUES of idx) — then this isn't logical indexing; leave it for the
+      // general passes.
+      if (!args.some((a) => isLogicalIndexArg(a.trim(), masks))) return match
+      // A name we can't prove is an array (`verifyTrue(tc, a == b)`, a method,
+      // a variable created by `load`) keeps the long-standing whole-expression
+      // form — reshaping its other args could only add a second guess.
+      if (!knownArrays?.has(varName)) {
+        // Only the operators that always triggered this rule: `&` / `|` /
+        // NumPy predicates on an unknown name (`tc.verifyTrue(L1 | L2)`) are
+        // more likely a call.
+        if (!/(?:>|<|==|!=|~=|\bnot\b|~)/.test(expr)) return match
+        return `${varName}[${expr.replace(/~=/g, '!=')}]`
+      }
+      // Each dim on its own: the mask dim selects as-is, every other dim is
+      // still 1-based. `A(v > 0, 2)` → `A[v > 0, 1]`, not `A[v > 0, 2]`.
+      const pyArgs = args.map((a) => {
+        const t = a.trim()
+        if (t === ':') return ':'
+        if (isLogicalIndexArg(t, masks)) return flattenMaskOperands(t.replace(/~=/g, '!='), knownArrays)
+        if (t.includes(':')) return sliceifyDim(t)
+        if (keepAsIs(t, zeroBased)) return t
+        return shiftSingleIndex(t)
+      })
+      return `${varName}[${pyArgs.join(', ')}]`
     },
   )
 
@@ -574,6 +683,7 @@ function transformUnambiguousIndexing(
   knownArrays?: Set<string>,
   knownFunctions?: Set<string>,
   shapeTable?: Map<string, ShapeClass>,
+  masks: Set<string> = new Set(),
 ): string {
   let result = content
 
@@ -632,7 +742,7 @@ function transformUnambiguousIndexing(
   // consumed span), so re-scan until nothing changes; the second pass then
   // converts the inner one with proper shifting. Capped defensively.
   for (let pass = 0; pass < 5; pass++) {
-    const next = rewriteMultiDimIndexing(result, zeroBased, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>(), shapeTable)
+    const next = rewriteMultiDimIndexing(result, zeroBased, knownArrays ?? new Set<string>(), knownFunctions ?? new Set<string>(), shapeTable, masks)
     if (next === result) break
     result = next
   }
@@ -708,7 +818,7 @@ function transformGeneralIndexing(
           const trimmed = a.trim()
           // If this index variable holds a 0-based result (from np.where etc.),
           // don't shift it — it's already correct
-          if (zeroBased.has(trimmed)) return trimmed
+          if (keepAsIs(trimmed, zeroBased)) return trimmed
           return shiftSingleIndex(trimmed)
         })
         return `${varName}[${pyArgs.join(', ')}]`
@@ -804,7 +914,7 @@ function rewriteChainedSubscript(
       // 1-based MATLAB slicing — sliceify it (start-1, keep stop) instead of
       // passing the raw range through as an unshifted Python slice.
       if (t.includes(':')) return sliceifyDim(t)
-      if (zeroBased.has(t)) return t
+      if (keepAsIs(t, zeroBased)) return t
       return shiftSingleIndex(t)
     })
     result = result.slice(0, m.start) + `[${argList.join(', ')}]` + result.slice(m.end + 1)
@@ -826,6 +936,7 @@ function rewriteMultiDimIndexing(
   knownArrays: Set<string>,
   knownFunctions: Set<string>,
   shapeTable?: Map<string, ShapeClass>,
+  masks: Set<string> = new Set(),
 ): string {
   const matches: Array<{ start: number; end: number; name: string; args: string }> = []
   let i = 0
@@ -892,6 +1003,8 @@ function rewriteMultiDimIndexing(
     const pyArgs = args.map(a => {
       const trimmed = a.trim()
       if (trimmed === ':') return ':'
+      // A mask dim selects as-is — never `m:m+1` or `m - 1`.
+      if (isLogicalIndexArg(trimmed, masks)) return trimmed
       if (trimmed.includes(':')) return sliceifyDim(trimmed)
 
       if (hasColon) {
@@ -911,7 +1024,7 @@ function rewriteMultiDimIndexing(
         }
       }
 
-      if (zeroBased.has(trimmed)) return trimmed
+      if (keepAsIs(trimmed, zeroBased)) return trimmed
       return shiftSingleIndex(trimmed)
     })
     result = result.slice(0, mm.start) + `${mm.name}[${pyArgs.join(', ')}]` + result.slice(mm.end + 1)
