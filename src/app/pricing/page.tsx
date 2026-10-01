@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs'
 import { useState } from 'react'
 import { track } from '@vercel/analytics'
 import { logClientEvent } from '@/lib/telemetry/client'
+import { gaEvent, gaPlanValue } from '@/lib/ga'
 
 const tiers = [
   {
@@ -108,6 +109,7 @@ export default function PricingPage() {
       if (data.url) {
         track('checkout_session_started', { plan: planKey })
         logClientEvent('checkout_started', !!isSignedIn)
+        gaEvent('begin_checkout', { plan: planKey, ...gaPlanValue(planKey) })
         window.location.href = data.url
       } else if (data.error === 'Unauthorized') {
         window.location.href = `/sign-in?redirect_url=/pricing`

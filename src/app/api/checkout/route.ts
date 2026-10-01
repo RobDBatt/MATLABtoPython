@@ -101,7 +101,9 @@ export async function POST(req: Request) {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl}/convert?upgraded=true`,
+      // plan + session_id let /convert send GA one `purchase` per checkout
+      // (GA dedupes on transaction_id); the page strips both once sent.
+      success_url: `${baseUrl}/convert?upgraded=true&plan=${planId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
       metadata: userId ? { userId, planId } : { planId },
       // Stamp the subscription itself too. `customer.subscription.*` events

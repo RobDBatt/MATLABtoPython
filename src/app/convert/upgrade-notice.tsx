@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { gaEvent, gaPlanValue } from '@/lib/ga'
 
 /**
  * Stripe sends every buyer back to /convert?upgraded=true. Nothing used to
@@ -13,7 +15,26 @@ import { useUser } from '@clerk/nextjs'
 export function UpgradeNotice() {
   const params = useSearchParams()
   const { isLoaded, isSignedIn } = useUser()
-  if (params.get('upgraded') !== 'true' || !isLoaded) return null
+  const upgraded = params.get('upgraded') === 'true'
+
+  // Stripe only redirects here after a completed payment, so this is the
+  // purchase. It needs the Checkout Session id: that is GA's transaction_id,
+  // which dedupes a second tab, and it is stripped from the URL once sent, so
+  // a reload (still ?upgraded=true) sends nothing.
+  const sent = useRef(false)
+  useEffect(() => {
+    const sessionId = params.get('session_id')
+    if (!upgraded || !sessionId || sent.current) return
+    sent.current = true
+    const plan = params.get('plan')
+    gaEvent('purchase', { transaction_id: sessionId, plan, ...gaPlanValue(plan) })
+    const url = new URL(window.location.href)
+    url.searchParams.delete('session_id')
+    url.searchParams.delete('plan')
+    window.history.replaceState({}, '', url.toString())
+  }, [upgraded, params])
+
+  if (!upgraded || !isLoaded) return null
 
   if (isSignedIn) {
     return (

@@ -12,6 +12,7 @@ export const PLANS = {
     linesPerMonth: Infinity,
     fileUpload: true,
     batchUpload: false,
+    priceUsd: 19.99, // monthly; must match the price on /pricing and in Stripe
     stripePriceId: process.env.STRIPE_PRICE_PRO || 'price_1TLHrqRElJyZVpb2X14Ag9oY',
   },
   team: {
@@ -20,6 +21,7 @@ export const PLANS = {
     linesPerMonth: 100000,
     fileUpload: true,
     batchUpload: true,
+    priceUsd: 79, // monthly; must match the price on /pricing and in Stripe
     stripePriceId: process.env.STRIPE_PRICE_TEAM || 'price_1TLHrqRElJyZVpb2ULp88N8T',
   },
 } as const

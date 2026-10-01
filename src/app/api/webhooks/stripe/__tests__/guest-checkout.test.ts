@@ -138,6 +138,12 @@ describe('checkout route', () => {
     expect(params.subscription_data).toEqual({ metadata: { planId: 'pro' } })
   })
 
+  it('returns buyers with the plan and session id GA needs for one purchase', async () => {
+    await start()
+    expect(sessionsCreate.mock.calls[0][0].success_url)
+      .toBe('https://mtopython.com/convert?upgraded=true&plan=pro&session_id={CHECKOUT_SESSION_ID}')
+  })
+
   it('a signed-in buyer still carries their userId', async () => {
     signedInAs = 'user_signed_in'
     await start()
