@@ -12,6 +12,10 @@ import { telemetryFields, logClientEvent } from '@/lib/telemetry/client'
 import { CONSENT_VERSION } from '@/lib/telemetry/types'
 
 const FREE_LINE_LIMIT = 50
+
+/** /api/convert answers an over-limit free-tier file with a preview: the
+ *  first lines of Python plus the full-file report (see lib/freePreview). */
+type ConvertResponse = ConversionResult & { truncated?: boolean; totalLines?: number }
 const EMAIL_STORAGE_KEY = 'mtp_convert_email'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -27,7 +31,7 @@ export function ConverterWidget({ exampleCode }: Props) {
   const [mode, setMode] = useState<'paste' | 'upload' | 'batch'>('paste')
   const [input, setInput] = useState('')
   const [fileName, setFileName] = useState<string | null>(null)
-  const [result, setResult] = useState<ConversionResult | null>(null)
+  const [result, setResult] = useState<ConvertResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -94,6 +98,11 @@ export function ConverterWidget({ exampleCode }: Props) {
       }
 
       setResult(data)
+      if (data.truncated) {
+        // The free-tier preview is the paywall moment for a real file.
+        logClientEvent('paywall_shown', !!isSignedIn)
+        track('conversion_preview', { lines, totalLines: data.totalLines || 0 })
+      }
       track('conversion_succeeded', {
         lines,
         mode,
@@ -287,7 +296,7 @@ export function ConverterWidget({ exampleCode }: Props) {
                 <span className="text-xs font-medium text-[#5a5f6b] uppercase tracking-wider font-[family-name:var(--font-jetbrains)]">
                   Python
                 </span>
-                {result && (
+                {result && !result.truncated && (
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleCopy}
@@ -311,6 +320,20 @@ export function ConverterWidget({ exampleCode }: Props) {
                   </span>
                 )}
               </pre>
+              {result?.truncated && (
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/90 to-transparent flex flex-col items-center justify-end pb-4">
+                  <p className="text-xs text-[#9aa1ac] mb-2">
+                    Showing the first {result.python.split('\n').length} of {(result.totalLines ?? 0).toLocaleString()} lines
+                  </p>
+                  <Link
+                    href="/pricing"
+                    onClick={() => { logClientEvent('upgrade_clicked', !!isSignedIn); track('preview_unlock_click', { from: 'output' }) }}
+                    className="px-4 py-2 bg-[#d9662b] text-white text-sm font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
+                  >
+                    Unlock the full file →
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -351,6 +374,13 @@ export function ConverterWidget({ exampleCode }: Props) {
                 Load example
               </button>
             )}
+            {!result && overFreeLimit && mode === 'paste' && (
+              <span className="text-xs text-[#9aa1ac]">
+                {/* A template literal, not JSX text: the build dropped the space
+                    after {FREE_LINE_LIMIT} and rendered "Over 50lines". */}
+                {`Over ${FREE_LINE_LIMIT} lines: you'll get the full compatibility report and a preview of the Python.`}
+              </span>
+            )}
             {result && (
               <span className="ml-auto text-xs text-[#5a5f6b] font-[family-name:var(--font-jetbrains)]">
                 {result.processingMs}ms
@@ -375,7 +405,31 @@ export function ConverterWidget({ exampleCode }: Props) {
               conversion + saw "hours saved"). Anonymous users only; signed-in
               users already have an account. This is the high-intent moment the
               funnel was leaking 100% of. */}
-          {result && !isSignedIn && (
+          {/* Preview of an over-limit file: the whole file was converted and
+              the report below covers all of it; only the Python is cut. */}
+          {result?.truncated && (
+            <div className="mt-4 rounded-lg border border-[#d9662b]/40 bg-[#1b1e26] px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
+              <div className="text-sm">
+                <div className="text-[#eef0f4] font-medium">
+                  Your whole file converted. This is a preview.
+                </div>
+                <div className="mt-1 text-[#9aa1ac]">
+                  The report below covers all {lineCount.toLocaleString()} lines. Individual Pro unlocks the full
+                  Python and the .py download, for files up to 5,000 lines.
+                  {!isSignedIn && ' Previews don\'t use your free conversion.'}
+                </div>
+              </div>
+              <Link
+                href="/pricing"
+                onClick={() => { logClientEvent('upgrade_clicked', !!isSignedIn); track('preview_unlock_click', { from: 'panel' }) }}
+                className="mt-3 sm:mt-0 inline-block shrink-0 px-5 py-2.5 bg-[#d9662b] text-white text-sm font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
+              >
+                See plans →
+              </Link>
+            </div>
+          )}
+
+          {result && !result.truncated && !isSignedIn && (
             <div className="mt-4">
               <EmailCapture
                 source="convert_success"

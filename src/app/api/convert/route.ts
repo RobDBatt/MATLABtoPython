@@ -5,6 +5,7 @@ import { scheduleTelemetry } from '@/lib/telemetry/server'
 import type { Target } from '@/lib/telemetry/types'
 import { isValidEmail, saveSubscriber, hasUsedMatlabFreeConversion, markMatlabFreeConversionUsed } from '@/lib/subscribers'
 import { checkConversionAllowed, recordLinesUsed, type ConversionVerdict } from '@/lib/entitlements'
+import { isPreviewable, previewPython, PREVIEW_MAX_INPUT_LINES } from '@/lib/freePreview'
 
 const FREE_LINE_LIMIT = 50
 
@@ -25,7 +26,7 @@ function gateMessage(
     case 'exceeds_line_limit':
       return signedIn
         ? `Your plan allows ${limit} lines per conversion. This code has ${lineCount} lines.`
-        : `Free tier allows ${FREE_LINE_LIMIT} lines. This code has ${lineCount} lines. Sign in to upgrade.`
+        : `This code has ${lineCount.toLocaleString()} lines. The free tier converts ${FREE_LINE_LIMIT} lines and previews files up to ${PREVIEW_MAX_INPUT_LINES.toLocaleString()}. Sign in to upgrade.`
   }
 }
 
@@ -74,17 +75,48 @@ export async function POST(req: NextRequest) {
     // Free-tier (anonymous) conversions require a valid email — turns
     // otherwise-invisible free usage into a lead we can follow up with.
     // Signed-in users already gave Clerk an email, so they're exempt.
-    if (!userId) {
-      if (!isValidEmail(email)) {
-        return NextResponse.json(
-          { error: 'email_required', message: 'Enter a valid email to convert on the free tier.' },
-          { status: 403 },
-        )
+    if (!userId && !isValidEmail(email)) {
+      return NextResponse.json(
+        { error: 'email_required', message: 'Enter a valid email to convert on the free tier.' },
+        { status: 403 },
+      )
+    }
+
+    // Single entitlement gate. This must stay a call into lib/entitlements —
+    // the plan checks were previously duplicated inline here, which left the
+    // migration-pass expiry check in entitlements.ts dead and unreachable.
+    const gate = await checkConversionAllowed(lineCount, telemetryMode)
+
+    // Free tier, over the line limit: convert the whole file and return a
+    // preview (first lines of Python + the full compatibility report) instead
+    // of a 403 that showed nothing. A preview is not the free conversion, so it
+    // neither checks nor burns the one-per-email allowance. See lib/freePreview.
+    if (isPreviewable(gate, lineCount)) {
+      if (!userId) {
+        after(() => saveSubscriber(email, 'convert_gate').catch(() => { /* best-effort; never blocks conversion */ }))
       }
-      // One free conversion per email. Checked before the line-limit test
+      const result = convert(code)
+      // Logged as a success tagged 'line_limit', so the digest can tell a
+      // preview apart from a full free conversion.
+      scheduleTelemetry({
+        eventType: 'convert_success',
+        code,
+        flagTypes: result.report.flags.map((f) => f.type),
+        lineCount,
+        sessionId: telemetrySession,
+        consent: telemetryConsent,
+        target: telemetryMode,
+        extraWarningIds: ['line_limit'],
+      })
+      const { python, totalLines } = previewPython(result.python)
+      return NextResponse.json({ ...result, python, truncated: true, totalLines, freeLimit: gate.limit })
+    }
+
+    if (!userId) {
+      // One free conversion per email. Checked before the gate's refusals
       // below so a repeat email gets the clearest, most relevant error.
       // Marked as used only after a successful convert() (see below) — a
-      // failed attempt (line limit, internal error) doesn't burn it.
+      // failed attempt (internal error) or a preview doesn't burn it.
       if (await hasUsedMatlabFreeConversion(email)) {
         return NextResponse.json(
           {
@@ -96,11 +128,6 @@ export async function POST(req: NextRequest) {
       }
       after(() => saveSubscriber(email, 'convert_gate').catch(() => { /* best-effort; never blocks conversion */ }))
     }
-
-    // Single entitlement gate. This must stay a call into lib/entitlements —
-    // the plan checks were previously duplicated inline here, which left the
-    // migration-pass expiry check in entitlements.ts dead and unreachable.
-    const gate = await checkConversionAllowed(lineCount, telemetryMode)
 
     if (!gate.allowed) {
       scheduleTelemetry({
