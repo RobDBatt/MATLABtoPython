@@ -376,7 +376,9 @@ export function ConverterWidget({ exampleCode }: Props) {
             )}
             {!result && overFreeLimit && mode === 'paste' && (
               <span className="text-xs text-[#9aa1ac]">
-                Over {FREE_LINE_LIMIT} lines: you&apos;ll get the full compatibility report and a preview of the Python.
+                {/* A template literal, not JSX text: the build dropped the space
+                    after {FREE_LINE_LIMIT} and rendered "Over 50lines". */}
+                {`Over ${FREE_LINE_LIMIT} lines: you'll get the full compatibility report and a preview of the Python.`}
               </span>
             )}
             {result && (
