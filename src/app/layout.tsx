@@ -195,6 +195,11 @@ function Nav() {
                 Sign in
               </button>
             </SignInButton>
+            <SignUpButton>
+              <button className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
+                Sign up
+              </button>
+            </SignUpButton>
           </Show>
           <Show when="signed-in">
             <UserButton />
