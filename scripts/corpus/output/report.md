@@ -2,8 +2,8 @@
 
 Total files analyzed: **1062**
 - **Clean** (py_compile passes, zero flags): **708** (66.7%)
-- PASS with flags (needs human review): 300 (28.2%)
-- py_compile fail: 54 (5.1%)
+- PASS with flags (needs human review): 301 (28.3%)
+- py_compile fail: 53 (5.0%)
 - converter threw: 0 (0.0%)
 
 ## Top flagged files (highest review effort)
@@ -21,14 +21,14 @@ Total files analyzed: **1062**
 
 ## Failure patterns (grouped by error signature)
 
-### 1. SyntaxError: invalid syntax  —  41 files
+### 1. SyntaxError: invalid syntax  —  40 files
 
 - `autofft\+validation\testCosWindows.m`
 - `autofft\+validation\testKaiserWindow.m`
 - `DeepLearnToolbox\util\makeLMfilters.m`  `== 1, g=-g*(x/variance)`
 - `export_fig\fix_lines.m`
 - `export_fig\print2eps.m`
-- ...and 36 more
+- ...and 35 more
 
 ### 2. SyntaxError: invalid syntax. Perhaps you forgot a comma?  —  4 files
 
@@ -47,7 +47,7 @@ Total files analyzed: **1062**
 
 - `export_fig\export_fig.m`
 
-### 5. C:\Sites-Vercel\Matlab\matlabtopython\scripts\corpus\output\_check_6pv0jnf4b28.py:39: SyntaxWarning: "\P" is an invalid  —  1 files
+### 5. <check>.py:39: SyntaxWarning: "\P" is an invalid escape sequence. Such sequences will not work in the future. Did you me  —  1 files
 
 - `lightspeed\mexcompiler.m`
 
@@ -55,7 +55,7 @@ Total files analyzed: **1062**
 
 - `numerical-analysis-toolbox\linear\iterative\krylov\GMRES.m`  `vi+1 = w / h[i+1, i - 1]`
 
-### 7. Sorry: IndentationError: unexpected indent (_check_1boxu3nlz25.py, line N)  —  1 files
+### 7. Sorry: IndentationError: unexpected indent (<check>.py, line N)  —  1 files
 
 - `spatialmath-matlab\arrow3.m`
 

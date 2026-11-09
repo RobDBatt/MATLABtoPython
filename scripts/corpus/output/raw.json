@@ -3219,7 +3219,7 @@
   {
     "rel": "lightspeed\\mexcompiler.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "C:\\Sites-Vercel\\Matlab\\matlabtopython\\scripts\\corpus\\output\\_check_6pv0jnf4b28.py:39: SyntaxWarning: \"\\P\" is an invalid ",
+    "error": "<check>.py:39: SyntaxWarning: \"\\P\" is an invalid escape sequence. Such sequences will not work in the future. Did you me",
     "snippet": "",
     "flagCount": 5,
     "flags": [
@@ -9290,7 +9290,7 @@
   {
     "rel": "spatialmath-matlab\\arrow3.m",
     "status": "PY_COMPILE_FAIL",
-    "error": "Sorry: IndentationError: unexpected indent (_check_1boxu3nlz25.py, line 365)",
+    "error": "Sorry: IndentationError: unexpected indent (<check>.py, line 365)",
     "snippet": "",
     "flagCount": 56,
     "flags": [
@@ -13490,8 +13490,8 @@
   },
   {
     "rel": "vbmc\\misc\\warp_input_vbmc.m",
-    "status": "PY_COMPILE_FAIL",
-    "error": "SyntaxError: invalid syntax",
+    "status": "PASS",
+    "error": "",
     "snippet": "",
     "flagCount": 2,
     "flags": [
