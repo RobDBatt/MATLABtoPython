@@ -51,6 +51,11 @@ src/lib/converter/count.ts
 __pycache__/
 *.pyc
 scripts/corpus/output/__pycache__/
+# raw_prev.json is a local scratch copy of the LAST run, kept only so
+# `npm run corpus:diff` can show what moved. Its contents depend on when
+# you happened to run the corpus, so in version control it is pure churn
+# -- it rewrote ~1600 lines on every run.
+scripts/corpus/output/raw_prev.json
 scripts/corpus/repos/
 scripts/oracle/output/
 
