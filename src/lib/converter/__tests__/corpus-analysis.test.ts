@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync, copyFileSync } from 'node:fs'
-import { join, dirname, relative } from 'node:path'
+import { basename, dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { convert } from '../index'
@@ -151,7 +151,16 @@ function runPyCompile(python: string): { ok: true } | { ok: false; error: string
   const r = spawnSync('python', ['-m', 'py_compile', tmpFile], { encoding: 'utf8' })
   try { rmSync(tmpFile) } catch { /* ignore */ }
   if (r.status === 0) return { ok: true }
-  const errText = (r.stderr || r.stdout || '').trim()
+  // The scratch filename is random, so leaving it in the recorded error makes
+  // the committed report.md and raw.json differ on every run even when nothing
+  // about the conversion changed. Scrub it to a stable placeholder: this report
+  // is checked in, and a converter that sells determinism should not have a
+  // test harness whose own output is non-deterministic.
+  const tmpBase = basename(tmpFile)
+  const errText = (r.stderr || r.stdout || '')
+    .split(tmpFile).join('<check>.py')
+    .split(tmpBase).join('<check>.py')
+    .trim()
   // Extract error type (SyntaxError / IndentationError / etc.) and a snippet
   const match = errText.match(/^(?:.*?\n)*(\w*Error): (.+)$/m)
   const error = match ? `${match[1]}: ${match[2]}` : errText.slice(0, 120)
