@@ -148,10 +148,10 @@ subplot(1, 3, 3); imshow(label2rgb(labeled)); title([num2str(n), ' regions']);`,
   },
   {
     slug: 'ode45-differential-equation',
-    title: 'ODE45 — Solve an ODE',
-    summary: 'Solve a damped harmonic oscillator with ode45 — the workhorse of engineering coursework.',
+    title: 'MATLAB ode45 to Python: Damped Oscillator',
+    summary: 'Convert MATLAB ode45 to Python with scipy.integrate.solve_ivp. Compare the damped-oscillator source, generated code, and solver output differences.',
     context:
-      "MATLAB's `ode45` maps to `scipy.integrate.solve_ivp` with method='RK45'. The argument order differs: MATLAB takes `(odefun, tspan, y0)`, scipy takes `(fun, t_span, y0)`. The converter handles the swap. Output access changes too — MATLAB gives `[t, y]` arrays; scipy wraps them in a `sol` object with `.t` and `.y` attributes.",
+      "MATLAB's `ode45` is commonly ported to `scipy.integrate.solve_ivp` with method `RK45`. The call arguments are in the same general order: function, time span, initial state. The return contracts differ: MATLAB returns `[t, y]`, while SciPy returns an `OdeResult` whose `t` is one-dimensional and whose `y` has shape (number of states, number of time points). The converter warns about that mismatch; its generated draft still needs a manual return-value and shape fix.",
     tags: ['numerical', 'optimization'],
     matlab: `% Damped harmonic oscillator
 % y'' + 0.2 y' + y = 0
@@ -164,7 +164,7 @@ plot(t, y(:, 1), 'b-', 'LineWidth', 1.5);
 xlabel('time'); ylabel('position');
 title('Damped oscillator');
 grid on;`,
-    notes: "scipy's solve_ivp returns a solution object. Access as `sol.t` and `sol.y[0]` instead of MATLAB's `t` and `y(:,1)`.",
+    notes: "The generated draft is not directly runnable as written: SciPy requires a one-dimensional initial state and derivative, and returns an OdeResult rather than a two-item [t, y] tuple. For this two-state example, use a one-dimensional NumPy state, assign the result to sol, then set t = sol.t and y = sol.y.T; plot y[:, 0]. Pass method='RK45' to match ode45's method family.",
   },
   {
     slug: 'monte-carlo-pi',
