@@ -920,8 +920,21 @@ describe('ODE Solvers', () => {
     expect(imports("[t, y] = ode45(@func, [0 10], y0);")).toContain('scipy.integrate')
   })
 
-  it('flags ode45 with return format warning', () => {
-    expect(flagTypes("[t, y] = ode45(@func, [0 10], y0);")).toContain('WARNING')
+  // Was: expects a WARNING that the return format differs. The two-output form
+  // is now lowered into the OdeResult unpack instead of being warned about, so
+  // the flag is a TOOLBOX note describing what was emitted. The WARNING still stands
+  // for the shapes that are not lowered (a bare call, an odeset struct with an
+  // option that has no scipy equivalent).
+  it('explains the OdeResult unpack it emitted for ode45', () => {
+    expect(flagTypes("[t, y] = ode45(@func, [0 10], y0);")).toContain('TOOLBOX')
+    const out = py("[t, y] = ode45(@func, [0 10], y0);")
+    expect(out).toContain('_sol = integrate.solve_ivp(')
+    expect(out).toContain('t = _sol.t')
+    expect(out).toContain('y = _sol.y.T')
+  })
+
+  it('still warns on a bare call, which is not lowered', () => {
+    expect(flagTypes("ode45(@func, [0 10], y0);")).toContain('WARNING')
   })
 
   it('converts ode15s to solve_ivp', () => {

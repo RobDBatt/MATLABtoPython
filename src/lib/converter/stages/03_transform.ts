@@ -2412,6 +2412,83 @@ function dropSingletonVectorDim(argList: string[]): string[] {
   return argList
 }
 
+/**
+ * `[t, y] = ode45(...)` destructures a two-item MATLAB return. solve_ivp
+ * hands back ONE OdeResult, so the generated `t, y = integrate.solve_ivp(...)`
+ * raises `ValueError: too many values to unpack (expected 2)`. The registry
+ * warning described this, but the code still could not run.
+ *
+ * Expand it into the three statements a person would write, the same way
+ * convertFindpeaks expands its own two-output form:
+ *
+ *   [t, y] = ode15s(@f, [0 10], [1; 0], opts)
+ *     -> _sol = integrate.solve_ivp(f, [0, 10], np.ravel([1, 0]), method='BDF', **opts)
+ *        t = _sol.t
+ *        y = _sol.y.T
+ *
+ * `.y.T` restores MATLAB's orientation (rows = time steps), so an existing
+ * `y(:, 1)` keeps meaning column 1.
+ *
+ * This has to run BEFORE the FUNCTION_MAP name-swap below, which would
+ * otherwise turn `ode15s` into `integrate.solve_ivp` and leave nothing to
+ * match on. It bails to the name-swap whenever the line is not a plain
+ * two-target assignment, or `_sol` is already taken.
+ */
+function expandOdeSolverResult(
+  content: string,
+  imports: Set<string>,
+  flags: Flag[],
+  line: StructuredLine,
+): string {
+  for (const [name, method] of Object.entries(ODE_SOLVER_METHOD)) {
+    const head = content.match(
+      new RegExp(
+        `^(\\s*)(?:\\[\\s*(\\w+)\\s*,\\s*(\\w+)\\s*\\]|(\\w+)\\s*,\\s*(\\w+))\\s*=\\s*${name}\\s*\\(`,
+      ),
+    )
+    if (!head) continue
+
+    // `_sol` cannot collide with anything from the source: a MATLAB
+    // identifier has to start with a letter. Two solver calls in one
+    // program reuse the name safely because the next two lines consume
+    // it immediately.
+    const tmp = '_sol'
+
+    // Walk to the matching close paren so a nested call cannot truncate it.
+    let depth = 1
+    let j = head[0].length
+    let inStr = false
+    let sc = ''
+    while (j < content.length && depth > 0) {
+      const c = content[j]
+      if (inStr) { if (c === sc) inStr = false; j++; continue }
+      if (c === "'" || c === '"') { inStr = true; sc = c; j++; continue }
+      if (c === '(') depth++
+      else if (c === ')') { depth--; if (depth === 0) break }
+      j++
+    }
+    if (depth !== 0) continue
+    // Anything trailing the call (a chained index, a comment) is not modelled.
+    if (content.slice(j + 1).trim() !== '') continue
+
+    const a = splitArgsRespectingStrings(content.slice(head[0].length, j)).map(t => t.trim())
+    const call = buildSolveIvpCall(a, method, imports)
+    if (call === null) continue
+
+    const indent = head[1]
+    const tVar = head[2] ?? head[4]
+    const yVar = head[3] ?? head[5]
+    flags.push({
+      type: 'TOOLBOX',
+      message: `${name} returns one OdeResult, not a [t, y] pair - unpacked into \`${tVar}\` and \`${yVar}\`, with \`${yVar}\` transposed to MATLAB's orientation (rows = time steps).`,
+      originalLine: line.originalLineStart,
+      outputLine: 0,
+      originalCode: content,
+    })
+    return `${indent}${tmp} = ${call}\n${indent}${tVar} = ${tmp}.t\n${indent}${yVar} = ${tmp}.y.T`
+  }
+  return content
+}
 function transformFunctions(
   content: string,
   imports: Set<string>,
@@ -2422,6 +2499,9 @@ function transformFunctions(
   lhsVar?: string,
 ): string {
   let result = content
+
+  // Must precede the name-swap: it matches on the MATLAB solver name.
+  result = expandOdeSolverResult(result, imports, flags, line)
 
   for (const [matlabName, mapping] of Object.entries(FUNCTION_MAP)) {
     // A locally-assigned variable shadows the builtin of the same name
@@ -2691,16 +2771,23 @@ function transformFunctions(
           const method = ODE_SOLVER_METHOD[matlabName]
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
             const a = splitArgsRespectingStrings(args).map(t => t.trim())
-            // MATLAB's 4th argument is an odeset options struct with no
-            // faithful mapping. Leave those to the plain name-swap rather
-            // than dropping the options silently.
-            if (a.length !== 3 || a.some(t => t === '')) return full
-            imports.add('numpy')
-            // A MATLAB state vector is a COLUMN (`[1; 0]` -> np.vstack) and
-            // solve_ivp rejects a 2-D y0 outright. np.ravel on an already-1-D
-            // value is a no-op, so this is safe either way. (The odefun's own
-            // return shape is a separate problem - see the registry warning.)
-            return `${mapping.python}(${a[0]}, ${a[1]}, np.ravel(${a[2]}), method='${method}')`
+            return buildSolveIvpCall(a, method, imports) ?? full
+          })
+        } else if (matlabName === 'odeset') {
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(t => t.trim())
+            if (a.length === 0 || a[0] === '') return 'dict()'
+            if (a.length % 2 !== 0) return full
+            const kw: string[] = []
+            for (let i = 0; i < a.length; i += 2) {
+              const key = a[i].replace(/^['\"]|['\"]$/g, '').toLowerCase()
+              const mapped = ODESET_OPTION[key]
+              // One unmappable option and the whole struct stays literal, so
+              // the reader sees it rather than losing it.
+              if (!mapped) return full
+              kw.push(`${mapped}=${a[i + 1]}`)
+            }
+            return `dict(${kw.join(', ')})`
           })
         } else if (matlabName === 'dot') {
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
@@ -4510,6 +4597,46 @@ const ODE_SOLVER_METHOD: Record<string, string> = {
   ode15s: 'BDF',
   ode23s: 'Radau',
   ode23t: 'Radau',
+  ode23tb: 'Radau',
+}
+
+/**
+ * odeset option -> solve_ivp keyword. Only the options with an exact
+ * equivalent are listed; anything else (Events, Jacobian, OutputFcn, Refine,
+ * Stats, ...) means the struct is left alone and flagged, because quietly
+ * dropping an option changes the solve.
+ */
+const ODESET_OPTION: Record<string, string> = {
+  reltol: 'rtol',
+  abstol: 'atol',
+  maxstep: 'max_step',
+  initialstep: 'first_step',
+}
+
+/**
+ * Build the solve_ivp call for a MATLAB solver call's arguments.
+ * Returns null when the shape is one we do not model, so the caller can fall
+ * through to the plain name-swap rather than emit something wrong.
+ */
+function buildSolveIvpCall(
+  a: string[],
+  method: string,
+  imports: Set<string>,
+): string | null {
+  if (a.length < 3 || a.length > 4 || a.some(t => t === '')) return null
+  imports.add('scipy.integrate')
+  imports.add('numpy')
+  // A MATLAB state vector is a COLUMN (`[1; 0]` -> np.vstack) and solve_ivp
+  // rejects a 2-D y0. np.ravel on an already-1-D value is a no-op.
+  // The odefun has the same column problem one level in: a MATLAB derivative
+  // `[y(2); -y(1)]` becomes np.vstack, and solve_ivp needs 1-D back. Wrap it
+  // only when it is a bare name - an inline lambda cannot be called this way,
+  // and a parenthesised callee would be re-read as 1-based indexing.
+  const fun = /^\w+$/.test(a[0]) ? `lambda _t, _y: np.ravel(${a[0]}(_t, _y))` : a[0]
+  const base = `integrate.solve_ivp(${fun}, ${a[1]}, np.ravel(${a[2]}), method='${method}'`
+  // A 4th argument is the odeset struct. Splat it: passing it positionally
+  // lands it in solve_ivp's 4th parameter, which is `method`.
+  return a.length === 4 ? `${base}, **${a[3]})` : `${base})`
 }
 
 function splitArgsRespectingStrings(args: string): string[] {
