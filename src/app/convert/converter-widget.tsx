@@ -215,6 +215,7 @@ export function ConverterWidget({ exampleCode }: Props) {
       {mode === 'batch' && (
         <div className="rounded-b-lg rounded-tr-lg border border-[#2a2e3a] bg-[#1b1e26] p-6">
           <BatchWidget />
+          <ConsentToggle className="mt-3" />
         </div>
       )}
 

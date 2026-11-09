@@ -20,6 +20,7 @@ on:
   pull_request:
     paths:
       - 'scripts/octave_oracle.mts'
+      - 'scripts/oracle/compare-workspaces.ts'
       - 'tests/verification-corpus/**'
 
 permissions:

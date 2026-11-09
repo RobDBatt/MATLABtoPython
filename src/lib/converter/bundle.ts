@@ -18,6 +18,7 @@
 import { convert, type ConvertOptions } from './index'
 import type { ConversionResult, Flag } from './types'
 import { buildImportBlock } from './registry/imports'
+import { stripStringsAndComments } from './tokenizer/string-extractor'
 
 export interface BundleResult {
   python: string
@@ -27,19 +28,11 @@ export interface BundleResult {
   flags: Flag[]
 }
 
-/** Strip comments and string literals so call-scanning can't match prose. */
-function stripNoise(src: string): string {
-  return src
-    .split('\n')
-    .map(l => l.replace(/%.*$/, '').replace(/'[^']*'/g, "''").replace(/"[^"]*"/g, '""'))
-    .join('\n')
-}
-
 /** Identifiers invoked in `src`: `name(...)` calls, bare-statement calls, and
  *  `@name` function-handle references (`knCenter(@knGauss, X)` pulls knGauss). */
 function calledNames(src: string): Set<string> {
   const out = new Set<string>()
-  const clean = stripNoise(src)
+  const clean = stripStringsAndComments(src)
   for (const m of clean.matchAll(/(^|[^\w.@])([A-Za-z_]\w*)\s*\(/g)) out.add(m[2])
   // No-paren invocation: a bare identifier alone on a statement line.
   for (const m of clean.matchAll(/^\s*([A-Za-z_]\w*)\s*;?\s*$/gm)) out.add(m[1])

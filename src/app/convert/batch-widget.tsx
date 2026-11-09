@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import JSZip from 'jszip'
 import { useUser } from '@clerk/nextjs'
+import { telemetryFields } from '@/lib/telemetry/client'
 
 interface BatchFile {
   name: string
@@ -37,7 +38,7 @@ export function BatchWidget() {
   }, [])
 
   const handleConvertAll = useCallback(async () => {
-    if (files.length === 0 || running) return
+    if (!isSignedIn || !isTeam || files.length === 0 || running) return
     setRunning(true)
     setDownloadUrl(null)
     setSummary(null)
@@ -74,7 +75,7 @@ export function BatchWidget() {
         const res = await fetch('/api/convert', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: text }),
+          body: JSON.stringify({ code: text, mode: 'batch', ...telemetryFields(true) }),
         })
         const data = await res.json()
         if (!res.ok) {
@@ -125,7 +126,7 @@ export function BatchWidget() {
     setDownloadUrl(url)
     setSummary(`${passCount} of ${files.length} files converted. Click to download.`)
     setRunning(false)
-  }, [files, running])
+  }, [files, isSignedIn, isTeam, running])
 
   if (!isSignedIn) {
     return (

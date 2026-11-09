@@ -8,6 +8,7 @@
     "w",
     "Mt"
   ],
+  "flatColumnOutputs": ["w"],
   "expected": {
     "w": {
       "value": [

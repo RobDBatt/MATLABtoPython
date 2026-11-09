@@ -15,10 +15,8 @@
  * monkeypatch preamble), so random scripts are numerically comparable instead
  * of skipped. Headless-graphics calls are stubbed out on the Octave side.
  *
- * Index contract: the converter intentionally returns 0-based indices
- * ("0-based + flag on display", REVIEW_PUNCHLIST). A variable whose values
- * differ from Octave by EXACTLY +1 everywhere (and are integers) is counted as
- * MATCH (index contract), verifying the contract rather than misreporting it.
+ * Only outputs named in the fixture's indexOutputs contract may differ by
+ * one. Workspace snapshots keep shape and complex components.
  *
  *   OCTAVE_BIN=octave npx tsx scripts/octave_oracle.mts
  *   CORPUS_SAMPLE=150 npx tsx scripts/octave_oracle.mts   # also sample corpus scripts
@@ -29,6 +27,7 @@ import { tmpdir } from 'node:os'
 import { spawnSync } from 'node:child_process'
 import { convert } from '../src/lib/converter/index'
 import { convertBundle } from '../src/lib/converter/bundle'
+import { compareWorkspaces, type OutputContract, type Workspace } from './oracle/compare-workspaces'
 
 const OCTAVE = process.env.OCTAVE_BIN || 'octave'
 const root = process.cwd()
@@ -44,36 +43,35 @@ for __i = 1:numel(__names)
   __n = __names{__i};
   if length(__n) >= 2 && strcmp(__n(1:2), '__'); continue; end
   __v = eval(__n);
-  if (isnumeric(__v) || islogical(__v)) && isreal(__v) && numel(__v) >= 1 && numel(__v) <= 10000 && all(isfinite(double(__v)(:)))
-    __o.(__n) = reshape(double(__v).', 1, []);  % row-major flatten to match numpy
+  __o.(__n) = NaN;  % JSON null records a present but unsupported value
+  if (isnumeric(__v) || islogical(__v)) && numel(__v) >= 1 && numel(__v) <= 10000 && all(isfinite(__v(:)))
+    __flat = reshape(permute(double(__v), ndims(__v):-1:1), 1, []);
+    __o.(__n) = struct('shape', size(__v), 'real', real(__flat));
+    if !isreal(__v); __o.(__n).imag = imag(__flat); end
   end
 end
 __fp = fopen(getenv('ORACLE_OUT'), 'w'); fwrite(__fp, jsonencode(__o)); fclose(__fp);
 `
 const PY_DUMP = `
-import json as _j, os as _os, math as _m
+import json as _j, os as _os
 try:
     import numpy as _np
 except Exception:
     _np = None
-def _fin(xs):
-    return [float(x) for x in xs] if all(_m.isfinite(x) for x in xs) else None
 _o = {}
 for _k, _v in list(globals().items()):
     if _k.startswith('_'): continue
     try:
-        if isinstance(_v, bool): _o[_k] = [float(_v)]
-        elif isinstance(_v, (int, float)): _o[_k] = _fin([_v])
-        elif _np is not None and isinstance(_v, _np.generic):
-            if _np.iscomplexobj(_v): continue
-            _o[_k] = _fin([float(_v)])
-        elif _np is not None and isinstance(_v, _np.ndarray):
-            if _np.iscomplexobj(_v) or _v.size < 1: continue
-            _o[_k] = _fin([float(x) for x in _v.astype(float).flatten()])
-        elif isinstance(_v, (list, tuple)) and len(_v) >= 1 and all(isinstance(x,(int,float,bool)) for x in _v): _o[_k] = _fin([float(x) for x in _v])
-        else: continue
-        if _o.get(_k) is None: _o.pop(_k, None)
-    except Exception: _o.pop(_k, None)
+        if _np is None or not isinstance(_v, (int, float, complex, list, tuple, _np.generic, _np.ndarray)):
+            continue
+        _a = _np.asarray(_v)
+        if _a.dtype.kind not in 'biufc' or not 1 <= _a.size <= 10000 or not _np.isfinite(_a).all():
+            continue
+        _o[_k] = {'shape': list(_a.shape), 'real': _a.real.astype(float).ravel().tolist()}
+        if _np.iscomplexobj(_a):
+            _o[_k]['imag'] = _a.imag.astype(float).ravel().tolist()
+    except (ValueError, TypeError, OverflowError):
+        continue
 open(_os.environ['ORACLE_OUT'], 'w').write(_j.dumps(_o))
 `
 
@@ -209,39 +207,18 @@ function firstCodeLine(src: string): string {
 }
 const isFunctionFile = (src: string) => /^\s*function\b/.test(firstCodeLine(src))
 
-function flat(v: unknown): number[] {
-  if (typeof v === 'number') return [v]
-  if (typeof v === 'boolean') return [v ? 1 : 0]
-  if (Array.isArray(v)) return v.flatMap(flat)
-  return []
-}
-function closeEnough(a: number[], b: number[]): boolean {
-  if (a.length !== b.length || a.length === 0) return false
-  for (let i = 0; i < a.length; i++) {
-    const d = Math.abs(a[i] - b[i])
-    if (d > ATOL + RTOL * Math.abs(b[i])) return false
-  }
-  return true
-}
-/** Octave value = Python value + 1 everywhere, all integers → the converter's
- *  locked 0-based index contract, not a bug. */
-function isIndexContract(py: number[], oct: number[]): boolean {
-  if (py.length !== oct.length || py.length === 0) return false
-  for (let i = 0; i < py.length; i++) {
-    if (!Number.isInteger(py[i]) || !Number.isInteger(oct[i])) return false
-    if (oct[i] !== py[i] + 1) return false
-  }
-  return true
-}
-
-interface Input { name: string; src: string; repoRoot?: string }
+interface Input { name: string; src: string; repoRoot?: string; contract?: OutputContract }
 function collectInputs(): Input[] {
   const out: Input[] = []
   const vcDir = join(root, 'tests', 'verification-corpus')
   if (existsSync(vcDir)) {
     for (const d of readdirSync(vcDir)) {
       const p = join(vcDir, d, 'input.m')
-      if (existsSync(p)) out.push({ name: `vc/${d}`, src: readFileSync(p, 'utf8') })
+      if (existsSync(p)) {
+        const meta = join(vcDir, d, 'meta.json')
+        const contract = existsSync(meta) ? JSON.parse(readFileSync(meta, 'utf8')) as OutputContract : undefined
+        out.push({ name: `vc/${d}`, src: readFileSync(p, 'utf8'), contract })
+      }
     }
   }
   const sample = Number(process.env.CORPUS_SAMPLE || 0)
@@ -367,28 +344,26 @@ for (const inp of inputs) {
     continue
   }
 
-  const o = JSON.parse(readFileSync(octOut, 'utf8')) as Record<string, unknown>
-  const p = JSON.parse(readFileSync(pyOut, 'utf8')) as Record<string, unknown>
-  const shared = Object.keys(o).filter(k => k in p)
-  if (shared.length === 0) { buckets['INCONCLUSIVE (no shared vars)'] = (buckets['INCONCLUSIVE (no shared vars)'] || 0) + 1; continue }
+  const o = JSON.parse(readFileSync(octOut, 'utf8')) as Workspace
+  const p = JSON.parse(readFileSync(pyOut, 'utf8')) as Workspace
+  const result = compareWorkspaces(o, p, inp.contract)
+  if (result.missingReference.length > 0 || result.compared === 0) {
+    const label = result.missingReference.length > 0
+      ? 'INCONCLUSIVE (missing reference output)'
+      : 'INCONCLUSIVE (no supported numeric outputs)'
+    buckets[label] = (buckets[label] || 0) + 1
+    continue
+  }
 
   compared++
-  const bad: string[] = []
-  let sawContract = false
-  for (const k of shared) {
-    const pv = flat(p[k])
-    const ov = flat(o[k])
-    if (closeEnough(pv, ov)) continue
-    if (isIndexContract(pv, ov)) { sawContract = true; contractVars.push(`${inp.name}:${k}`); continue }
-    bad.push(k)
-  }
-  if (bad.length === 0) {
+  contractVars.push(...result.indexMatches.map(name => `${inp.name}:${name}`))
+  if (result.mismatches.length === 0) {
     match++
-    const label = sawContract ? 'MATCH ✅ (incl. 0-based index contract)' : 'MATCH ✅'
+    const label = result.indexMatches.length > 0 ? 'MATCH ✅ (incl. 0-based index contract)' : 'MATCH ✅'
     buckets[label] = (buckets[label] || 0) + 1
   } else {
     buckets['MISMATCH ☠ (SILENT-WRONG)'] = (buckets['MISMATCH ☠ (SILENT-WRONG)'] || 0) + 1
-    mismatches.push(`${inp.name}  vars: ${bad.join(', ')}`)
+    mismatches.push(`${inp.name}  vars: ${result.mismatches.join(', ')}`)
   }
 }
 rmSync(work, { recursive: true, force: true })

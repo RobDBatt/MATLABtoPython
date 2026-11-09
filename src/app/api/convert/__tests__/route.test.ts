@@ -16,7 +16,7 @@ let emailUsed = false
 const markUsed = vi.fn()
 vi.mock('@/lib/subscribers', () => ({
   isValidEmail: (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e),
-  saveSubscriber: vi.fn(async () => ({ ok: true, storage: 'log' })),
+  saveSubscriber: vi.fn(async () => ({ ok: true, storage: 'db' })),
   hasUsedMatlabFreeConversion: async () => emailUsed,
   markMatlabFreeConversionUsed: async (...a: unknown[]) => markUsed(...a),
 }))
@@ -71,10 +71,11 @@ describe('free tier over the line limit', () => {
     expect((await res.json()).truncated).toBe(true)
   })
 
-  it('is logged as a success tagged line_limit', async () => {
+  it('logs the preview separately from a full output', async () => {
     await call({ code: matlab(120), email: 'eng@lab.edu', telemetry_consent: true, session_id: 's' })
     const events = telemetry.mock.calls.map((c) => c[0] as { eventType: string; extraWarningIds?: string[] })
-    expect(events.some((e) => e.eventType === 'convert_success' && e.extraWarningIds?.includes('line_limit'))).toBe(true)
+    expect(events.some((e) => e.eventType === 'convert_preview' && e.extraWarningIds?.includes('line_limit'))).toBe(true)
+    expect(events.some((e) => e.eventType === 'convert_full_output')).toBe(false)
     expect(events.some((e) => e.eventType === 'convert_failure')).toBe(false)
   })
 
@@ -84,6 +85,31 @@ describe('free tier over the line limit', () => {
     const res = await call({ code: matlab(120) })
     expect(res.status).toBe(200)
     expect((await res.json()).truncated).toBe(true)
+  })
+})
+
+describe('batch conversion', () => {
+  const body = { code: matlab(2), mode: 'batch', telemetry_consent: true, session_id: 'batch-session' }
+
+  it('enforces the Team entitlement and records the refusal reason', async () => {
+    mockUserId = 'u_1'
+    mockUser = { id: 'u_1', publicMetadata: { plan: 'pro' } }
+    const response = await call(body)
+    expect(response.status).toBe(403)
+    expect((await response.json()).error).toBe('batch_not_allowed')
+    expect(telemetry).toHaveBeenCalledWith(expect.objectContaining({
+      eventType: 'convert_failure', target: 'batch', extraWarningIds: ['batch_not_allowed'],
+    }))
+  })
+
+  it('delivers a Team batch file and forwards consent and the session', async () => {
+    mockUserId = 'u_1'
+    mockUser = { id: 'u_1', publicMetadata: { plan: 'team' } }
+    const response = await call(body)
+    expect(response.status).toBe(200)
+    expect(telemetry).toHaveBeenCalledWith(expect.objectContaining({
+      eventType: 'convert_full_output', target: 'batch', consent: true, sessionId: 'batch-session',
+    }))
   })
 })
 

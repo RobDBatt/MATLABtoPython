@@ -11,6 +11,7 @@
     "mx",
     "ix"
   ],
+  "indexOutputs": ["ix"],
   "expected": {
     "s": {
       "value": 31

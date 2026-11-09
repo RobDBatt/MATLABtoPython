@@ -51,6 +51,12 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Python output and oracle regression checks
+        run: npx vitest run src/lib/converter/__tests__/py-compile-suite.test.ts src/lib/converter/__tests__/oracle-comparison.test.ts src/lib/converter/__tests__/bundle.test.ts
+
+      - name: Capture and batch routing checks
+        run: npx vitest run src/app/api/convert/__tests__/route.test.ts src/app/api/subscribe/__tests__/route.test.ts src/lib/telemetry/__tests__/telemetry.test.ts
+
       # --gate exits non-zero on any converter defect OR a missing-deps env
       # (curated all-environmental / nothing executed). Both are gate failures.
       - name: Curated oracle gate

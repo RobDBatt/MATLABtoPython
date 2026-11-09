@@ -25,22 +25,34 @@
  */
 
 export function resolveQuotes(source: string): string {
+  return scanSource(source, false)
+}
+
+/** Remove prose for call scanning while keeping transpose operators as code. */
+export function stripStringsAndComments(source: string): string {
+  return scanSource(source, true)
+}
+
+function scanSource(source: string, stripProse: boolean): string {
   const lines = source.split('\n')
   const out: string[] = []
   let inBlockComment = false
 
   for (const line of lines) {
     const trimmed = line.trim()
-    if (trimmed === '%{') { inBlockComment = true; out.push(line); continue }
-    if (trimmed === '%}') { inBlockComment = false; out.push(line); continue }
-    if (inBlockComment) { out.push(line); continue }
-    out.push(processLine(line))
+    if (trimmed === '%{') inBlockComment = true
+    if (inBlockComment) {
+      out.push(stripProse ? '' : line)
+      if (trimmed === '%}') inBlockComment = false
+    } else {
+      out.push(processLine(line, stripProse))
+    }
   }
 
   return out.join('\n')
 }
 
-function processLine(line: string): string {
+function processLine(line: string, stripProse: boolean): string {
   let processed = ''
   let i = 0
   while (i < line.length) {
@@ -48,14 +60,14 @@ function processLine(line: string): string {
 
     // Line comment — everything after `%` is untouched
     if (ch === '%') {
-      processed += line.slice(i)
+      if (!stripProse) processed += line.slice(i)
       break
     }
 
     // Double-quoted string (MATLAB R2016b+): unambiguous
     if (ch === '"') {
       const end = findStringEnd(line, i, '"')
-      processed += line.slice(i, end + 1)
+      processed += stripProse ? '""' : line.slice(i, end + 1)
       i = end + 1
       continue
     }
@@ -86,8 +98,7 @@ function processLine(line: string): string {
       // never closes. Rewrite such strings to Python double-quoted form
       // when possible, or backslash-escape when not.
       const end = findStringEnd(line, i, "'")
-      const raw = line.slice(i + 1, end) // string body, no delimiters
-      processed += rewriteMatlabSingleQuoted(raw)
+      processed += stripProse ? "''" : rewriteMatlabSingleQuoted(line.slice(i + 1, end))
       i = end + 1
       continue
     }

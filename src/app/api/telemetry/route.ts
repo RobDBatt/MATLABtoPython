@@ -66,14 +66,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid event' }, { status: 400 })
     }
 
-    await supabaseInsert({
+    const saved = await supabaseInsert({
       table: 'usage_events',
       data: eventToRow(event) as unknown as Record<string, unknown>,
     })
+    if (!saved) return new NextResponse(null, { status: 503 })
     return new NextResponse(null, { status: 204 })
   } catch (err) {
     console.error('[telemetry] /api/telemetry failed:', err)
-    // Never surface an error that might make the client retry-storm; 204.
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 503 })
   }
 }

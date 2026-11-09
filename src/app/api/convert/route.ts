@@ -96,10 +96,8 @@ export async function POST(req: NextRequest) {
         after(() => saveSubscriber(email, 'convert_gate').catch(() => { /* best-effort; never blocks conversion */ }))
       }
       const result = convert(code)
-      // Logged as a success tagged 'line_limit', so the digest can tell a
-      // preview apart from a full free conversion.
       scheduleTelemetry({
-        eventType: 'convert_success',
+        eventType: 'convert_preview',
         code,
         flagTypes: result.report.flags.map((f) => f.type),
         lineCount,
@@ -130,6 +128,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!gate.allowed) {
+      const warning = gate.reason === 'exceeds_line_limit' ? 'line_limit' : gate.reason
       scheduleTelemetry({
         eventType: 'convert_failure',
         code,
@@ -138,7 +137,7 @@ export async function POST(req: NextRequest) {
         sessionId: telemetrySession,
         consent: telemetryConsent,
         target: telemetryMode,
-        extraWarningIds: [gate.reason === 'monthly_limit_reached' ? 'monthly_limit' : 'line_limit'],
+        extraWarningIds: warning ? [warning] : [],
       })
       return NextResponse.json(
         {
@@ -156,7 +155,7 @@ export async function POST(req: NextRequest) {
     // Fire-and-forget anonymous telemetry AFTER the response (consent-gated).
     // Never affects latency or the conversion result.
     scheduleTelemetry({
-      eventType: 'convert_success',
+      eventType: 'convert_full_output',
       code,
       flagTypes: result.report.flags.map((f) => f.type),
       lineCount,
