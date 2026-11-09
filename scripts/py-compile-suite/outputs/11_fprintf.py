@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 x = 3.14159
 y = 42
 name = 'Alice'
-print('x = %.3f' % (x,))
-print('y = %d' % (y,))
-print('%s has %d apples' % (name, y))
+print(f'x = {x:.3f}')
+print(f'y = {int(y):d}')
+print(f'{name} has {int(y):d} apples')
 plt.savefig('stdout: %f\n')
-msg = 'The value is %g' % (x,)
+msg = f'The value is {x:g}'
 print(msg)

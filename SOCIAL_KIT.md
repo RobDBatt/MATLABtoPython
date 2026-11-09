@@ -222,7 +222,7 @@ free backlink from a high-authority domain. Submit a PR to:
 Suggested PR text:
 
 ```markdown
-* [matlabtopython.com](https://mtopython.com) — Deterministic
+* [mtopython.com](https://mtopython.com) — Deterministic
   MATLAB-to-Python converter. Rule-based (no AI), 10 toolboxes mapped,
   honest flags instead of silent wrong output. Free tier + PyPI runtime
   shim ([matlabtopython-compat](https://pypi.org/project/matlabtopython-compat/)).

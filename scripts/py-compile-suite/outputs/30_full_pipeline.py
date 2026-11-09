@@ -26,7 +26,7 @@ def findpeaks_demo(signal_, fs, threshold):
     plt.plot(t, signal_, 'b', linewidth=0.5)
     # hold on removed — matplotlib accumulates plots by default
     plt.plot(locs, peaks, 'rv', markersize=8)
-    plt.title('Found %d peaks above %.2f' % (np.max(peaks.shape), threshold))
+    plt.title(f'Found {int(np.max(peaks.shape)):d} peaks above {threshold:.2f}')
     plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
     plt.grid(True)
