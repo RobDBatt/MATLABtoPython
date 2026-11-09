@@ -4,10 +4,10 @@ import numpy as np
 A = np.array([[1, 2, 3], [4, 5, 6]])
 v = np.vstack([10, 20, 30])
 print('A size: %d x %d\n', A.shape)
-print('column vector: %s' % (mat2str(v),))
+print(f'column vector: {mat2str(v)}')
 row = v.T
-print('row vector: %s' % (mat2str(row),))
+print(f'row vector: {mat2str(row)}')
 B = A.T
-print('transposed A has %d rows' % (B.shape[0],))
+print(f'transposed A has {int(B.shape[0]):d} rows')
 result = A@v
-print('product = [%d, %d]' % (result[0], result[1]))
+print(f'product = [{int(result[0]):d}, {int(result[1]):d}]')
