@@ -872,3 +872,53 @@ describe('unsupported construct inside a collapsed try-header+body line', () => 
     )
   })
 })
+
+// 2026-11-08: MATLAB picks its ODE algorithm by the solver NAME; scipy picks
+// it with `method=`, defaulting to the explicit, non-stiff RK45. Every solver
+// in the family emitted a bare `integrate.solve_ivp(...)` with no method=, so
+// `ode15s` - an implicit STIFF solver - silently became RK45. It does not
+// raise: on Van der Pol (mu=1000, the system MATLAB's own ode15s docs use)
+// RK45 still reports success, after 1,688,374 steps and 77s, where BDF takes
+// 537 steps and 0.07s. The registry warning already named the right method
+// while the emitted code omitted it.
+//
+// Separately, MATLAB state vectors are COLUMNS (`[1; 0]` -> np.vstack) and
+// solve_ivp rejects a 2-D y0 with "`y0` must be 1-dimensional".
+describe('ode solvers emit the method that matches the MATLAB solver', () => {
+  const METHOD: Record<string, string> = {
+    ode45: 'RK45',
+    ode23: 'RK23',
+    ode113: 'LSODA',
+    ode15s: 'BDF',
+    ode23s: 'Radau',
+    ode23t: 'Radau',
+  }
+
+  for (const [fn, method] of Object.entries(METHOD)) {
+    it(`${fn} -> solve_ivp(method='${method}')`, () => {
+      const { python } = convert(`[t, y] = ${fn}(@f, [0 10], [1; 0]);`)
+      expect(python).toContain(`method='${method}'`)
+    })
+  }
+
+  it('no solver emits a bare solve_ivp without a method', () => {
+    for (const fn of Object.keys(METHOD)) {
+      const { python } = convert(`[t, y] = ${fn}(@f, [0 10], y0);`)
+      expect(python).toMatch(/integrate\.solve_ivp\(.*method=/)
+    }
+  })
+
+  it('a MATLAB column y0 is ravelled - solve_ivp rejects 2-D', () => {
+    const { python } = convert('[t, y] = ode45(@f, [0 10], [1; 0]);')
+    expect(python).toContain('np.ravel(')
+    expect(python).toContain('import numpy as np')
+  })
+
+  it('an odeset options argument is left to the name-swap, not dropped', () => {
+    const src = "opts = odeset('RelTol', 1e-6);\n[t, y] = ode15s(@f, [0 10], y0, opts);"
+    const { python } = convert(src)
+    // Silently discarding the options would change the solve with no warning.
+    expect(python).toContain('opts')
+    expect(python).not.toContain("method='BDF'")
+  })
+})
