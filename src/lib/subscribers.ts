@@ -12,15 +12,13 @@ export function isValidEmail(email: string): boolean {
 export async function saveSubscriber(
   email: string,
   source: string,
-): Promise<{ ok: boolean; duplicate?: boolean; storage: 'db' | 'log'; error?: string }> {
+): Promise<{ ok: boolean; duplicate?: boolean; storage: 'db'; error?: string }> {
   const supabaseUrl = process.env.SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 
-  // If Supabase isn't configured, log and succeed — same no-hard-fail
-  // behavior as the original /api/subscribe endpoint.
   if (!supabaseUrl || !supabaseKey) {
-    console.log('[subscribe] (no-db)', { email, source, ts: new Date().toISOString() })
-    return { ok: true, storage: 'log' }
+    console.error('[subscribe] database is not configured')
+    return { ok: false, storage: 'db', error: 'storage_unavailable' }
   }
 
   try {
@@ -54,8 +52,7 @@ export async function saveSubscriber(
  * Has this email already used its one free MATLABtoPython conversion?
  * Fails OPEN (returns false) when Supabase isn't configured or the query
  * errors — a transient DB hiccup must never block a legitimate conversion;
- * worst case someone gets an extra free run, which is the same tradeoff
- * `saveSubscriber` already makes for the no-DB case.
+ * worst case someone gets an extra free run.
  */
 export async function hasUsedMatlabFreeConversion(email: string): Promise<boolean> {
   const supabaseUrl = process.env.SUPABASE_URL
@@ -94,7 +91,7 @@ export async function markMatlabFreeConversionUsed(email: string, source: string
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
-    console.log('[free-conversion-gate] (no-db)', { email, ts: new Date().toISOString() })
+    console.error('[free-conversion-gate] database is not configured')
     return
   }
 

@@ -10,15 +10,15 @@ import { isValidEmail, saveSubscriber } from '@/lib/subscribers'
  */
 
 export async function POST(req: NextRequest) {
-  let body: { email?: string; source?: string }
+  let body: { email?: unknown; source?: unknown } | null
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
   }
 
-  const email = (body.email || '').trim().toLowerCase()
-  const source = (body.source || 'unknown').trim().slice(0, 80)
+  const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+  const source = (typeof body?.source === 'string' ? body.source.trim().slice(0, 80) : '') || 'unknown'
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const result = await saveSubscriber(email, source)
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 502 })
+    return NextResponse.json({ error: result.error }, { status: result.error === 'storage_unavailable' ? 503 : 502 })
   }
   return NextResponse.json({ ok: true, storage: result.storage, duplicate: result.duplicate })
 }

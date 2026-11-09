@@ -17,11 +17,10 @@ export const SITE = 'matlab' as const
  * events below are client-only moments the server never sees, POSTed to
  * /api/telemetry -- they are what makes the drop-off between 'used the
  * converter' and 'paid' visible in the same table as everything else.
- * VBAtoPython logs the same three; keep the names identical so one query
- * covers both sites.
+ * Keep the shared conversion outcome names aligned with VBAtoPython.
  */
 export const EVENT_TYPES = [
-  'preflight', 'convert_attempt', 'convert_success', 'convert_failure',
+  'preflight', 'convert_attempt', 'convert_success', 'convert_preview', 'convert_full_output', 'convert_failure',
   'paywall_shown', 'upgrade_clicked', 'checkout_started',
 ] as const
 export type EventType = (typeof EVENT_TYPES)[number]

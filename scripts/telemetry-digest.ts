@@ -5,7 +5,7 @@
  * project and produces a markdown digest:
  *   - Top 10 features by count (last 7 days) + week-over-week delta
  *   - Top 10 warnings by count (last 7 days) + week-over-week delta
- *   - Conversion success rate
+ *   - Full-output delivery rate and preview count
  *   - Lines-bucket distribution
  *   - Mode distribution (paste / upload / batch)
  *
@@ -92,9 +92,14 @@ function distTable(title: string, m: Map<string, number>, total: number): string
 function buildDigest(cur: UsageEvent[], prev: UsageEvent[]): string {
   const today = new Date().toISOString().slice(0, 10)
   const sessions = new Set(cur.map((e) => e.session_id)).size
-  const successes = cur.filter((e) => e.event_type === 'convert_success').length
+  const attempts = cur.filter((e) => e.event_type === 'convert_attempt').length
+  const legacyPreviews = cur.filter((e) =>
+    e.event_type === 'convert_success' && e.warnings?.some((warning) => warning.id === 'line_limit'),
+  ).length
+  const fullOutputs = cur.filter((e) => e.event_type === 'convert_full_output' || e.event_type === 'convert_success').length - legacyPreviews
+  const previews = cur.filter((e) => e.event_type === 'convert_preview').length + legacyPreviews
   const total = cur.length
-  const rate = total > 0 ? Math.round((successes / total) * 100) : 0
+  const rate = attempts && fullOutputs + previews <= attempts ? `${Math.round((fullOutputs / attempts) * 100)}%` : 'unavailable'
 
   const parts = [
     `# Telemetry digest (MATLABtoPython) — ${today}`,
@@ -105,7 +110,8 @@ function buildDigest(cur: UsageEvent[], prev: UsageEvent[]): string {
     '',
     `- **Events (7d):** ${total}  (prior 7d: ${prev.length})`,
     `- **Distinct sessions:** ${sessions}`,
-    `- **Conversion success rate:** ${rate}%  (${successes}/${total})`,
+    `- **Full-output delivery rate:** ${rate} (${fullOutputs} full outputs / ${attempts} recorded attempts)`,
+    `- **Previews delivered:** ${previews}`,
     '',
     topTable('Top features (7d)', tally(cur, 'features'), tally(prev, 'features')),
     topTable('Top warnings (7d)', tally(cur, 'warnings'), tally(prev, 'warnings')),

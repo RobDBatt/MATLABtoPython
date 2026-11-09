@@ -21,6 +21,16 @@ describe('resolveClosure', () => {
   it('finds no-paren bare-statement invocations', () => {
     expect(resolveClosure('double_it;\n', files)).toContain('double_it')
   })
+
+  it('finds calls after quoted percent signs and ignores comments and literals', () => {
+    const source = [
+      "%{",
+      "unused(1);",
+      "%}",
+      "disp('100% unused()'); a = deeper(5); % unused(2)",
+    ].join('\n')
+    expect(resolveClosure(source, files)).toEqual(['deeper'])
+  })
 })
 
 describe('convertBundle', () => {

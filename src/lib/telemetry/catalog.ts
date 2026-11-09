@@ -47,7 +47,9 @@ const FUNCTION_IDS: ReadonlySet<string> = new Set([
 ])
 
 /** Failure-reason warning ids that don't come from converter flags. */
-export const FAILURE_WARNING_IDS = ['line_limit', 'internal_error', 'network'] as const
+export const FAILURE_WARNING_IDS = [
+  'line_limit', 'monthly_limit_reached', 'upload_not_allowed', 'batch_not_allowed', 'internal_error', 'network',
+] as const
 
 /** The full allowed vocabulary: functions + language constructs + flag types. */
 export const KNOWN_FEATURE_IDS: ReadonlySet<string> = new Set<string>([

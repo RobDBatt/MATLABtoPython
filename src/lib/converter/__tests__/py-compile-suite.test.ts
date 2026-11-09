@@ -7,7 +7,7 @@ import { convert } from '../index'
 
 /**
  * Runs every .m fixture in scripts/py-compile-suite/inputs through the
- * converter and validates the resulting Python with `python -m py_compile`.
+ * converter and validates the resulting Python with the shared output checker.
  *
  * This is the end-to-end safety net: the unit tests cover individual
  * transformation rules, the py_compile suite proves that realistic MATLAB
@@ -20,6 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '..', '..', '..', '..')
 const inputsDir = join(repoRoot, 'scripts', 'py-compile-suite', 'inputs')
 const outputsDir = join(repoRoot, 'scripts', 'py-compile-suite', 'outputs')
+const checker = join(repoRoot, 'scripts', 'python_output_check.py')
 
 function pythonAvailable(): boolean {
   const r = spawnSync('python', ['--version'], { encoding: 'utf8' })
@@ -47,7 +48,7 @@ describe.skipIf(!pyOk)('py_compile suite (30 real-world MATLAB scripts)', () => 
       const pyFile = join(outputsDir, file.replace(/\.m$/, '.py'))
       writeFileSync(pyFile, python)
 
-      const check = spawnSync('python', ['-m', 'py_compile', pyFile], { encoding: 'utf8' })
+      const check = spawnSync('python', [checker, 'np'], { input: python, encoding: 'utf8' })
       if (check.status !== 0) {
         const err = (check.stderr || check.stdout || '').trim()
         throw new Error(`py_compile failed for ${file}:\n${err}\n\n--- Generated Python ---\n${python}`)
