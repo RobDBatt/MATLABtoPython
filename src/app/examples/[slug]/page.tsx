@@ -16,9 +16,15 @@ export async function generateMetadata({
   const { slug } = await params
   const example = getExample(slug)
   if (!example) return { title: 'Not Found' }
+  const isOde45 = slug === 'ode45-differential-equation'
   return {
-    title: `${example.title} — MATLAB to Python example`,
-    description: example.summary,
+    title: isOde45
+      ? 'MATLAB ode45 to Python: SciPy solve_ivp'
+      : `${example.title} — MATLAB to Python example`,
+    description: isOde45
+      ? 'Convert MATLAB ode45 to Python with scipy.integrate.solve_ivp. See the side-by-side damped-oscillator example and the differences in solver output.'
+      : example.summary,
+    alternates: { canonical: `https://mtopython.com/examples/${slug}` },
   }
 }
 
@@ -130,6 +136,19 @@ export default async function ExamplePage({
           <div className="font-medium text-slate-900 mb-1">Implementation notes</div>
           {example.notes}
         </div>
+      )}
+
+      {example.slug === 'ode45-differential-equation' && (
+        <p className="-mt-6 mb-10 text-xs text-slate-500">
+          References:{' '}
+          <a href="https://www.mathworks.com/help/matlab/ref/ode45.html" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-slate-700">
+            MathWorks ode45 documentation
+          </a>
+          {' · '}
+          <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-slate-700">
+            SciPy solve_ivp documentation
+          </a>
+        </p>
       )}
 
       {/* CTA */}

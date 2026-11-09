@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import { EXAMPLES } from '@/content/examples'
 
 export const metadata: Metadata = {
-  title: 'MATLAB to Python Conversion Examples',
+  title: 'MATLAB to Python Examples: Real NumPy and SciPy Conversions',
   description:
-    'Real MATLAB snippets — Butterworth filter, FFT, peak detection, ODE45, Monte Carlo, K-means, linear solve — converted to Python by the deterministic engine at mtopython.com. Side-by-side with explanations.',
+    'Compare MATLAB source with converter-generated Python for FFT, ODE45, filters, linear algebra, statistics, and more. Each example explains what changed. Try the free 50-line converter.',
 }
 
 export default function ExamplesPage() {
@@ -12,7 +12,7 @@ export default function ExamplesPage() {
     <div className="mx-auto max-w-5xl px-6 py-16">
       <div className="mb-12">
         <h1 className="font-[family-name:var(--font-syne)] text-3xl font-bold text-[#eef0f4] mb-3">
-          Conversion examples
+          MATLAB to Python Conversion Examples
         </h1>
         <p className="text-[#9aa1ac] max-w-2xl leading-relaxed">
           Real MATLAB snippets converted to Python by the same engine that powers
@@ -20,6 +20,12 @@ export default function ExamplesPage() {
           Each example shows the MATLAB source, the converter&apos;s Python output,
           and notes on what changed and why.
         </p>
+        <a
+          href="/convert"
+          className="mt-5 inline-block px-5 py-2.5 bg-[#d9662b] text-white text-sm font-medium rounded-lg hover:bg-[#b8541f] transition-colors"
+        >
+          Try the free converter →
+        </a>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
