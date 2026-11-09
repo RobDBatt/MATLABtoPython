@@ -164,7 +164,7 @@ plot(t, y(:, 1), 'b-', 'LineWidth', 1.5);
 xlabel('time'); ylabel('position');
 title('Damped oscillator');
 grid on;`,
-    notes: "The generated draft is not directly runnable as written: SciPy requires a one-dimensional initial state and derivative, and returns an OdeResult rather than a two-item [t, y] tuple. For this two-state example, use a one-dimensional NumPy state, assign the result to sol, then set t = sol.t and y = sol.y.T; plot y[:, 0]. Pass method='RK45' to match ode45's method family.",
+    notes: "The converter now passes method='RK45' to match ode45, and wraps the initial state in np.ravel because solve_ivp rejects the 2-D column MATLAB's [1; 0] produces. Two things still need you: the derivative returns a column too, so swap its np.vstack for np.array, and solve_ivp returns a single OdeResult rather than a two-item [t, y] tuple — assign it to sol, then t = sol.t and y = sol.y.T, and plot y[:, 0].",
   },
   {
     slug: 'monte-carlo-pi',

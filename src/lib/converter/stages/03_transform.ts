@@ -2687,6 +2687,21 @@ function transformFunctions(
             const lc = matlabName === 'strncmpi' ? '.lower()' : ''
             return `(${a[0]}[:${a[2]}]${lc} == ${a[1]}[:${a[2]}]${lc})`
           })
+        } else if (matlabName in ODE_SOLVER_METHOD) {
+          const method = ODE_SOLVER_METHOD[matlabName]
+          result = replaceFunctionCalls(result, matlabName, (full, args) => {
+            const a = splitArgsRespectingStrings(args).map(t => t.trim())
+            // MATLAB's 4th argument is an odeset options struct with no
+            // faithful mapping. Leave those to the plain name-swap rather
+            // than dropping the options silently.
+            if (a.length !== 3 || a.some(t => t === '')) return full
+            imports.add('numpy')
+            // A MATLAB state vector is a COLUMN (`[1; 0]` -> np.vstack) and
+            // solve_ivp rejects a 2-D y0 outright. np.ravel on an already-1-D
+            // value is a no-op, so this is safe either way. (The odefun's own
+            // return shape is a separate problem - see the registry warning.)
+            return `${mapping.python}(${a[0]}, ${a[1]}, np.ravel(${a[2]}), method='${method}')`
+          })
         } else if (matlabName === 'dot') {
           result = replaceFunctionCalls(result, matlabName, (full, args) => {
             const a = splitArgsRespectingStrings(args).map(s => s.trim())
@@ -4474,6 +4489,29 @@ function replaceFunctionCalls(
  * corrupted strings containing commas — e.g. `strsplit('a,b,c', ',')`
  * got chopped into `['a`, `b`, `c'`, `' '`].
  */
+/**
+ * MATLAB picks its ODE algorithm by the solver NAME; scipy picks it with a
+ * `method=` keyword, defaulting to 'RK45'. ode15s, ode23s and ode23t are
+ * implicit solvers for STIFF systems, and RK45 is explicit and non-stiff.
+ *
+ * Every one of these used to emit a bare `integrate.solve_ivp(...)` with no
+ * method=, so `ode15s` silently became RK45. That does not raise — a stiff
+ * system under RK45 crawls, or returns a wrong trajectory. The registry's
+ * own warning already named the right method while the emitted code omitted
+ * it, which reads as a description of what the converter did.
+ *
+ * Only the 3-argument form (odefun, tspan, y0) is rewritten; a 4th odeset
+ * argument has no faithful mapping and falls through to the name-swap.
+ */
+const ODE_SOLVER_METHOD: Record<string, string> = {
+  ode45: 'RK45',
+  ode23: 'RK23',
+  ode113: 'LSODA',
+  ode15s: 'BDF',
+  ode23s: 'Radau',
+  ode23t: 'Radau',
+}
+
 function splitArgsRespectingStrings(args: string): string[] {
   const out: string[] = []
   let current = ''
