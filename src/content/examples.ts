@@ -164,7 +164,7 @@ plot(t, y(:, 1), 'b-', 'LineWidth', 1.5);
 xlabel('time'); ylabel('position');
 title('Damped oscillator');
 grid on;`,
-    notes: "The converter now passes method='RK45' to match ode45, and wraps the initial state in np.ravel because solve_ivp rejects the 2-D column MATLAB's [1; 0] produces. Two things still need you: the derivative returns a column too, so swap its np.vstack for np.array, and solve_ivp returns a single OdeResult rather than a two-item [t, y] tuple — assign it to sol, then t = sol.t and y = sol.y.T, and plot y[:, 0].",
+    notes: "This one runs as emitted. Three things had to be adapted, and all three come from the same place - MATLAB state vectors are columns, SciPy wants 1-D: np.ravel on the initial state, np.ravel on whatever the derivative returns, and method='RK45' to match ode45 rather than taking SciPy's default. solve_ivp also returns one OdeResult instead of a [t, y] pair, so the result is unpacked into _sol and y is transposed back to MATLAB's orientation, rows = time steps.",
   },
   {
     slug: 'monte-carlo-pi',

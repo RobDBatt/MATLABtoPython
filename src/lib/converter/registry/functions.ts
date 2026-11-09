@@ -500,6 +500,23 @@ export const FUNCTION_MAP: Record<string, FunctionMapping> = {
     imports: ['scipy.integrate'],
     flag: { type: 'WARNING', message: 'ode23t → solve_ivp(method="Radau") — return format differs: use result.t, result.y' },
   },
+  // ode23tb (TR-BDF2) is implicit and for stiff systems; Radau is the closest
+  // SciPy offering. Until now it was not mapped at all, so `ode23tb(...)` was
+  // emitted verbatim - a NameError at runtime, with no flag to warn anyone.
+  ode23tb: {
+    python: 'integrate.solve_ivp',
+    args: 'custom',
+    imports: ['scipy.integrate'],
+    flag: { type: 'WARNING', message: 'ode23tb → solve_ivp(method="Radau") — return format differs: use result.t, result.y' },
+  },
+  // An odeset struct becomes a dict of solve_ivp keyword arguments, splatted
+  // into the call. Passing it positionally (the old behaviour) put it in
+  // solve_ivp's 4th parameter, which is `method`.
+  odeset: {
+    python: 'dict',
+    args: 'custom',
+    imports: [],
+  },
 
   // ── Numerical Integration ──────────────────────────────
   integral: {

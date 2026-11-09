@@ -914,11 +914,44 @@ describe('ode solvers emit the method that matches the MATLAB solver', () => {
     expect(python).toContain('import numpy as np')
   })
 
-  it('an odeset options argument is left to the name-swap, not dropped', () => {
-    const src = "opts = odeset('RelTol', 1e-6);\n[t, y] = ode15s(@f, [0 10], y0, opts);"
+  // Was: asserted the odeset form fell through to the plain name-swap. It no
+  // longer does - odeset became a dict of solve_ivp keywords, splatted in.
+  it('an odeset struct becomes solve_ivp keywords, splatted', () => {
+    const src = "opts = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);\n[t, y] = ode15s(@f, [0 10], y0, opts);"
     const { python } = convert(src)
-    // Silently discarding the options would change the solve with no warning.
-    expect(python).toContain('opts')
-    expect(python).not.toContain("method='BDF'")
+    expect(python).toContain('opts = dict(rtol=1e-6, atol=1e-8)')
+    expect(python).toContain("method='BDF', **opts)")
+  })
+
+  it('one unmappable odeset option leaves the whole struct literal', () => {
+    // Dropping an option the solver honours would change the result with no
+    // warning - exactly the failure this whole area is about.
+    const { python } = convert("opts = odeset('Jacobian', @J);\n[t, y] = ode15s(@f, [0 10], y0, opts);")
+    expect(python).toContain('odeset(')
+  })
+
+  it('ode23tb is mapped at all - it used to emit a bare NameError', () => {
+    const { python } = convert('[t, y] = ode23tb(@f, [0 10], [1; 0]);')
+    expect(python).toContain("method='Radau'")
+    expect(python).not.toMatch(/\bode23tb\(/)
+  })
+
+  it('the two-output form is lowered into the OdeResult unpack', () => {
+    const { python } = convert('[t, y] = ode45(@f, [0 10], [1; 0]);')
+    expect(python).toContain('_sol = integrate.solve_ivp(')
+    expect(python).toContain('t = _sol.t')
+    // .T restores MATLAB's orientation: rows = time steps.
+    expect(python).toContain('y = _sol.y.T')
+    expect(python).not.toMatch(/^t, y = /m)
+  })
+
+  it('two solver calls reuse the temp safely', () => {
+    // `_sol` cannot clash with a source name - MATLAB identifiers start with
+    // a letter - and each call consumes it on the next two lines.
+    const { python } = convert("[t1, y1] = ode45(@f, [0 10], y0);\n[t2, y2] = ode15s(@g, [0 20], y0);")
+    expect(python).toContain('t1 = _sol.t')
+    expect(python).toContain('t2 = _sol.t')
+    expect(python).toContain("method='RK45'")
+    expect(python).toContain("method='BDF'")
   })
 })
