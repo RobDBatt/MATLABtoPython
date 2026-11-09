@@ -166,14 +166,14 @@ function Footer() {
 function Nav() {
   return (
     <nav className="sticky top-0 z-50 border-b border-[#2a2e3a] bg-[#15171d]/95 backdrop-blur-sm">
-      <div className="mx-auto max-w-6xl flex items-center justify-between px-6 h-14">
+      <div className="mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 min-h-14">
         <a
           href="/"
           className="font-[family-name:var(--font-syne)] font-bold text-[#eef0f4] text-lg tracking-tight"
         >
           MATLAB<span className="text-[#d9662b]">to</span>Python
         </a>
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm whitespace-nowrap">
           <a href="/convert" className="text-[#9aa1ac] hover:text-[#eef0f4] transition-colors">
             Converter
           </a>
