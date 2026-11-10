@@ -6,6 +6,7 @@ import {
   Show,
   UserButton,
 } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { Syne, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
@@ -91,7 +92,17 @@ export default function RootLayout({
       className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col font-[family-name:var(--font-dm-sans)] bg-[#15171d] text-[#eef0f4]">
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark,
+            variables: {
+              colorPrimary: "#d9662b",
+              colorBackground: "#1b1e26",
+              colorText: "#eef0f4",
+              colorTextSecondary: "#9aa1ac",
+            },
+          }}
+        >
           <Nav />
           <main className="flex-1">{children}</main>
           <Footer />
